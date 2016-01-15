@@ -1,6 +1,6 @@
 #RandomBiasedAI
-WorkerRush
-LightRush
+#WorkerRush
+#LightRush
 #RangedRush
 #HeavyRush
 #IDABCD
@@ -18,3 +18,4 @@ LightRush
 #AHTN-P
 #AHTN-F
 #AHTN-FST
+Puppet

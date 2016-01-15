@@ -1,0 +1,4 @@
+#maps/melee4x4light2.xml
+#maps/melee8x8mixed6.xml
+#maps/basesWorkers8x8.xml
+maps/BloodBath.xml

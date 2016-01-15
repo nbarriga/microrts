@@ -1,6 +1,6 @@
 #RandomBiasedAI
-#WorkerRush
-#LightRush
+WorkerRush
+LightRush
 RangedRush
 HeavyRush
 #IDABCD
