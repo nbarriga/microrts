@@ -32,7 +32,11 @@ public class PhysicalGameState {
     
     
     public static PhysicalGameState load(String fileName, UnitTypeTable utt) throws JDOMException, IOException {
-        return new PhysicalGameState(new SAXBuilder().build(fileName).getRootElement(), utt);        
+        try{
+        	return new PhysicalGameState(new SAXBuilder().build(fileName).getRootElement(), utt);        
+        }catch(IllegalArgumentException ex){
+        	throw new IllegalArgumentException("Error loading map: "+fileName,ex);
+        }
     }
     
     public PhysicalGameState(int a_width, int a_height) {
@@ -69,6 +73,12 @@ public class PhysicalGameState {
     }
     
     public void addUnit(Unit u) {
+    	for(Unit u2:units){
+    		if(u.getX()==u2.getX() && u.getY()==u2.getY() ){
+    			throw new IllegalArgumentException("PhysicalGameState.addUnit: added two units in position: ("
+    					+u.getX()+", "+u.getY()+")");
+    		}
+    	}
         units.add(u);
     }
     
@@ -238,9 +248,8 @@ public class PhysicalGameState {
         }
         for(Object o:units_e.getChildren()) {
             Element unit_e = (Element)o;
-            Unit u = new Unit(unit_e, utt);
-//            System.out.println(u);
-            units.add(u);
+            addUnit(new Unit(unit_e, utt));
+
         }
     }    
     
