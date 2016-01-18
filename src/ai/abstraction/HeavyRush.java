@@ -116,7 +116,7 @@ public class HeavyRush extends AbstractionLayerAI {
                 nworkers++;
             }
         }
-        if (nworkers < 1 && p.getResources() > workerType.cost) {
+        if (nworkers < 1 && p.getResources() >= workerType.cost) {
             train(u, workerType);
         }
     }
@@ -171,7 +171,7 @@ public class HeavyRush extends AbstractionLayerAI {
         List<Integer> reservedPositions = new LinkedList<Integer>();
         if (nbases == 0 && !freeWorkers.isEmpty()) {
             // build a base:
-            if (p.getResources() > baseType.cost + resourcesUsed) {
+            if (p.getResources() >= baseType.cost + resourcesUsed) {
                 Unit u = freeWorkers.remove(0);
                 int pos = findBuildingPosition(reservedPositions, u, p, pgs);
                 build(u, baseType, pos % pgs.getWidth(), pos / pgs.getWidth());
@@ -182,7 +182,7 @@ public class HeavyRush extends AbstractionLayerAI {
 
         if (nbarracks == 0) {
             // build a barracks:
-            if (p.getResources() > barracksType.cost + resourcesUsed && !freeWorkers.isEmpty()) {
+            if (p.getResources() >= barracksType.cost + resourcesUsed && !freeWorkers.isEmpty()) {
                 Unit u = freeWorkers.remove(0);
                 int pos = findBuildingPosition(reservedPositions, u, p, pgs);
                 build(u, barracksType, pos % pgs.getWidth(), pos / pgs.getWidth());

@@ -86,7 +86,7 @@ public class WorkerRush extends AbstractionLayerAI {
     
     
     public void baseBehavior(Unit u,Player p, PhysicalGameState pgs) {
-        if (p.getResources()>workerType.cost) train(u, workerType);
+        if (p.getResources()>=workerType.cost) train(u, workerType);
     }
     
     public void meleeUnitBehavior(Unit u,Player p, PhysicalGameState pgs) {
@@ -123,7 +123,7 @@ public class WorkerRush extends AbstractionLayerAI {
         List<Integer> reservedPositions = new LinkedList<Integer>();
         if (nbases==0 && !freeWorkers.isEmpty()) {
             // build a base:
-            if (p.getResources()>baseType.cost + resourcesUsed) {
+            if (p.getResources()>=baseType.cost + resourcesUsed) {
                 Unit u = freeWorkers.remove(0);
                 int pos = findBuildingPosition(reservedPositions,u,p,pgs);
                 build(u, baseType, pos%pgs.getWidth(), pos/pgs.getWidth());
