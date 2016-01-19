@@ -186,7 +186,7 @@ public class HeavyRush extends AbstractionLayerAI {
                 Unit u = freeWorkers.remove(0);
                 int pos = findBuildingPosition(reservedPositions, u, p, pgs);
                 build(u, barracksType, pos % pgs.getWidth(), pos / pgs.getWidth());
-                resourcesUsed += baseType.cost;
+                resourcesUsed += barracksType.cost;
             }
         }
 
