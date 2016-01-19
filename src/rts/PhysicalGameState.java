@@ -6,6 +6,8 @@ package rts;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+
 import rts.units.Unit;
 import java.util.LinkedList;
 import java.util.List;
@@ -108,6 +110,16 @@ public class PhysicalGameState {
             if (u.getX()==x && u.getY()==y) return u;
         }
         return null;
+    }
+    
+    public Collection<Unit> getUnitsAround(int x, int y, int squareRange) {
+    	List<Unit> closeUnits = new LinkedList<Unit>();
+        for(Unit u:units) {
+        	if((Math.abs(u.getX() - x)<=squareRange &&  Math.abs(u.getY() - y)<=squareRange)){
+        		closeUnits.add(u);
+        	}
+        }
+        return closeUnits;
     }
     
     int winner() {
