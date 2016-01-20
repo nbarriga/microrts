@@ -47,6 +47,7 @@ public abstract class AbstractionLayerAI extends AI {
         
         // Execute abstract actions:
         List<Unit> toDelete = new LinkedList<Unit>();
+        ResourceUsage ru = new ResourceUsage();
         for(AbstractAction aa:actions.values()) {
             if (!pgs.getUnits().contains(aa.unit)) {
                 // The unit is dead:
@@ -57,8 +58,11 @@ public abstract class AbstractionLayerAI extends AI {
                     toDelete.add(aa.unit);
                 } else {
                     if (gs.getActionAssignment(aa.unit)==null) {
-                        UnitAction ua = aa.execute(gs);
-                        if (ua!=null) desires.add(new Pair<Unit,UnitAction>(aa.unit,ua));
+                        UnitAction ua = aa.execute(gs,ru);
+                        if (ua!=null) {
+                        	ru.merge(ua.resourceUsage(aa.unit, pgs));
+                        	desires.add(new Pair<Unit,UnitAction>(aa.unit,ua));
+                        }
                     }
                 }
             }
