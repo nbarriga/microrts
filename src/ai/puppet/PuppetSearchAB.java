@@ -24,6 +24,10 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 			this.script=script;
 			this.player=player;
 		}
+		@Override
+		public String toString(){
+			return script+", player: "+player;
+		}
 	}
 	class Result{
 		Move m;
@@ -32,12 +36,16 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 			this.m=m;
 			this.score=score;
 		}
+		@Override
+		public String toString(){
+			return m+", score: "+score;
+		}
 	}
 	protected int DEBUG=1;
-	protected int MAXDEPTH=4;
+	protected int MAXDEPTH=2;
 	protected EvaluationFunction eval;
 	protected int evalPlayoutTime=0;
-	protected int stepPlayoutTime=100;
+	protected int stepPlayoutTime=1200;
 	protected AI playoutAI;
 	protected AI scripts[];
 	protected int MAXPLAYER;
@@ -54,7 +62,7 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 		eval=evaluation;
 		this.scripts=scripts;
 		playoutAI=scripts[0];
-		lastScript=scripts[0];
+		lastScript=null;
 		lastSearchTime=-1;
 	}
 
@@ -64,7 +72,7 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 	@Override
 	public void reset() {
 		// TODO Auto-generated method stub
-		lastScript=scripts[0];
+		lastScript=null;
 		lastSearchTime=-1;
 	}
 
@@ -75,12 +83,12 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
 		MAXPLAYER=player;
 		if(lastSearchTime==-1
-				||(gs.getTime()-lastSearchTime)>(stepPlayoutTime*MAXDEPTH)){
+				||(gs.getTime()-lastSearchTime)>(stepPlayoutTime*MAXDEPTH/2)){
 			lastSearchTime=gs.getTime();
 			lastScript=ABCD(player, gs, MAXDEPTH);
 		}
         if (gs.canExecuteAnyAction(player) && gs.winner()==-1) {
-        	if (DEBUG>=2) System.out.println("Issuing move using script: " + lastScript);
+        	if (DEBUG>=3) System.out.println("Issuing move using script: " + lastScript);
             PlayerAction pa = lastScript.getAction(player, gs); 
             //pa.fillWithNones(gs, player, defaultNONEduration);
             return pa;
@@ -112,23 +120,15 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 			// Run the play out:
 			if(evalPlayoutTime>0){
 				GameState gs2 = gs.clone();
-				AI playoutAI1 = playoutAI.clone();
-				AI playoutAI2 = playoutAI.clone();
-				int timeOut = gs2.getTime() + evalPlayoutTime;
-				boolean gameover = false;
-				while(!gameover && gs2.getTime()<timeOut) {
-					if (gs2.isComplete()) {
-						gameover = gs2.cycle();
-					} else {
-						gs2.issue(playoutAI1.getAction(0, gs2));
-						gs2.issue(playoutAI2.getAction(1, gs2));
-					}
-				}       
-				if(DEBUG>=2)System.out.println(indent+"Eval (at " + gs.getTime() + "): "
+				simulate(gs2,playoutAI.clone(),playoutAI.clone(),0,1,evalPlayoutTime);  
+				if(DEBUG>=2)System.out.println(indent+"Eval (at " + gs2.getTime() + "): "
 						+ eval.evaluate(MAXPLAYER, 1-MAXPLAYER, gs2));
 				//          System.out.println(gs);
 				return new Result(null,eval.evaluate(MAXPLAYER, 1-MAXPLAYER, gs2));
 			}else{
+//				System.out.println(gs);
+				if(DEBUG>=2)System.out.println(indent+"Eval (at " + gs.getTime() + "): "
+						+ eval.evaluate(MAXPLAYER, 1-MAXPLAYER, gs));
 				return new Result(null,eval.evaluate(MAXPLAYER, 1-MAXPLAYER, gs));
 			}
 		}
@@ -144,23 +144,14 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 		assert(toMove==0 || toMove==1);
 		Result best=null;
 		for(AI script:scripts){
+
+			if(DEBUG>=2)System.out.println(indent+"Node: "+script);
 			Result tmp=null;
 			if(move1==null){
 				tmp=ABCD(gs,new Move(script.clone(),toMove),alpha,beta,depthLeft-1,nextPlayerInSimultaneousNode,indent+"  ");
 			}else{
 				GameState gs2 = gs.clone();
-				AI playoutAI1 = move1.script.clone();
-				AI playoutAI2 = script.clone();
-				int timeOut = gs2.getTime() + stepPlayoutTime;
-				boolean gameover = false;
-				while(!gameover && gs2.getTime()<timeOut) {
-					if (gs2.isComplete()) {
-						gameover = gs2.cycle();
-					} else {
-						gs2.issue(playoutAI1.getAction(move1.player, gs2));
-						gs2.issue(playoutAI2.getAction(toMove, gs2));
-					}
-				}    
+				simulate(gs2,move1.script.clone(),script.clone(),move1.player,toMove, stepPlayoutTime);
 				tmp=ABCD(gs2,null,alpha,beta,depthLeft-1,nextPlayerInSimultaneousNode,indent+"  ");
 			}	
 			if(DEBUG>=2)System.out.println(indent+"result: "+tmp);
@@ -178,16 +169,31 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 				}
 			}
 			if(alpha>=beta){
-				if(DEBUG>=2)System.out.println(indent+"Beta cut: "+best);
+				if(DEBUG>=2)System.out.println(indent+"Beta cut: "+best.score);
 				assert(best!=null);
+//				System.out.println(indent+"Value: "+best.score);
 				return best;
 			}
 		}
-		if(DEBUG>=2)System.out.println(indent+"Final return: "+best);
+		if(DEBUG>=2)System.out.println(indent+"Final return: "+best.score);
 		assert(best!=null);
+//		System.out.println(indent+"Value: "+best.score);
 		return best;
 		
 		
+	}
+	protected void simulate(GameState gs, AI ai1, AI ai2, int player1, int player2, int time) throws Exception{
+		assert(player1!=player2);
+		int timeOut = gs.getTime() + time;
+		boolean gameover = false;
+		while(!gameover && gs.getTime()<timeOut) {
+			if (gs.isComplete()) {
+				gameover = gs.cycle();
+			} else {
+				gs.issue(ai1.getAction(player1, gs));
+				gs.issue(ai2.getAction(player2, gs));
+			}
+		}    
 	}
 	/* (non-Javadoc)
 	 * @see ai.core.AI#clone()
