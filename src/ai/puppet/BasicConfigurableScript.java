@@ -1,6 +1,7 @@
 package ai.puppet;
 
 import java.util.Collection;
+
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,13 +19,11 @@ import rts.units.UnitType;
 import rts.units.UnitTypeTable;
 import util.Pair;
 
-public class BasicConfigurableScript extends ConfigurableScript {
+enum BasicChoicePoint{NWORKERS, UNITTYPE, EXPAND};
 
-	enum ChoicePoint{NWORKERS, UNITTYPE, EXPAND};
-	final ChoicePoint[] choicePointValues = ChoicePoint.values();
-	EnumMap<ChoicePoint,Options> choicePoints = new EnumMap<ChoicePoint,Options>(ChoicePoint.class);
-	EnumMap<ChoicePoint,Integer> choices = new EnumMap<ChoicePoint,Integer>(ChoicePoint.class);
-	
+public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint> {
+
+
     Random r = new Random();
     UnitTypeTable utt;
     UnitType workerType;
@@ -59,15 +58,19 @@ public class BasicConfigurableScript extends ConfigurableScript {
         heavyType = utt.getUnitType("Heavy");
         rangedType = utt.getUnitType("Ranged");
         resourceType = utt.getUnitType("Resource");
+        
+        choicePoints = new EnumMap<BasicChoicePoint,Options>(BasicChoicePoint.class);
+        choices = new EnumMap<BasicChoicePoint,Integer>(BasicChoicePoint.class);
+        choicePointValues = BasicChoicePoint.values();
         reset();
     }
 
-    public void reset() {
-    	super.reset();
-    }
-
-    public AI clone() {
-        return new BasicConfigurableScript(utt, pf);
+    public ConfigurableScript<BasicChoicePoint> clone() {
+    	BasicConfigurableScript sc = new BasicConfigurableScript(utt, pf);
+    	sc.choices=choices.clone();
+    	sc.choicePoints=choicePoints.clone();
+    	sc.choicePointValues=choicePointValues.clone();
+        return sc;
     }
 
     /*
@@ -82,7 +85,6 @@ public class BasicConfigurableScript extends ConfigurableScript {
     public PlayerAction getAction(int player, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
         Player p = gs.getPlayer(player);
-        PlayerAction pa = new PlayerAction();
 //        System.out.println("LightRushAI for player " + player + " (cycle " + gs.getTime() + ")");
         resourcesUsed=gs.getResourceUsage().getResourcesUsed(player); 
         nworkers=0;
@@ -171,7 +173,7 @@ public class BasicConfigurableScript extends ConfigurableScript {
     }
 
     public void baseBehavior(Unit u, Player p, PhysicalGameState pgs) {
-        if (nworkers < choices.get(ChoicePoint.NWORKERS) && p.getResources() >= workerType.cost + resourcesUsed) {
+        if (nworkers < choices.get(BasicChoicePoint.NWORKERS) && p.getResources() >= workerType.cost + resourcesUsed) {
             train(u, workerType);
             resourcesUsed+=workerType.cost;
         }
@@ -204,7 +206,7 @@ public class BasicConfigurableScript extends ConfigurableScript {
     }
     
     public void barracksBehavior(Unit u, Player p, PhysicalGameState pgs) {
-    	UnitType toBuild=utt.getUnitType(choices.get(ChoicePoint.UNITTYPE));
+    	UnitType toBuild=utt.getUnitType(choices.get(BasicChoicePoint.UNITTYPE));
     	if (p.getResources() >= toBuild.cost + resourcesUsed) {
     		train(u, toBuild);
     		resourcesUsed+=toBuild.cost;
@@ -316,7 +318,7 @@ public class BasicConfigurableScript extends ConfigurableScript {
         }
 
         //expand
-        if(choices.get(ChoicePoint.EXPAND)>0 
+        if(choices.get(BasicChoicePoint.EXPAND)>0 
         		&& nbarracks >= 1 
         		&& (nbases - abandonedbases) <= 1 
         		&& freeresources > 0  
@@ -483,20 +485,8 @@ public class BasicConfigurableScript extends ConfigurableScript {
            return closestUnit;
       }
 
-	@Override
-	public Collection<Options> getAllChoicePoints() {
-		// TODO Auto-generated method stub
-		return choicePoints.values();
-	}
 
 
-
-	@Override
-	public void setDefaultChoices() {//first option is the default
-		for(ChoicePoint c:ChoicePoint.values()){
-			choices.put(c, choicePoints.get(c).getOption(0));
-		}
-	}
 
 	@Override
 	public Collection<Options> getApplicableChoicePoints(int player, GameState gs) {
@@ -504,18 +494,11 @@ public class BasicConfigurableScript extends ConfigurableScript {
 	}
 
 	@Override
-	public void setChoices(Collection<Pair<Integer,Integer>> choices) {
-		for(Pair<Integer,Integer> c:choices){
-			this.choices.put(choicePointValues[c.m_a],c.m_b);
-		}
-	}
-
-	@Override
 	public void initializeChoices() {
-		for(ChoicePoint c:ChoicePoint.values()){
+		for(BasicChoicePoint c:choicePointValues){
 			switch(c){
 			case NWORKERS: 
-				choicePoints.put(c, new Options(c.ordinal(),new int[]{1,2,3}));
+				choicePoints.put(c, new Options(c.ordinal(),new int[]{1,2}));
 				break;
 			case UNITTYPE:
 				choicePoints.put(c, new Options(c.ordinal(),new int[]{
