@@ -73,13 +73,14 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 	public void reset() {
 		lastChoices=null;
 		lastSearchTime=-1;
+		script.reset();
 	}
 
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
 		MAXPLAYER=player;
 		if(lastSearchTime==-1
-				||(gs.getTime()-lastSearchTime)>(stepPlayoutTime*MAXDEPTH/2)){
+				||(gs.getTime()-lastSearchTime)>=(stepPlayoutTime*MAXDEPTH/2)){
 			lastSearchTime=gs.getTime();
 			lastChoices=ABCD(player, gs, MAXDEPTH);
 		}
@@ -100,7 +101,7 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 	        nNodes = 0;
 	        float alpha = -EvaluationFunction.VICTORY;
 	        float beta = EvaluationFunction.VICTORY;
-	        if (DEBUG>=1) System.out.println("Starting ABCD... " + player + " with " + MAX_TIME +" ms");
+	        if (DEBUG>=1) System.out.println("Starting ABCD at frame "+gs.getTime()+", player " + player + " with " + MAX_TIME +" ms");
 	        Result bestMove = ABCD(gs, null, alpha, beta, depth, MAXPLAYER,"");
 	        if (DEBUG>=1) System.out.println("ABCD: " + bestMove + " in " 
 	        + (System.currentTimeMillis()-start)+" ms, Nodes: "+nNodes+", leaves: "+nLeaves);
@@ -189,12 +190,10 @@ public class PuppetSearchAB extends AIWithComputationBudget {
 			}
 		}    
 	}
-	/* (non-Javadoc)
-	 * @see ai.core.AI#clone()
-	 */
+
 	@Override
 	public AI clone() {
-		PuppetSearchAB ps = new PuppetSearchAB(MAX_TIME, MAX_ITERATIONS, script, eval);
+		PuppetSearchAB ps = new PuppetSearchAB(MAX_TIME, MAX_ITERATIONS, script.clone(), eval);
 		ps.lastChoices = lastChoices;
 		ps.lastSearchTime = lastSearchTime;
 		return ps;

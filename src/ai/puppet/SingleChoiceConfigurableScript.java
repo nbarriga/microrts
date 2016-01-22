@@ -25,6 +25,14 @@ public class SingleChoiceConfigurableScript extends ConfigurableScript<SingleCho
 	}
 
 	@Override
+	public void reset(){
+		super.reset();
+		for(AI sc:scripts){
+			sc.reset();
+		}
+	}
+	
+	@Override
 	public Collection<Options> getApplicableChoicePoints(int player, GameState gs) {
 		return getAllChoicePoints();
 	}
@@ -47,7 +55,10 @@ public class SingleChoiceConfigurableScript extends ConfigurableScript<SingleCho
 
 	@Override
     public ConfigurableScript<SingleChoice> clone() {
-    	SingleChoiceConfigurableScript sc = new SingleChoiceConfigurableScript(pf,scripts);
+		AI scripts2[]=new AI[scripts.length];
+		for(int i=0;i<scripts.length;i++)
+			scripts2[i]=scripts[i].clone();
+    	SingleChoiceConfigurableScript sc = new SingleChoiceConfigurableScript(pf,scripts2);
     	sc.choices=choices.clone();
     	sc.choicePoints=choicePoints.clone();
     	sc.choicePointValues=choicePointValues.clone();
@@ -56,7 +67,11 @@ public class SingleChoiceConfigurableScript extends ConfigurableScript<SingleCho
 
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
-		return scripts[choices.get(SingleChoice.SINGLE)].getAction(player, gs);
+//		System.out.println("-------------"+player);
+//		for(AI sc:scripts){
+//			System.out.println(sc.toString());
+//		}
+		return scripts[0].getAction(player, gs);
 	}
 
 

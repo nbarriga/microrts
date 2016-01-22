@@ -38,11 +38,11 @@ public abstract class ConfigurableScript<T extends Enum<T>> extends AbstractionL
 	public ConfigurableScript(PathFinding a_pf) {
 		super(a_pf);
 	}
-	
-	 public void reset(){
+	@Override
+	public void reset(){
 		initializeChoices();
 		setDefaultChoices();
-	 }
+	}
 	public Collection<Options> getAllChoicePoints(){
 		return choicePoints.values();
 	}
