@@ -40,6 +40,7 @@ public class WorkerRush extends AbstractionLayerAI {
     }
     
     public void reset() {
+    	super.reset();
     }
     
     public AI clone() {

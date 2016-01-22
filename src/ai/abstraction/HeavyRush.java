@@ -46,6 +46,7 @@ public class HeavyRush extends AbstractionLayerAI {
     }
 
     public void reset() {
+    	super.reset();
     }
 
     public AI clone() {

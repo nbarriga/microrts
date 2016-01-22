@@ -44,6 +44,7 @@ public class RangedRush extends AbstractionLayerAI {
     }
 
     public void reset() {
+    	super.reset();
     }
 
     public AI clone() {

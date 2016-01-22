@@ -36,7 +36,9 @@ public abstract class AbstractionLayerAI extends AI {
         pf = a_pf;
     }
             
-    public abstract void reset();
+    public void reset(){
+    	actions.clear();
+    }
 
     public abstract AI clone();
     
