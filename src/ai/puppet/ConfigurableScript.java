@@ -59,7 +59,7 @@ public abstract class ConfigurableScript<T extends Enum<T>> extends AbstractionL
 		}
 	}
 
-	public Collection<ArrayList<Pair<Integer,Integer>>> getChoiceCombinations(int player, GameState gs){
+	public ArrayList<ArrayList<Pair<Integer,Integer>>> getChoiceCombinations(int player, GameState gs){
 		Collection<Options> options= getApplicableChoicePoints(player,gs);
 //		int[] strides=new int[options.size()];
 		int[] reps=new int[options.size()+1];

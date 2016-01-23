@@ -71,7 +71,7 @@ public class SingleChoiceConfigurableScript extends ConfigurableScript<SingleCho
 //		for(AI sc:scripts){
 //			System.out.println(sc.toString());
 //		}
-		return scripts[0].getAction(player, gs);
+		return scripts[choices.get(SingleChoice.SINGLE)].getAction(player, gs);
 	}
 
 

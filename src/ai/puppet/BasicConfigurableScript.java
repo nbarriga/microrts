@@ -158,7 +158,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
                 workers.add(u);
             }
         }
-        workersBehavior(workers, p, pgs);
+        workersBehavior(workers, p, gs);
 
         // behavior of barracks:
         for (Unit u : pgs.getUnits()) {
@@ -276,10 +276,11 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
     	int yDiff=Math.abs(u1.getY()-u2.getY());
     	return xDiff*xDiff+yDiff*yDiff;
     }
-    public void workersBehavior(List<Unit> workers, Player p, PhysicalGameState pgs) {
-
+    public void workersBehavior(List<Unit> workers, Player p, GameState gs) {
+    	PhysicalGameState pgs=gs.getPhysicalGameState();
+    	
         if(workers.isEmpty())return;
-   
+        
         List<Unit> bases = new LinkedList<Unit>();
         for (Unit u2 : pgs.getUnits()) {
             if (u2.getType() == baseType
@@ -303,7 +304,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
         } 
      
 
-        if (nbarracks < (nbases - abandonedbases)) {
+        if (nbarracks < (nbases - abandonedbases) && !utt.getUnitType(choices.get(BasicChoicePoint.UNITTYPE)).canHarvest) {
             // build a barracks:
             if (p.getResources() >= barracksType.cost + resourcesUsed && !freeWorkers.isEmpty()) {
             	Unit u = freeWorkers.remove(0);
@@ -356,6 +357,9 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
             	resourcesUsed+=  baseType.cost;
             }
         }
+        
+        while(freeWorkers.size()>choices.get(BasicChoicePoint.NWORKERS))
+        	 meleeUnitBehavior(freeWorkers.remove(0), p, gs);
         // harvest with all the free workers:
         for (Unit u : freeWorkers) {
             Unit closestBase = null;
@@ -384,6 +388,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
                 harvest(u, closestResource, closestBase);
             }
         }
+       
     }
 
     // Finds the nearest available location at which a building can be placed:
