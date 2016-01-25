@@ -71,6 +71,9 @@ public class PuppetSearchAB extends AI {
 		Move last(){
 			return new Move(choices.get(current-1),player);
 		}
+		void ABcut(){
+			current=choices.size();
+		}
 	}
 	class ABCDNode {
 		GameState gs;
@@ -81,7 +84,7 @@ public class PuppetSearchAB extends AI {
 		int nextPlayerInSimultaneousNode;
 		MoveGenerator nextMoves;
 		Result best;
-	    
+	    ABCDNode following;
 	   
 	    public ABCDNode( 
 	    		GameState gs, 
@@ -99,6 +102,7 @@ public class PuppetSearchAB extends AI {
 	    	this.nextPlayerInSimultaneousNode=nextPlayerInSimultaneousNode;
 	    	this.best=best;
 	    	nextMoves=new MoveGenerator(script.getChoiceCombinations(toMove(), gs),toMove());
+	    	following=null;
 	    }
 	    int toMove(){
 	    	if(prevMove==null)return nextPlayerInSimultaneousNode;
@@ -107,83 +111,133 @@ public class PuppetSearchAB extends AI {
 	    boolean isMaxPlayer(){
 	    	return toMove()==MAXPLAYER;
 	    }
-	    void setResult(Result result){
-			if(best==null){
-				best=result;
-			}else if((isMaxPlayer()&&result.score>best.score)
-					||(!isMaxPlayer()&&result.score<best.score)){
-				best=result;
+	    void setResult(Result result, ABCDNode node){
+	    	if(best==null){
+	    		best=result;
+	    		following=node;
+	    	}else if(isMaxPlayer()){
+	    		alpha = Math.max(alpha,best.score);
+	    		if(result.score>best.score){
+	    			best=result;
+	    			following=node;
+	    		}
+	    	}else if(!isMaxPlayer()){
+	    		beta = Math.min(beta,best.score);
+	    		if(result.score<best.score){
+	    			best=result;
+	    			following=node;
+	    		}
+	    	}
+	    	if(alpha>=beta){
+				nextMoves.ABcut();
 			}
-	    }
-	    void setScore(Result result){
-			if((isMaxPlayer()&&result.score>best.score)
-					||(!isMaxPlayer()&&result.score<best.score)){
-				best.score=result.score;
-			}
-	    }
-	    boolean alphaBetaCut(){
-	    	return false;
 	    }
 	    public String toString(){
-	    	return "NODEDEPTH:"+depth+" "+prevMove+" best="+best;
+	    	return " time:"+gs.getTime()+" "+/*prevMove+" best="+*/best+"\n"+(following!=null?following.toString():"");
 	    }
+	}
+	
+	class Plan{
+		ABCDNode node;
+		Plan(ABCDNode node){
+			this.node=node;
+		}
+		Plan(){
+			node=null;
+		}
+		void update(GameState gs){
+			while(node!=null&&
+					((gs.getTime()-node.gs.getTime())>PLAYOUT_TIME ||!node.isMaxPlayer())){
+				node=node.following;
+			}
+//			if(node!=null)
+//				System.out.println("current plan: "+node);
+//			else
+//				System.out.println("no current plan");
+		}
+		Collection<Pair<Integer, Integer>> getChoices(){
+			if(node!=null&&node.best!=null){
+				return node.best.m.choices;
+			}else{
+				return Collections.emptyList();
+			}
+		}
+		boolean valid(){
+			return node!=null&&node.best!=null;
+		}
 	}
 
     protected int MAX_TIME = 100;//ms
 	protected int DEBUG=1;
-	protected int MAXDEPTH=2;
+	protected int MAXDEPTH=6;
 	protected EvaluationFunction eval;
-	protected int stepPlayoutTime=400;
+	protected int PLAYOUT_TIME=100;
 	protected ConfigurableScript<?> script;
 	protected int MAXPLAYER=-1;
-	protected Collection<Pair<Integer,Integer>> lastChoices;
 	protected int lastSearchFrame;
 	protected long lastSearchTime;
-    int nLeaves = 0;
-    int nNodes = 0;
+    int nLeaves = 0, totalLeaves = 0;
+    int nNodes = 0, totalNodes = 0;
     
     Stack<ABCDNode> stack=new Stack<ABCDNode>();
     ABCDNode head;
+    Plan currentPlan;
+   
+    
 	/**
 	 * @param mt
 	 * @param mi
 	 */
-	public PuppetSearchAB(int mt, ConfigurableScript<?> script, EvaluationFunction evaluation) {
+	public PuppetSearchAB(int mt, int pt, ConfigurableScript<?> script, EvaluationFunction evaluation) {
 		
 		MAX_TIME=mt;
+		PLAYOUT_TIME=pt;
 		eval=evaluation;
 		this.script=script;
-		lastChoices= Collections.emptyList();
+		currentPlan=new Plan();
 		lastSearchFrame=-1;
 	}
 
 	@Override
 	public void reset() {
-		lastChoices= Collections.emptyList();
+		currentPlan=new Plan();
 		lastSearchFrame=-1;
 		stack.clear();
 		script.reset();
+		nLeaves = 0; totalLeaves = 0;
+	    nNodes = 0; totalNodes = 0;
 	}
-
-
+	@Override
+	public AI clone() {
+		PuppetSearchAB ps = new PuppetSearchAB(MAX_TIME, PLAYOUT_TIME, script.clone(), eval);
+		ps.currentPlan = currentPlan;
+		ps.lastSearchFrame = lastSearchFrame;
+		return ps;
+	}
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
 		MAXPLAYER=player;
 		if(lastSearchFrame==-1
-				//||(gs.getTime()-lastSearchTime)>=(stepPlayoutTime*MAXDEPTH/2)
-				||stack.empty()){
+//				||(gs.getTime()-lastSearchFrame)>=(stepPlayoutTime)
+//				||(stack.empty()&&(gs.getTime()-lastSearchFrame)>PLAYOUT_TIME*MAXDEPTH/2)
+				||stack.empty()
+				){
 			if(DEBUG>=1){
-				System.out.println("Restarting after "+(gs.getTime()-lastSearchFrame)+" frames");
-				System.out.println("Restarting after "+(System.currentTimeMillis()-lastSearchTime)+" ms");
+				System.out.println("Restarting after "+(gs.getTime()-lastSearchFrame)+" frames, "
+						+(System.currentTimeMillis()-lastSearchTime)+" ms");
 			}
 			restartSearch(gs);
 			
 		}
-		ABCD(player,gs,MAXDEPTH);
+        if (DEBUG>=2) System.out.println("Starting ABCD at frame "+gs.getTime()+", player " + player + " with " + MAX_TIME +" ms");
+		if(!stack.empty()){
+			ABCD();
+		}
         if (gs.canExecuteAnyAction(player) && gs.winner()==-1) {
-        	if (DEBUG>=2) System.out.println("Issuing move using choices: " + lastChoices);
+        	if (DEBUG>=2) System.out.println("Issuing move using choices: " + currentPlan.getChoices());
+        	currentPlan.update(gs);
         	script.setDefaultChoices();
-        	script.setChoices(lastChoices);
+        	script.setChoices(currentPlan.getChoices());
             PlayerAction pa = script.getAction(player, gs); 
             //pa.fillWithNones(gs, player, defaultNONEduration);
             return pa;
@@ -194,35 +248,35 @@ public class PuppetSearchAB extends AI {
 	protected void restartSearch(GameState gs){
 		lastSearchFrame=gs.getTime();
 		lastSearchTime=System.currentTimeMillis();
-		if(stack.empty()){
-			stack.push(new ABCDNode(
-					gs, 
-					null, 
-					-EvaluationFunction.VICTORY, 
-					EvaluationFunction.VICTORY, 
-					0, 
-					MAXPLAYER, 
-					null));
-		}
+		stack.clear();
+		stack.push(new ABCDNode(
+				gs.clone(), 
+				null, 
+				-EvaluationFunction.VICTORY, 
+				EvaluationFunction.VICTORY, 
+				0, 
+				MAXPLAYER, 
+				null));
 		head=stack.peek();
+		totalLeaves = 0;
+		totalNodes = 0;
 	}
-	protected void ABCD(int player, GameState gs, int depth) throws Exception{
+	protected void ABCD() throws Exception{
 		 long start = System.currentTimeMillis();
 	        nLeaves = 0;
 	        nNodes = 0;
-	        float alpha = -EvaluationFunction.VICTORY;
-	        float beta = EvaluationFunction.VICTORY;
-	        if (DEBUG>=2) System.out.println("Starting ABCD at frame "+gs.getTime()+", player " + player + " with " + MAX_TIME +" ms");
 //	        Result bestMove = ABCD(gs, null, alpha, beta, depth, MAXPLAYER,"");
 	        iterativeABCD(MAXDEPTH);
-	        
-	        if (DEBUG>=1) System.out.println("ABCD: " + head.best + " in " 
+	        totalLeaves+=nLeaves;
+	        totalNodes+=nNodes;
+	        if (DEBUG>=2) System.out.println("ABCD: " + head.best + " in " 
 	        + (System.currentTimeMillis()-start)+" ms, Nodes: "+nNodes+", leaves: "+nLeaves);
 	        
 	        if(stack.empty()){
-	        	lastChoices= head.best.m.choices;
-	        	if (DEBUG>=1) System.out.println("ABCD: " + head.best + " in " 
-	        	        + (System.currentTimeMillis()-lastSearchTime)+" ms");
+	        	currentPlan=new Plan(head);
+	        	if (DEBUG>=1) System.out.println("ABCD:\n" + head + " in " 
+	        			+ (System.currentTimeMillis()-lastSearchTime)+" ms, Nodes: "
+	        			+totalNodes+", leaves: "+totalLeaves);
 	        }
 		
 	}
@@ -243,19 +297,19 @@ public class PuppetSearchAB extends AI {
 
 			if(current.prevMove==null){
 //				if(DEBUG>=2)System.out.println("current.prevMove==null");
-				if(current.depth==maxDepth|| gs.winner()!=-1){//evaluate
+				if(current.depth==maxDepth|| current.gs.winner()!=-1){//evaluate
 					if(DEBUG>=2)System.out.println("eval");
 					nLeaves++;
 					stack.pop();
 					ABCDNode parent= stack.peek();
 					Result result = new Result(parent.nextMoves.last(),eval.evaluate(MAXPLAYER, 1-MAXPLAYER, current.gs));
-					parent.setResult(result);
+					parent.setResult(result, current);
 					continue;
 				}
 				if(current.nextMoves.hasNext()){
 					if(DEBUG>=2)System.out.println("current.nextMoves.hasNext()");
 					stack.push(new ABCDNode(
-							gs, 
+							current.gs, 
 							current.nextMoves.next(), 
 							current.alpha, 
 							current.beta, 
@@ -267,14 +321,14 @@ public class PuppetSearchAB extends AI {
 					stack.pop();
 					if(!stack.empty()){
 						ABCDNode parent= stack.peek();
-						parent.setResult(new Result(parent.nextMoves.last(),current.best.score));
+						parent.setResult(new Result(parent.nextMoves.last(),current.best.score),current);
 					}
 					continue;
 				}
 			}else{
 //				if(DEBUG>=2)System.out.println("player2");
 				if(current.nextMoves.hasNext()){
-					GameState gs2 = gs.clone();
+					GameState gs2 = current.gs.clone();
 
 					ConfigurableScript<?> sc1=script.clone();
 					ConfigurableScript<?> sc2=script.clone();
@@ -284,7 +338,7 @@ public class PuppetSearchAB extends AI {
 					Move next=current.nextMoves.next();
 					sc2.setChoices(next.choices);
 
-					simulate(gs2,sc1,sc2,current.prevMove.player,next.player, stepPlayoutTime);
+					simulate(gs2,sc1,sc2,current.prevMove.player,next.player, PLAYOUT_TIME);
 					stack.push(new ABCDNode(
 							gs2, 
 							null, 
@@ -297,7 +351,7 @@ public class PuppetSearchAB extends AI {
 				}else{
 					stack.pop();
 					ABCDNode parent= stack.peek();
-					parent.setResult(new Result(parent.nextMoves.last(),current.best.score));
+					parent.setResult(new Result(parent.nextMoves.last(),current.best.score),current);
 					continue;
 				}
 			}	
@@ -340,7 +394,7 @@ public class PuppetSearchAB extends AI {
 				sc1.setChoices(move1.choices);
 				ConfigurableScript<?> sc2=script.clone();
 				sc2.setChoices(choices);
-				simulate(gs2,sc1,sc2,move1.player,toMove, stepPlayoutTime);
+				simulate(gs2,sc1,sc2,move1.player,toMove, PLAYOUT_TIME);
 				tmp=ABCD(gs2,null,alpha,beta,depthLeft-1,nextPlayerInSimultaneousNode,indent+"  ");
 			}	
 			if(DEBUG>=2)System.out.println(indent+"result: "+tmp);
@@ -385,13 +439,7 @@ public class PuppetSearchAB extends AI {
 		}    
 	}
 
-	@Override
-	public AI clone() {
-		PuppetSearchAB ps = new PuppetSearchAB(MAX_TIME, script.clone(), eval);
-		ps.lastChoices = lastChoices;
-		ps.lastSearchFrame = lastSearchFrame;
-		return ps;
-	}
+
 
 
 }
