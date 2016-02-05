@@ -122,6 +122,31 @@ public class GameState {
         return true;
     }
     
+    // Returns an array with true if there is no unit in the specified position and no unit is executing an action that will use that position
+    public boolean[][] getAllFree() {
+    	
+    	boolean free[][]=new boolean[pgs.getWidth()][pgs.getHeight()];
+    	for(int x=0;x<pgs.getWidth();x++){
+    		for(int y=0;y<pgs.getHeight();y++){
+    			free[x][y]=(pgs.getTerrain(x, y)==PhysicalGameState.TERRAIN_NONE);
+    		}
+    	}
+        for(Unit u:pgs.units) {
+        	free[u.getX()][u.getY()]=false;
+        }
+        for(UnitActionAssignment ua:unitActions.values()) {
+            if (ua.action.type==UnitAction.TYPE_MOVE ||
+                ua.action.type==UnitAction.TYPE_PRODUCE) {
+                Unit u = ua.unit;
+                if (ua.action.getDirection()==UnitAction.DIRECTION_UP ) free[u.getX()][u.getY()-1]=false;
+                if (ua.action.getDirection()==UnitAction.DIRECTION_RIGHT) free[u.getX()+1][u.getY()]=false;
+                if (ua.action.getDirection()==UnitAction.DIRECTION_DOWN ) free[u.getX()][u.getY()+1]=false;
+                if (ua.action.getDirection()==UnitAction.DIRECTION_LEFT) free[u.getX()-1][u.getY()]=false;
+            }
+        }
+        return free;
+    }
+    
 
     // for fully observable game states, all the cells are observable:
     public boolean observable(int x, int y) {
