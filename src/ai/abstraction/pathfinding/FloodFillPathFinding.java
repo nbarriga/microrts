@@ -96,7 +96,7 @@ public class FloodFillPathFinding extends PathFinding {
 //		if(Math.abs(start.getX()-x) +Math.abs(start.getY()-y) <= 4){
 //			return aStar.findPathToPositionInRange(start, targetpos, range, gs, ru);
 //		}
-		if (distances==null || distances.length<w*h) {
+		if (distances==null || distances.length<w || distances[0].length<h) {
 			distances = new int[w][h];  
 		}
 		for (int[] row: distances){
@@ -110,7 +110,7 @@ public class FloodFillPathFinding extends PathFinding {
 		return getAction(start);
 	}
 	private void initFree( GameState gs, ResourceUsage ru){
-		if (free==null || free.length<w*h) {
+		if (free==null || free.length<w || free[0].length<h) {
 			free = new boolean[w][h];  
 		}
 		for(boolean row[]:free){
@@ -156,6 +156,8 @@ public class FloodFillPathFinding extends PathFinding {
         
 	}
 	
+	//this is not necessarily correct. Following the shortest path to a specific location and stopping when
+	//in range is not the same as getting the shortest path to any position in range.
 	@Override
 	public UnitAction findPathToPositionInRange(Unit start, int targetpos, int range, GameState gs, ResourceUsage ru) {
 //		System.out.println(range);
@@ -172,10 +174,9 @@ public class FloodFillPathFinding extends PathFinding {
 		}
 		if(gs.getTime()<lastFrame){//new game
 			cache.clear();
-			lastFrame=gs.getTime();
 //			System.out.println("Removed, new game");
 		}
-
+		lastFrame=gs.getTime();
 		initFree(gs,ru);
 		if(cache.containsKey(targetpos)){
 			distances=cache.get(targetpos);
