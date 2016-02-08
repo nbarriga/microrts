@@ -1,8 +1,11 @@
 #RandomBiasedAI
+#RandomScript
 #WorkerRush
-#LightRush
+LightRush
 #RangedRush
 #HeavyRush
+#BasicConfigurableScript
+#SingleChoiceConfigurableScript
 #IDABCD
 #MonteCarlo1
 #NaiveMCTS2
@@ -18,4 +21,5 @@
 #AHTN-P
 #AHTN-F
 #AHTN-FST
-Puppet
+#PuppetSingle
+#PuppetBasic

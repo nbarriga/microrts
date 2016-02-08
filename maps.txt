@@ -1,4 +1,21 @@
 #maps/melee4x4light2.xml
 #maps/melee8x8mixed6.xml
 #maps/basesWorkers8x8.xml
-maps/BloodBath.xml
+#maps/basesWorkers16x16.xml
+#maps/basesWorkers24x24.xml
+maps/BroodWar/(2)Benzene.scxA.xml
+maps/BroodWar/(2)Destination.scxA.xml
+maps/BroodWar/(2)HeartbreakRidge.scxA.xml
+maps/BroodWar/(3)Aztec.scxA.xml
+maps/BroodWar/(3)TauCross.scxA.xml
+maps/BroodWar/(4)Andromeda.scxA.xml
+maps/BroodWar/(4)CircuitBreaker.scxA.xml
+maps/BroodWar/(4)EmpireoftheSun.scmA.xml
+maps/BroodWar/(4)Fortress.scxA.xml
+maps/BroodWar/(4)Python.scxA.xml
+maps/BroodWar/(4)Blood Bath.scmA.xml
+#maps/BroodWar/(4)Blood Bath.scmB.xml
+#maps/BroodWar/(4)Blood Bath.scmC.xml
+#maps/BroodWar/(4)Blood Bath.scmD.xml
+#maps/BroodWar/(4)Blood Bath.scmE.xml
+#maps/BroodWar/(4)Blood Bath.scmF.xml

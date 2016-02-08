@@ -12,24 +12,26 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.jdom.JDOMException;
-
-import com.sun.javafx.geom.transform.GeneralTransform3D;
-
 import ai.RandomAI;
 import ai.RandomBiasedAI;
 import ai.abstraction.HeavyRush;
 import ai.abstraction.LightRush;
 import ai.abstraction.RangedRush;
 import ai.abstraction.WorkerRush;
+import ai.abstraction.pathfinding.AStarPathFinding;
 import ai.abstraction.pathfinding.BFSPathFinding;
+import ai.abstraction.pathfinding.FloodFillPathFinding;
 import ai.abstraction.pathfinding.GreedyPathFinding;
+import ai.abstraction.pathfinding.PathFinding;
 import ai.ahtn.AHTNAI;
 import ai.core.AI;
 import ai.core.AIWithComputationBudget;
 import ai.core.ContinuingAI;
 import ai.core.InterruptibleAIWithComputationBudget;
 import ai.core.PseudoContinuingAI;
+import ai.evaluation.EvaluationFunction;
+import ai.evaluation.SimpleEvaluationFunction;
+import ai.evaluation.SimpleSqrtEvaluationFunction2;
 import ai.evaluation.SimpleSqrtEvaluationFunction3;
 import ai.mcts.naivemcts.NaiveMCTS;
 import ai.mcts.uct.DownsamplingUCT;
@@ -40,7 +42,9 @@ import ai.minimax.RTMiniMax.IDRTMinimax;
 import ai.minimax.RTMiniMax.IDRTMinimaxRandomized;
 import ai.montecarlo.MonteCarlo;
 import ai.portfolio.PortfolioAI;
+import ai.puppet.BasicConfigurableScript;
 import ai.puppet.PuppetSearchAB;
+import ai.puppet.SingleChoiceConfigurableScript;
 import rts.PhysicalGameState;
 import rts.units.UnitTypeTable;
 
@@ -49,13 +53,23 @@ public class RunConfigurableExperiments {
 	private static int TIME = 100;
 	private static int MAX_ACTIONS = 100;
 	private static int MAX_PLAYOUTS = -1;
-	private static int PLAYOUT_TIME = 100;
+	private static int PLAYOUT_TIME = 200;
 	private static int MAX_DEPTH = 10;
 	private static int RANDOMIZED_AB_REPEATS = 10;
+	private static int MAX_FRAMES = 3000;
 	
 	private static List<AI> bots1 = new LinkedList<AI>();
 	private static List<AI> bots2 = new LinkedList<AI>();
 	private static List<PhysicalGameState> maps = new LinkedList<PhysicalGameState>();
+	
+	public static PathFinding getPathFinding(){
+//		return new BFSPathFinding();
+//		return new AStarPathFinding();
+		return new FloodFillPathFinding();
+	}
+	public static EvaluationFunction getEvaluationFunction(){
+		return new SimpleEvaluationFunction();
+	}
 	
 	public static void loadMaps(String mapFileName) throws IOException  {
 		try (Stream<String> lines = Files.lines(Paths.get(mapFileName), Charset.defaultCharset())) {
@@ -68,6 +82,7 @@ public class RunConfigurableExperiments {
 			});
 		}
 	}
+
 	public static AI getBot(String botName){
 		switch(botName){
 		case "RandomAI":
@@ -75,60 +90,68 @@ public class RunConfigurableExperiments {
 		case "RandomBiasedAI":
 			return new RandomBiasedAI();
 		case "LightRush":
-			return new LightRush(UnitTypeTable.utt, new BFSPathFinding());
+			return new LightRush(UnitTypeTable.utt, getPathFinding());
 		case "RangedRush":
-			return new RangedRush(UnitTypeTable.utt, new BFSPathFinding());
+			return new RangedRush(UnitTypeTable.utt, getPathFinding());
 		case "HeavyRush":
-			return new HeavyRush(UnitTypeTable.utt, new BFSPathFinding());
+			return new HeavyRush(UnitTypeTable.utt, getPathFinding());
 		case "WorkerRush":
-			return new WorkerRush(UnitTypeTable.utt, new BFSPathFinding());		
+			return new WorkerRush(UnitTypeTable.utt, getPathFinding());	
+		case "BasicConfigurableScript":
+			return new BasicConfigurableScript(UnitTypeTable.utt, getPathFinding());
+		case "SingleChoiceConfigurableScript":
+			return new SingleChoiceConfigurableScript( getPathFinding(),
+					new AI[]{new WorkerRush(UnitTypeTable.utt, getPathFinding()),
+		                    new LightRush(UnitTypeTable.utt, getPathFinding()),
+		                    new RangedRush(UnitTypeTable.utt, getPathFinding()),
+		                    new HeavyRush(UnitTypeTable.utt, getPathFinding())});
 		case "PortfolioAI":
-			return new PortfolioAI(new AI[]{new WorkerRush(UnitTypeTable.utt, new BFSPathFinding()),
-                    new LightRush(UnitTypeTable.utt, new BFSPathFinding()),
-                    new RangedRush(UnitTypeTable.utt, new BFSPathFinding()),
+			return new PortfolioAI(new AI[]{new WorkerRush(UnitTypeTable.utt, getPathFinding()),
+                    new LightRush(UnitTypeTable.utt, getPathFinding()),
+                    new RangedRush(UnitTypeTable.utt, getPathFinding()),
                     new RandomBiasedAI()}, 
            new boolean[]{true,true,true,false}, 
-           TIME, MAX_PLAYOUTS, PLAYOUT_TIME*4, new SimpleSqrtEvaluationFunction3());
+           TIME, MAX_PLAYOUTS, PLAYOUT_TIME*4, getEvaluationFunction());
 		case "IDRTMinimax":
-			return new IDRTMinimax(TIME, new SimpleSqrtEvaluationFunction3());
+			return new IDRTMinimax(TIME, getEvaluationFunction());
 		case "IDRTMinimaxRandomized":
 			return new IDRTMinimaxRandomized(TIME, RANDOMIZED_AB_REPEATS, 
-					new SimpleSqrtEvaluationFunction3());
+					getEvaluationFunction());
 		case "IDABCD":
-			return new IDABCD(TIME, MAX_PLAYOUTS, new WorkerRush(UnitTypeTable.utt, new GreedyPathFinding()), 
-					PLAYOUT_TIME, new SimpleSqrtEvaluationFunction3(), false);
+			return new IDABCD(TIME, MAX_PLAYOUTS, new WorkerRush(UnitTypeTable.utt, getPathFinding()), 
+					PLAYOUT_TIME, getEvaluationFunction(), false);
 		case "MonteCarlo1":
 			return new MonteCarlo(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, new RandomBiasedAI(), 
-					new SimpleSqrtEvaluationFunction3());
+					getEvaluationFunction());
 		case "MonteCarlo2":
 			return new MonteCarlo(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_ACTIONS, new RandomBiasedAI(), 
-					new SimpleSqrtEvaluationFunction3());
+					getEvaluationFunction());
 			// by setting "MAX_DEPTH = 1" in the next two bots, this effectively makes them Monte Carlo search, instead of Monte Carlo Tree Search
 		case "NaiveMCTS1"://MonteCarlo
 			return new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, 1, 0.33f, 0.0f, 0.75f, 
-					new RandomBiasedAI(), new SimpleSqrtEvaluationFunction3());
+					new RandomBiasedAI(), getEvaluationFunction());
 		case "NaiveMCTS2"://epsilon-greedy MonteCarlo
 			return new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, 1, 1.00f, 0.0f, 0.25f, 
-					new RandomBiasedAI(), new SimpleSqrtEvaluationFunction3());
+					new RandomBiasedAI(), getEvaluationFunction());
 		case "UCT":
 			return new UCT(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, new RandomBiasedAI(), 
-					new SimpleSqrtEvaluationFunction3());
+					getEvaluationFunction());
 		case "DownsamplingUCT":
 			return new DownsamplingUCT(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_ACTIONS, MAX_DEPTH, 
-					new RandomBiasedAI(), new SimpleSqrtEvaluationFunction3());
+					new RandomBiasedAI(), getEvaluationFunction());
 		case "UCTUnitActions":
 			return new UCTUnitActions(TIME, PLAYOUT_TIME, MAX_DEPTH*10, new RandomBiasedAI(), 
-					new SimpleSqrtEvaluationFunction3());
+					getEvaluationFunction());
 		case "NaiveMCTS3"://NaiveMCTS
 			return new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, 0.33f, 0.0f, 0.75f, 
-					new RandomBiasedAI(), new SimpleSqrtEvaluationFunction3());
+					new RandomBiasedAI(), getEvaluationFunction());
 		case "NaiveMCTS4"://epsilon-greedy MCTS
 			return new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, 1.00f, 0.0f, 0.25f, 
-					new RandomBiasedAI(), new SimpleSqrtEvaluationFunction3());
+					new RandomBiasedAI(), getEvaluationFunction());
 		case "AHTN-LL":
 			try {
 				return new AHTNAI("ahtn/microrts-ahtn-definition-lowest-level.lisp",TIME, 
-						MAX_PLAYOUTS, PLAYOUT_TIME, new SimpleSqrtEvaluationFunction3(),
+						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -136,7 +159,7 @@ public class RunConfigurableExperiments {
 		case "AHTN-LLPF":
 			try {
 				return new AHTNAI("ahtn/microrts-ahtn-definition-low-level.lisp",TIME, 
-						MAX_PLAYOUTS, PLAYOUT_TIME, new SimpleSqrtEvaluationFunction3(),
+						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -144,7 +167,7 @@ public class RunConfigurableExperiments {
 		case "AHTN-P":
 			try {
 				return new AHTNAI("ahtn/microrts-ahtn-definition-portfolio.lisp",TIME, 
-						MAX_PLAYOUTS, PLAYOUT_TIME, new SimpleSqrtEvaluationFunction3(),
+						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -152,7 +175,7 @@ public class RunConfigurableExperiments {
 		case "AHTN-F":
 			try {
 				return new AHTNAI("ahtn/microrts-ahtn-definition-flexible-portfolio.lisp",TIME, 
-						MAX_PLAYOUTS, PLAYOUT_TIME, new SimpleSqrtEvaluationFunction3(),
+						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -160,20 +183,23 @@ public class RunConfigurableExperiments {
 		case "AHTN-FST":
 			try {
 				return new AHTNAI("ahtn/microrts-ahtn-definition-flexible-single-target-portfolio.lisp",TIME, 
-						MAX_PLAYOUTS, PLAYOUT_TIME, new SimpleSqrtEvaluationFunction3(),
+						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		case "Puppet":
-			return new PuppetSearchAB(TIME, MAX_PLAYOUTS, 
-					new AI[]{
-							new WorkerRush(UnitTypeTable.utt, new BFSPathFinding()),
-							new LightRush(UnitTypeTable.utt, new BFSPathFinding()),
-							new RangedRush(UnitTypeTable.utt, new BFSPathFinding()),
-							new HeavyRush(UnitTypeTable.utt, new BFSPathFinding())
-							}, 
-					new SimpleSqrtEvaluationFunction3());
+		case "PuppetSingle":
+			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
+					new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(UnitTypeTable.utt, getPathFinding()),
+				                    new LightRush(UnitTypeTable.utt, getPathFinding()),
+				                    new RangedRush(UnitTypeTable.utt, getPathFinding()),
+				                    new HeavyRush(UnitTypeTable.utt, getPathFinding())}),
+					getEvaluationFunction());
+		case "PuppetBasic":
+			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
+					new BasicConfigurableScript(UnitTypeTable.utt, getPathFinding()), 
+					getEvaluationFunction());
 		default:
 			throw new RuntimeException("AI not found");
 		}
@@ -224,34 +250,34 @@ public class RunConfigurableExperiments {
 	
     public static void main(String args[]) throws Exception 
     { 
+    	boolean asymetric=!args[1].equals("-");
         loadBots1(args[0]);
-        loadBots2(args[1]);
+        if(asymetric)loadBots2(args[1]);
         processBots(bots1);
-        processBots(bots2);
+        if(asymetric)processBots(bots2);
         loadMaps(args[2]);
         PrintStream out = new PrintStream(new File(args[3]));
         int iterations = Integer.parseInt(args[4]);
         
-  //        Experimenter.runExperimentsPartiallyObservable(bots, maps, 10, 3000, 300, true, out);
-        //Experimenter.runExperiments(bots, maps, 10, 3000, 300, false, out);
-      
-        // Separate the matches by map:
-        for(PhysicalGameState map:maps){
-        	ExperimenterAsymmetric.runExperiments(bots1,bots2, 
-        			Collections.singletonList(map), iterations, 5000, 300, true, out);
+        if(true){
+        	if(asymetric){
+        		ExperimenterAsymmetric.runExperiments(bots1,bots2, 
+        				maps, iterations, MAX_FRAMES, 300, false, out);
+        	}else{
+        		Experimenter.runExperiments(bots1, 
+        				maps, iterations, MAX_FRAMES, 300, false, out);
+        	}
+        }else{// Separate the matches by map:
+        	for(PhysicalGameState map:maps){
+        		if(asymetric){
+        			ExperimenterAsymmetric.runExperiments(bots1,bots2, 
+        					Collections.singletonList(map), iterations, MAX_FRAMES, 300, false, out);
+        		}else{
+        			Experimenter.runExperiments(bots1, 
+        					Collections.singletonList(map), iterations, MAX_FRAMES, 300, false, out);
+        		}
+        	}
         }
-//        Experimenter.runGame(getBot("RangedRush"), getBot("RandomBiasedAI"), 
-////                 Experimenter.runGame(new ContinuingAI((InterruptibleAIWithComputationBudget)getBot("IDABCD")), 
-////                		 getBot("RandomAI"), 
-//        		PhysicalGameState.load("maps/BloodBath.xml",UnitTypeTable.utt), 1, 5000, 
-//        		300, true,  out, false);
-        
-//      ExperimenterAsymmetric.runExperiments(
-////    	    Collections.singletonList(new ContinuingAI((InterruptibleAIWithComputationBudget)getBot("IDABCD"))),
-//    		  Collections.singletonList(getBot("RangedRush")),
-//    		  Collections.singletonList(getBot("RandomBiasedAI")), 
-//    		  Collections.singletonList(PhysicalGameState.load("maps/BloodBath.xml",UnitTypeTable.utt)), 
-//    		  1, 5000, 300, true, out);
     }
 
 }
