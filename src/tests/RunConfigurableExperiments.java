@@ -61,6 +61,9 @@ public class RunConfigurableExperiments {
 	private static List<AI> bots1 = new LinkedList<AI>();
 	private static List<AI> bots2 = new LinkedList<AI>();
 	private static List<PhysicalGameState> maps = new LinkedList<PhysicalGameState>();
+	static UnitTypeTable utt= new UnitTypeTable(
+			UnitTypeTable.VERSION_ORIGINAL_FINETUNED,
+			UnitTypeTable.MOVE_CONFLICT_RESOLUTION_CANCEL_ALTERNATING);
 	
 	public static PathFinding getPathFinding(){
 //		return new BFSPathFinding();
@@ -75,7 +78,7 @@ public class RunConfigurableExperiments {
 		try (Stream<String> lines = Files.lines(Paths.get(mapFileName), Charset.defaultCharset())) {
 			lines.forEachOrdered(line -> {
 				try {
-					if(!line.startsWith("#")&&!line.isEmpty())maps.add(PhysicalGameState.load(line,UnitTypeTable.utt));
+					if(!line.startsWith("#")&&!line.isEmpty())maps.add(PhysicalGameState.load(line,utt));
 				} catch (Exception ex) {
 					throw new RuntimeException(ex);
 				}
@@ -90,25 +93,25 @@ public class RunConfigurableExperiments {
 		case "RandomBiasedAI":
 			return new RandomBiasedAI();
 		case "LightRush":
-			return new LightRush(UnitTypeTable.utt, getPathFinding());
+			return new LightRush(utt, getPathFinding());
 		case "RangedRush":
-			return new RangedRush(UnitTypeTable.utt, getPathFinding());
+			return new RangedRush(utt, getPathFinding());
 		case "HeavyRush":
-			return new HeavyRush(UnitTypeTable.utt, getPathFinding());
+			return new HeavyRush(utt, getPathFinding());
 		case "WorkerRush":
-			return new WorkerRush(UnitTypeTable.utt, getPathFinding());	
+			return new WorkerRush(utt, getPathFinding());	
 		case "BasicConfigurableScript":
-			return new BasicConfigurableScript(UnitTypeTable.utt, getPathFinding());
+			return new BasicConfigurableScript(utt, getPathFinding());
 		case "SingleChoiceConfigurableScript":
 			return new SingleChoiceConfigurableScript( getPathFinding(),
-					new AI[]{new WorkerRush(UnitTypeTable.utt, getPathFinding()),
-		                    new LightRush(UnitTypeTable.utt, getPathFinding()),
-		                    new RangedRush(UnitTypeTable.utt, getPathFinding()),
-		                    new HeavyRush(UnitTypeTable.utt, getPathFinding())});
+					new AI[]{new WorkerRush(utt, getPathFinding()),
+		                    new LightRush(utt, getPathFinding()),
+		                    new RangedRush(utt, getPathFinding()),
+		                    new HeavyRush(utt, getPathFinding())});
 		case "PortfolioAI":
-			return new PortfolioAI(new AI[]{new WorkerRush(UnitTypeTable.utt, getPathFinding()),
-                    new LightRush(UnitTypeTable.utt, getPathFinding()),
-                    new RangedRush(UnitTypeTable.utt, getPathFinding()),
+			return new PortfolioAI(new AI[]{new WorkerRush(utt, getPathFinding()),
+                    new LightRush(utt, getPathFinding()),
+                    new RangedRush(utt, getPathFinding()),
                     new RandomBiasedAI()}, 
            new boolean[]{true,true,true,false}, 
            TIME, MAX_PLAYOUTS, PLAYOUT_TIME*4, getEvaluationFunction());
@@ -118,7 +121,7 @@ public class RunConfigurableExperiments {
 			return new IDRTMinimaxRandomized(TIME, RANDOMIZED_AB_REPEATS, 
 					getEvaluationFunction());
 		case "IDABCD":
-			return new IDABCD(TIME, MAX_PLAYOUTS, new WorkerRush(UnitTypeTable.utt, getPathFinding()), 
+			return new IDABCD(TIME, MAX_PLAYOUTS, new WorkerRush(utt, getPathFinding()), 
 					PLAYOUT_TIME, getEvaluationFunction(), false);
 		case "MonteCarlo1":
 			return new MonteCarlo(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, new RandomBiasedAI(), 
@@ -191,14 +194,14 @@ public class RunConfigurableExperiments {
 		case "PuppetSingle":
 			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
 					new SingleChoiceConfigurableScript(getPathFinding(),
-							new AI[]{new WorkerRush(UnitTypeTable.utt, getPathFinding()),
-				                    new LightRush(UnitTypeTable.utt, getPathFinding()),
-				                    new RangedRush(UnitTypeTable.utt, getPathFinding()),
-				                    new HeavyRush(UnitTypeTable.utt, getPathFinding())}),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+				                    new LightRush(utt, getPathFinding()),
+				                    new RangedRush(utt, getPathFinding()),
+				                    new HeavyRush(utt, getPathFinding())}),
 					getEvaluationFunction());
 		case "PuppetBasic":
 			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
-					new BasicConfigurableScript(UnitTypeTable.utt, getPathFinding()), 
+					new BasicConfigurableScript(utt, getPathFinding()), 
 					getEvaluationFunction());
 		default:
 			throw new RuntimeException("AI not found");
@@ -261,20 +264,20 @@ public class RunConfigurableExperiments {
         
         if(true){
         	if(asymetric){
-        		ExperimenterAsymmetric.runExperiments(bots1,bots2, 
-        				maps, iterations, MAX_FRAMES, 300, false, out);
+        		ExperimenterAsymmetric.runExperiments(bots1,bots2,
+        				maps, utt, iterations, MAX_FRAMES, 300, false, out);
         	}else{
         		Experimenter.runExperiments(bots1, 
-        				maps, iterations, MAX_FRAMES, 300, false, out);
+        				maps, utt, iterations, MAX_FRAMES, 300, false, out);
         	}
         }else{// Separate the matches by map:
         	for(PhysicalGameState map:maps){
         		if(asymetric){
-        			ExperimenterAsymmetric.runExperiments(bots1,bots2, 
-        					Collections.singletonList(map), iterations, MAX_FRAMES, 300, false, out);
+        			ExperimenterAsymmetric.runExperiments(bots1,bots2,
+        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, false, out);
         		}else{
         			Experimenter.runExperiments(bots1, 
-        					Collections.singletonList(map), iterations, MAX_FRAMES, 300, false, out);
+        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, false, out);
         		}
         	}
         }
