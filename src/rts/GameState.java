@@ -4,6 +4,7 @@
  */
 package rts;
 
+import java.io.Serializable;
 import java.util.*;
 import rts.units.Unit;
 import rts.units.UnitTypeTable;
@@ -13,8 +14,8 @@ import util.Pair;
  *
  * @author santi
  */
-public class GameState {
-    static Random r = new Random();         // only used if the action conflict resolution strategy is set to random
+public class GameState implements Serializable{
+	static Random r = new Random();         // only used if the action conflict resolution strategy is set to random
     
     int unitCancelationCounter = 0;  // only used if the action conflict resolution strategy is set to alternating
     

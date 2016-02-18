@@ -5,6 +5,7 @@
 package rts;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -22,7 +23,7 @@ import rts.units.UnitTypeTable;
  *
  * @author santi
  */
-public class PhysicalGameState {
+public class PhysicalGameState implements Serializable {
     public static final int TERRAIN_NONE = 0;
     public static final int TERRAIN_WALL = 1;
     

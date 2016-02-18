@@ -4,6 +4,7 @@
  */
 package rts.units;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,7 +21,7 @@ import util.XMLWriter;
  *
  * @author santi
  */
-public class Unit {
+public class Unit implements Serializable {
     UnitType type;
     
     public static long next_ID = 0;

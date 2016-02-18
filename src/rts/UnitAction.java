@@ -4,6 +4,8 @@
  */
 package rts;
 
+import java.io.Serializable;
+
 import org.jdom.Element;
 import rts.units.*;
 import util.XMLWriter;
@@ -12,7 +14,7 @@ import util.XMLWriter;
  *
  * @author santi
  */
-public class UnitAction {
+public class UnitAction implements Serializable {
     public static final int TYPE_NONE = 0;
     public static final int TYPE_MOVE = 1;
     public static final int TYPE_HARVEST = 2;
