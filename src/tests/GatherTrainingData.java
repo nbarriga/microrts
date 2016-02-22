@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -268,8 +269,8 @@ public class GatherTrainingData {
         processBots(bots2);
         loadMaps(args[2]);
         PrintStream out = new PrintStream(new File(args[3]));
-        int iterations = Integer.parseInt(args[4]);
-        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("state.txt"));
+        int iterations = Integer.parseInt(args[5]);
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(args[4]));
         
         runExperiments(bots1,bots2,
         				maps, utt, iterations, MAX_FRAMES, 300, false, out, oos);
@@ -314,7 +315,7 @@ public class GatherTrainingData {
         Random rnd= new Random();
         
 
-
+        System.out.println(new Date(System.currentTimeMillis()));
         for(PhysicalGameState pgs:maps) 
         {
         	for (int i = 0; i < iterations; i++) 
@@ -342,10 +343,11 @@ public class GatherTrainingData {
     			out.println("Starting at frame "+gs.getTime()+" from "+numInitCycles+" init scripts");
 
     			if(gs.gameover()){
-    				out.println("Game over at init phase");
+    				out.println("Game over at init phase! Skipping.");
     				continue;
     			}
-    			oos.writeObject(gs);
+    			GameState storeGs = gs.clone();
+    			
     			int firstPlayerWins=0;
     			int firstPlayerLoses=0;
     			for (int ai1_idx = 0; ai1_idx < finalBots.size(); ai1_idx++) 
@@ -378,12 +380,19 @@ public class GatherTrainingData {
 
     				}                    
 //    			}
-    			out.println("First player win ratio: "+(firstPlayerWins)/((float)firstPlayerWins+firstPlayerLoses));
-    			oos.writeInt(firstPlayerWins*100/(firstPlayerWins+firstPlayerLoses));
+    			
+    			if(firstPlayerWins+firstPlayerLoses>0){
+    				out.println("First player win ratio: "+(firstPlayerWins)/((float)firstPlayerWins+firstPlayerLoses));
+    				oos.writeObject(storeGs);
+    				oos.writeInt(firstPlayerWins*100/(firstPlayerWins+firstPlayerLoses));
+    			}else{
+    				out.println("All games were ties! Skipping.");
+    			}
+    			
     			if (w!=null) w.dispose();
         	}
         }
-
+        System.out.println(new Date(System.currentTimeMillis()));
 
     }
 

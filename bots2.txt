@@ -1,7 +1,7 @@
 #RandomBiasedAI
 #RandomScript
 WorkerRush
-#LightRush
+LightRush
 RangedRush
 HeavyRush
 #IDABCD
