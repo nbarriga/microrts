@@ -8,7 +8,6 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +16,6 @@ import java.util.stream.Stream;
 
 import javax.swing.JFrame;
 
-import ai.BranchingFactorCalculator;
 import ai.RandomAI;
 import ai.RandomBiasedAI;
 import ai.abstraction.HeavyRush;
@@ -56,7 +54,6 @@ import rts.GameState;
 import rts.PhysicalGameState;
 import rts.PlayerAction;
 import rts.units.UnitTypeTable;
-import sun.text.normalizer.CharTrie.FriendAgent;
 
 public class GatherTrainingData {
 	private static boolean CONTINUING = true;
