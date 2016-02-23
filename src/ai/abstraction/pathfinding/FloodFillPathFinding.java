@@ -13,7 +13,7 @@ import rts.units.Unit;
 import util.Pair;
 
 public class FloodFillPathFinding extends PathFinding {
-	AStarPathFinding aStar=new AStarPathFinding();
+	PathFinding altPF=new AStarPathFinding();
 	HashMap<Integer,int[][]> cache=new HashMap<Integer,int[][]>();
 	boolean free[][] = null;
 	int distances[][] = null;
@@ -93,12 +93,12 @@ public class FloodFillPathFinding extends PathFinding {
 		int x=targetpos%w;
 		int y= targetpos/w;
 		
-//		if(Math.abs(start.getX()-x) +Math.abs(start.getY()-y) <= 4){
-//			return aStar.findPathToPositionInRange(start, targetpos, range, gs, ru);
-//		}
-		if (distances==null || distances.length<w || distances[0].length<h) {
-			distances = new int[w][h];  
+		if(Math.abs(start.getX()-x) +Math.abs(start.getY()-y) <= 4){
+			return altPF.findPathToPositionInRange(start, targetpos, range, gs, ru);
 		}
+//		if (distances==null || distances.length<w || distances[0].length<h) {
+			distances = new int[w][h];  
+//		}
 		for (int[] row: distances){
 			Arrays.fill(row, Integer.MAX_VALUE);
 		}
