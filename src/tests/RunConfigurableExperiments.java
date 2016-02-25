@@ -44,6 +44,7 @@ import ai.montecarlo.MonteCarlo;
 import ai.portfolio.PortfolioAI;
 import ai.puppet.BasicConfigurableScript;
 import ai.puppet.PuppetSearchAB;
+import ai.puppet.PuppetSearchMCTS;
 import ai.puppet.SingleChoiceConfigurableScript;
 import rts.PhysicalGameState;
 import rts.units.UnitTypeTable;
@@ -191,7 +192,7 @@ public class RunConfigurableExperiments {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		case "PuppetSingle":
+		case "PuppetABSingle":
 			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
@@ -199,8 +200,22 @@ public class RunConfigurableExperiments {
 				                    new RangedRush(utt, getPathFinding()),
 				                    new HeavyRush(utt, getPathFinding())}),
 					getEvaluationFunction());
-		case "PuppetBasic":
+		case "PuppetABBasic":
 			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
+					new BasicConfigurableScript(utt, getPathFinding()), 
+					getEvaluationFunction());
+		case "PuppetMCTSSingle":
+			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME, 
+					new RandomBiasedAI(),
+					new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+				                    new LightRush(utt, getPathFinding()),
+				                    new RangedRush(utt, getPathFinding()),
+				                    new HeavyRush(utt, getPathFinding())}),
+					getEvaluationFunction());
+		case "PuppetMCTSBasic":
+			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME,
+					new RandomBiasedAI(),
 					new BasicConfigurableScript(utt, getPathFinding()), 
 					getEvaluationFunction());
 		default:

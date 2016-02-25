@@ -25,22 +25,8 @@ import util.Pair;
  * @author nbarriga
  *
  */
-public class PuppetSearchAB extends AI {
-	class Move{
-		Collection<Pair<Integer,Integer>> choices;
-		int player;
-		public Move(Collection<Pair<Integer,Integer>> choices, int player){
-			this.choices=choices;
-			this.player=player;
-		}
-		@Override
-		public String toString(){
-			return "choices: "+choices.stream().map(
-					(Pair<Integer,Integer>  p)-> 
-					new Pair<String,Integer>(script.choicePointValues[p.m_a].name(),p.m_b))
-			.collect(Collectors.toList())+", player: "+player;
-		}
-	}
+public class PuppetSearchAB extends PuppetBase {
+	
 	class Result{
 		Move m;
 		float score;
@@ -53,28 +39,7 @@ public class PuppetSearchAB extends AI {
 			return m+", score: "+score;
 		}
 	}
-	class MoveGenerator{
-		ArrayList<ArrayList<Pair<Integer,Integer>>> choices;
-		int current=0;
-		int player;
-		MoveGenerator(ArrayList<ArrayList<Pair<Integer,Integer>>> choices, int player){
-			this.choices=choices;
-			this.player=player;
-		}
-		boolean hasNext(){
-			return current<choices.size();
-		}
-		
-		Move next(){
-			return new Move(choices.get(current++),player);
-		}
-		Move last(){
-			return new Move(choices.get(current-1),player);
-		}
-		void ABcut(){
-			current=choices.size();
-		}
-	}
+	
 	class ABCDNode {
 		GameState gs;
 		Move prevMove; 
@@ -189,29 +154,26 @@ public class PuppetSearchAB extends AI {
 	 * @param mi
 	 */
 	public PuppetSearchAB(int mt, int pt, ConfigurableScript<?> script, EvaluationFunction evaluation) {
-		
-		MAX_TIME=mt;
+		super(mt,script,evaluation);
 		PLAYOUT_TIME=pt;
-		eval=evaluation;
-		this.script=script;
 		currentPlan=new Plan();
-		lastSearchFrame=-1;
 	}
 
 	@Override
 	public void reset() {
+		super.reset();
 		currentPlan=new Plan();
-		lastSearchFrame=-1;
 		stack.clear();
-		script.reset();
 		nLeaves = 0; totalLeaves = 0;
 	    nNodes = 0; totalNodes = 0;
 	}
+	//todo:this clone method is broken
 	@Override
 	public AI clone() {
 		PuppetSearchAB ps = new PuppetSearchAB(MAX_TIME, PLAYOUT_TIME, script.clone(), eval);
 		ps.currentPlan = currentPlan;
 		ps.lastSearchFrame = lastSearchFrame;
+		ps.lastSearchTime = lastSearchTime;
 		return ps;
 	}
 	@Override
@@ -219,8 +181,8 @@ public class PuppetSearchAB extends AI {
 		MAXPLAYER=player;
 		if(lastSearchFrame==-1
 //				||(gs.getTime()-lastSearchFrame)>=(stepPlayoutTime)
-//				||(stack.empty()&&(gs.getTime()-lastSearchFrame)>PLAYOUT_TIME*MAXDEPTH/2)
-				||stack.empty()
+				||(stack.empty()&&(gs.getTime()-lastSearchFrame)>PLAYOUT_TIME*MAXDEPTH/4)
+//				||stack.empty()
 				){
 			if(DEBUG>=1){
 				System.out.println("Restarting after "+(gs.getTime()-lastSearchFrame)+" frames, "
@@ -331,7 +293,9 @@ public class PuppetSearchAB extends AI {
 					GameState gs2 = current.gs.clone();
 
 					ConfigurableScript<?> sc1=script.clone();
+					sc1.reset();
 					ConfigurableScript<?> sc2=script.clone();
+					sc2.reset();
 
 					sc1.setChoices(current.prevMove.choices);
 
@@ -424,19 +388,6 @@ public class PuppetSearchAB extends AI {
 		return best;
 		
 		
-	}
-	protected void simulate(GameState gs, AI ai1, AI ai2, int player1, int player2, int time) throws Exception{
-		assert(player1!=player2);
-		int timeOut = gs.getTime() + time;
-		boolean gameover = false;
-		while(!gameover && gs.getTime()<timeOut) {
-			if (gs.isComplete()) {
-				gameover = gs.cycle();
-			} else {
-				gs.issue(ai1.getAction(player1, gs));
-				gs.issue(ai2.getAction(player2, gs));
-			}
-		}    
 	}
 
 
