@@ -13,22 +13,43 @@ import util.Pair;
 
 public class PuppetSearchMCTS extends PuppetBase {
 	class Plan{
+		PuppetMCTSNode node;
 		Plan(){
+			node=null;
 		}
 		Plan(PuppetMCTSNode root){
-			
+			node=root;
 		}
-		void update(GameState gs){
+		void update(GameState gs, int player){
+			while(valid()&&
+					((gs.getTime()-node.gs.getTime())>STEP_PLAYOUT_TIME ||node.bestChild().player()!=player)){
+				node=node.bestChild();
+			}
 		}
 		Collection<Pair<Integer, Integer>> getChoices(){
-			return null;
+			if(valid()){
+				return node.actions[node.bestChild().index].choices;
+			}else{
+				return Collections.emptyList();
+			}
 		}
 		boolean valid(){
-			return false;
+			return node!=null&&node.bestChild()!=null;
+		}
+		
+		public String toString(){
+//			String str="";
+//			PuppetMCTSNode n=node;
+//			while(n!=null&&n.bestChild()!=null){
+//				str+="Player: "+n.toMove+", choices: "+n.bestChild().prevMove.choices+"Node: "+n+"\n";
+//				n=n.bestChild();
+//			}
+//			return str;
+			return node.toString();
 		}
 	}
 	
-	int DEBUG=2;
+	int DEBUG=1;
 	int EVAL_PLAYOUT_TIME=100;
 	int STEP_PLAYOUT_TIME=100;
 	int PLAN_VALIDITY=400;
@@ -38,7 +59,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 	
 	PuppetMCTSNode root;
 	Plan currentPlan;
-	
+	long cummSearchTime;
 	public PuppetSearchMCTS(int max_time, int step_playout_time, int eval_playout_time, 
 			AI policy, ConfigurableScript<?> script, EvaluationFunction evaluation) {
 		super(max_time,script,evaluation);
@@ -83,12 +104,12 @@ public class PuppetSearchMCTS extends PuppetBase {
 				){
 			if(DEBUG>=1){
 				System.out.println("Restarting after "+(gs.getTime()-lastSearchFrame)+" frames, "
-						+(System.currentTimeMillis()-lastSearchTime)+" ms");
+						+(System.currentTimeMillis()-lastSearchTime)+" ms ("+cummSearchTime+" ms)");
 			}
 			restartSearch(gs, player);
 			
 		}
-        if (DEBUG>=2) System.out.println("Starting ABCD at frame "+gs.getTime()+", player " + player + " with " + MAX_TIME +" ms");
+        if (DEBUG>=3) System.out.println("Starting MCTS at frame "+gs.getTime()+", player " + player + " with " + MAX_TIME +" ms");
 		
         //Expand the tree
         if(root!=null){
@@ -97,8 +118,8 @@ public class PuppetSearchMCTS extends PuppetBase {
 		
 		//execute current plan
         if (gs.canExecuteAnyAction(player) && gs.winner()==-1) {
+        	currentPlan.update(gs,player);
         	if (DEBUG>=2) System.out.println("Issuing move using choices: " + currentPlan.getChoices());
-        	currentPlan.update(gs);
         	script.setDefaultChoices();
         	script.setChoices(currentPlan.getChoices());
             PlayerAction pa = script.getAction(player, gs); 
@@ -110,9 +131,9 @@ public class PuppetSearchMCTS extends PuppetBase {
 	void restartSearch(GameState gs, int player){
 		lastSearchFrame=gs.getTime();
 		lastSearchTime=System.currentTimeMillis();
-		root=new PuppetMCTSNode(gs,script,true,new Move(null,player),null,eval.upperBound(gs));
-		totalNodes = 0;
-		totalPlayouts = 0;
+		root=new PuppetMCTSNode(gs.clone(),script,player,eval.upperBound(gs));
+		nPlayouts = 0;
+		cummSearchTime=0;
 	}
 	
 	void MCTS() throws Exception{
@@ -125,23 +146,23 @@ public class PuppetSearchMCTS extends PuppetBase {
         
         if(searchDone()){
         	currentPlan=new Plan(root);
+        	if (DEBUG>=1) System.out.println("Done. Updating Plan:\n"+currentPlan);
+        	
         }
+        cummSearchTime+=(System.currentTimeMillis()-start);
 	}
 	void monteCarloRun() throws Exception{
 		PuppetMCTSNode leaf = root.selectLeaf(STEP_PLAYOUT_TIME);
 		policy1.reset();
 		policy2.reset();
 		GameState gs2=leaf.gs.clone();
-		simulate(gs2,policy1, policy2,leaf.parent.move.player,leaf.move.player,EVAL_PLAYOUT_TIME);
-		float e=eval.evaluate(leaf.parent.move.player,leaf.move.player, gs2);
-		while(leaf!=null) {
-            leaf.accum_evaluation += e;
-            leaf.visit_count++;
-            leaf = leaf.parent;
-        }
+		simulate(gs2,policy1, policy2,leaf.parent.player(),leaf.player(),EVAL_PLAYOUT_TIME);
+		float e=eval.evaluate(leaf.player(),1-leaf.player(), gs2);
+		leaf.update(e, leaf.player());
 		totalPlayouts++;
+		nPlayouts++;
 	}
 	boolean searchDone(){
-		return false;
+		return nPlayouts>=512;
 	}
 }

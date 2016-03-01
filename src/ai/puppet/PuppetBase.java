@@ -2,6 +2,8 @@ package ai.puppet;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import ai.core.AI;
@@ -37,14 +39,15 @@ class Move{
 		this.choices=choices;
 		this.player=player;
 	}
-	//	@Override
-	//	public String toString(){
-	//		return "choices: "+choices.stream().map(
-	//				(Pair<Integer,Integer>  p)-> 
-	//				new Pair<String,Integer>(script.choicePointValues[p.m_a].name(),p.m_b))
-	//		.collect(Collectors.toList())+", player: "+player;
-	//	}
+		public String toString(ConfigurableScript<?> script){
+			return "choices: "+choices.stream().map(
+					(Pair<Integer,Integer>  p)-> 
+					new Pair<String,Integer>(script.choicePointValues[p.m_a].name(),p.m_b))
+			.collect(Collectors.toList())+", player: "+player;
+		}
 }
+
+
 public abstract class PuppetBase extends AI {
 
 

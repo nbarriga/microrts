@@ -132,15 +132,10 @@ public class PuppetSearchAB extends PuppetBase {
 		}
 	}
 
-    protected int MAX_TIME = 100;//ms
 	protected int DEBUG=1;
 	protected int MAXDEPTH=6;
-	protected EvaluationFunction eval;
 	protected int PLAYOUT_TIME=100;
-	protected ConfigurableScript<?> script;
 	protected int MAXPLAYER=-1;
-	protected int lastSearchFrame;
-	protected long lastSearchTime;
     int nLeaves = 0, totalLeaves = 0;
     int nNodes = 0, totalNodes = 0;
     
