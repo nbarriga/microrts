@@ -36,7 +36,7 @@ public class PuppetSearchAB extends PuppetBase {
 		}
 		@Override
 		public String toString(){
-			return m+", score: "+score;
+			return m.toString(script)+", score: "+score;
 		}
 	}
 	
@@ -135,6 +135,7 @@ public class PuppetSearchAB extends PuppetBase {
 	protected int DEBUG=1;
 	protected int MAXDEPTH=6;
 	protected int PLAYOUT_TIME=100;
+	protected int PLAN_VALIDITY=400;
 	protected int MAXPLAYER=-1;
     int nLeaves = 0, totalLeaves = 0;
     int nNodes = 0, totalNodes = 0;
@@ -152,6 +153,7 @@ public class PuppetSearchAB extends PuppetBase {
 		super(mt,script,evaluation);
 		PLAYOUT_TIME=pt;
 		currentPlan=new Plan();
+		PLAN_VALIDITY=PLAYOUT_TIME*MAXDEPTH/4;
 	}
 
 	@Override
@@ -176,8 +178,9 @@ public class PuppetSearchAB extends PuppetBase {
 		MAXPLAYER=player;
 		if(lastSearchFrame==-1
 //				||(gs.getTime()-lastSearchFrame)>=(stepPlayoutTime)
-				||(stack.empty()&&(gs.getTime()-lastSearchFrame)>PLAYOUT_TIME*MAXDEPTH/4)
+				||(stack.empty()&&(gs.getTime()-lastSearchFrame)>PLAN_VALIDITY)
 //				||stack.empty()
+//				||!currentPlan.valid()
 				){
 			if(DEBUG>=1){
 				System.out.println("Restarting after "+(gs.getTime()-lastSearchFrame)+" frames, "
@@ -385,6 +388,9 @@ public class PuppetSearchAB extends PuppetBase {
 		
 	}
 
+	public String toString(){
+		return "PuppetSearchAB("+script.toString()+")";
+	}
 
 
 

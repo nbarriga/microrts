@@ -520,6 +520,12 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 		
 	}
 
-
+	public String toString(){
+		String str = "SingleChoicePoint(";
+		for(BasicChoicePoint c:BasicChoicePoint.values()){
+			str+=c.toString()+",";
+		}
+		return str+")";
+	}
     
 }

@@ -74,6 +74,12 @@ public class SingleChoiceConfigurableScript extends ConfigurableScript<SingleCho
 		return scripts[choices.get(SingleChoice.SINGLE)].getAction(player, gs);
 	}
 
-
+	public String toString(){
+		String str = "SingleChoicePoint(";
+		for(AI ai:scripts){
+			str+=ai.toString()+",";
+		}
+		return str+")";
+	}
 
 }

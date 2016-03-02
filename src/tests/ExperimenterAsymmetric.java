@@ -31,6 +31,7 @@ public class ExperimenterAsymmetric {
         double tie_time[][] = new double[bots1.size()][bots2.size()];
         double lose_time[][] = new double[bots1.size()][bots2.size()];
 
+        float avgFPS=0.0f;
         for (int ai1_idx = 0; ai1_idx < bots1.size(); ai1_idx++) 
         {
             for (int ai2_idx = 0; ai2_idx < bots2.size(); ai2_idx++) 
@@ -50,10 +51,11 @@ public class ExperimenterAsymmetric {
                         if (visualize) w = PhysicalGameStatePanel.newVisualizer(gs, 600, 600);
 
                         out.println("MATCH UP: " + ai1+ " vs " + ai2);
-                        System.gc();
                         
+                        long start=System.currentTimeMillis();
                         boolean gameover = false;
                         do {
+                        	System.gc();
                             if (PRINT_BRANCHING_AT_EACH_MOVE) {
                                 String bf1 = (gs.canExecuteAnyAction(0) ? ""+BranchingFactorCalculator.branchingFactorByResourceUsageSeparatingFast(gs, 0):"-");
                                 String bf2 = (gs.canExecuteAnyAction(1) ? ""+BranchingFactorCalculator.branchingFactorByResourceUsageSeparatingFast(gs, 1):"-");
@@ -77,9 +79,12 @@ public class ExperimenterAsymmetric {
                         } while (!gameover && 
                                  (gs.getTime() < max_cycles) && 
                                  (gs.getTime() - lastTimeActionIssued < max_inactive_cycles));
+                        long end=System.currentTimeMillis();
                         if (w!=null) w.dispose();
                         int winner = gs.winner();
-                        out.println("Winner: " + winner + "  in " + gs.getTime() + " cycles");
+                        float fps=gs.getTime()*1000.0f/(end-start);
+                        avgFPS+=fps;
+                        out.println("Winner: " + winner + "  in " + gs.getTime() + " cycles, at "+fps+" FPS");
                         out.println(ai1 + " : " + ai1.statisticsString());
                         out.println(ai2 + " : " + ai2.statisticsString());
                         out.flush();
@@ -97,7 +102,8 @@ public class ExperimenterAsymmetric {
                 }
             }
         }
-
+        avgFPS/=(bots1.size()*bots2.size()*maps.size()*iterations);
+        out.println("Average FPS: "+avgFPS);
         out.println("Notice that the results below are only from the perspective of the 'bots1' list.");
         out.println("If you want a symmetric experimentation, use the 'Experimenter' class");
         out.println("Wins: ");

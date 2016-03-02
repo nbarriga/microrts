@@ -64,7 +64,7 @@ public class RunConfigurableExperiments {
 	private static List<PhysicalGameState> maps = new LinkedList<PhysicalGameState>();
 	static UnitTypeTable utt= new UnitTypeTable(
 			UnitTypeTable.VERSION_ORIGINAL_FINETUNED,
-			UnitTypeTable.MOVE_CONFLICT_RESOLUTION_CANCEL_ALTERNATING);
+			UnitTypeTable.MOVE_CONFLICT_RESOLUTION_CANCEL_BOTH);
 	
 	public static PathFinding getPathFinding(){
 //		return new BFSPathFinding();
@@ -192,7 +192,7 @@ public class RunConfigurableExperiments {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		case "PuppetABSingle":
+		case "PuppetABCDSingle":
 			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
@@ -200,13 +200,14 @@ public class RunConfigurableExperiments {
 				                    new RangedRush(utt, getPathFinding()),
 				                    new HeavyRush(utt, getPathFinding())}),
 					getEvaluationFunction());
-		case "PuppetABBasic":
+		case "PuppetABCDBasic":
 			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
 					new BasicConfigurableScript(utt, getPathFinding()), 
 					getEvaluationFunction());
 		case "PuppetMCTSSingle":
 			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME, 
-					new RandomBiasedAI(),
+					//new RandomBiasedAI(),
+					new WorkerRush(utt, getPathFinding()),
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
 				                    new LightRush(utt, getPathFinding()),
@@ -215,7 +216,8 @@ public class RunConfigurableExperiments {
 					getEvaluationFunction());
 		case "PuppetMCTSBasic":
 			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME,
-					new RandomBiasedAI(),
+					//new RandomBiasedAI(),
+					new WorkerRush(utt, getPathFinding()),
 					new BasicConfigurableScript(utt, getPathFinding()), 
 					getEvaluationFunction());
 		default:
@@ -280,7 +282,7 @@ public class RunConfigurableExperiments {
         if(true){
         	if(asymetric){
         		ExperimenterAsymmetric.runExperiments(bots1,bots2,
-        				maps, utt, iterations, MAX_FRAMES, 300, false, out);
+        				maps, utt, iterations, MAX_FRAMES, 300, true, out);
         	}else{
         		Experimenter.runExperiments(bots1, 
         				maps, utt, iterations, MAX_FRAMES, 300, false, out);
