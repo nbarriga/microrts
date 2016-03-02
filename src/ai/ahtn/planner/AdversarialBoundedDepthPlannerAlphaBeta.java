@@ -257,7 +257,9 @@ public class AdversarialBoundedDepthPlannerAlphaBeta {
                         System.out.println(cp);
                         System.out.println(bindings);
                         System.out.println(cp.gs);
-                        System.exit(2);
+                        timeout=true;
+//                        return null;
+//                        System.exit(2);
                     }
                 }
 //                System.out.println("Popping:");
