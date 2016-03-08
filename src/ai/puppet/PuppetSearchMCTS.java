@@ -52,6 +52,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 	int DEBUG=1;
 	int EVAL_PLAYOUT_TIME=100;
 	int STEP_PLAYOUT_TIME=100;
+	int MAX_PLAYOUTS=512;
 	int PLAN_VALIDITY=400;
 	AI policy1, policy2;
 	int nPlayouts = 0, totalPlayouts = 0;
@@ -61,11 +62,13 @@ public class PuppetSearchMCTS extends PuppetBase {
 	Plan currentPlan;
 	long cummSearchTime;
 	public PuppetSearchMCTS(int max_time, int step_playout_time, int eval_playout_time, 
+			int max_playouts,
 			AI policy, ConfigurableScript<?> script, EvaluationFunction evaluation) {
 		super(max_time,script,evaluation);
 		
 		STEP_PLAYOUT_TIME=step_playout_time;
 		EVAL_PLAYOUT_TIME=eval_playout_time;
+		MAX_PLAYOUTS=max_playouts;
 		PLAN_VALIDITY=(int) (STEP_PLAYOUT_TIME*1.5);
 		
 		this.policy1=policy.clone();
@@ -89,6 +92,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 	@Override
 	public AI clone() {
 		PuppetSearchMCTS clone = new PuppetSearchMCTS(MAX_TIME, STEP_PLAYOUT_TIME, EVAL_PLAYOUT_TIME,
+				MAX_PLAYOUTS,
 				policy1.clone(),script.clone(), eval);
 		clone.currentPlan = currentPlan;
 		clone.lastSearchFrame = lastSearchFrame;
@@ -169,7 +173,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 		nPlayouts++;
 	}
 	boolean searchDone(){
-		return nPlayouts>=512;
+		return nPlayouts>=MAX_PLAYOUTS;
 	}
 	
 	public String toString(){

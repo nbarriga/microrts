@@ -198,18 +198,18 @@ public class GatherTrainingData {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		case "PuppetSingle":
-			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
-					new SingleChoiceConfigurableScript(getPathFinding(),
-							new AI[]{new WorkerRush(utt, getPathFinding()),
-				                    new LightRush(utt, getPathFinding()),
-				                    new RangedRush(utt, getPathFinding()),
-				                    new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction());
-		case "PuppetBasic":
-			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
-					new BasicConfigurableScript(utt, getPathFinding()), 
-					getEvaluationFunction());
+//		case "PuppetSingle":
+//			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
+//					new SingleChoiceConfigurableScript(getPathFinding(),
+//							new AI[]{new WorkerRush(utt, getPathFinding()),
+//				                    new LightRush(utt, getPathFinding()),
+//				                    new RangedRush(utt, getPathFinding()),
+//				                    new HeavyRush(utt, getPathFinding())}),
+//					getEvaluationFunction());
+//		case "PuppetBasic":
+//			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
+//					new BasicConfigurableScript(utt, getPathFinding()), 
+//					getEvaluationFunction());
 		default:
 			throw new RuntimeException("AI not found");
 		}

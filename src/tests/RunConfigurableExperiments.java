@@ -54,7 +54,7 @@ public class RunConfigurableExperiments {
 	private static int TIME = 100;
 	private static int MAX_ACTIONS = 100;
 	private static int MAX_PLAYOUTS = -1;
-	private static int PLAYOUT_TIME = 200;
+	private static int PLAYOUT_TIME = 100;
 	private static int MAX_DEPTH = 10;
 	private static int RANDOMIZED_AB_REPEATS = 10;
 	private static int MAX_FRAMES = 3000;
@@ -193,7 +193,7 @@ public class RunConfigurableExperiments {
 				throw new RuntimeException(e);
 			}
 		case "PuppetABCDSingle":
-			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
+			return new PuppetSearchAB(TIME, PLAYOUT_TIME, 6,
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
 				                    new LightRush(utt, getPathFinding()),
@@ -201,11 +201,11 @@ public class RunConfigurableExperiments {
 				                    new HeavyRush(utt, getPathFinding())}),
 					getEvaluationFunction());
 		case "PuppetABCDBasic":
-			return new PuppetSearchAB(TIME, PLAYOUT_TIME,
+			return new PuppetSearchAB(TIME, PLAYOUT_TIME, 4,
 					new BasicConfigurableScript(utt, getPathFinding()), 
 					getEvaluationFunction());
 		case "PuppetMCTSSingle":
-			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME, 
+			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME, 512,
 					//new RandomBiasedAI(),
 					new WorkerRush(utt, getPathFinding()),
 					new SingleChoiceConfigurableScript(getPathFinding(),
@@ -215,7 +215,7 @@ public class RunConfigurableExperiments {
 				                    new HeavyRush(utt, getPathFinding())}),
 					getEvaluationFunction());
 		case "PuppetMCTSBasic":
-			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME,
+			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME, 256,
 					//new RandomBiasedAI(),
 					new WorkerRush(utt, getPathFinding()),
 					new BasicConfigurableScript(utt, getPathFinding()), 

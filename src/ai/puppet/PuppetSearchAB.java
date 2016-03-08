@@ -121,7 +121,7 @@ public class PuppetSearchAB extends PuppetBase {
 //				System.out.println("no current plan");
 		}
 		Collection<Pair<Integer, Integer>> getChoices(){
-			if(node!=null&&node.best!=null){
+			if(valid()){
 				return node.best.m.choices;
 			}else{
 				return Collections.emptyList();
@@ -149,9 +149,10 @@ public class PuppetSearchAB extends PuppetBase {
 	 * @param mt
 	 * @param mi
 	 */
-	public PuppetSearchAB(int mt, int pt, ConfigurableScript<?> script, EvaluationFunction evaluation) {
+	public PuppetSearchAB(int mt, int pt, int max_depth, ConfigurableScript<?> script, EvaluationFunction evaluation) {
 		super(mt,script,evaluation);
 		PLAYOUT_TIME=pt;
+		MAXDEPTH=max_depth;
 		currentPlan=new Plan();
 		PLAN_VALIDITY=PLAYOUT_TIME*MAXDEPTH/4;
 	}
@@ -167,7 +168,7 @@ public class PuppetSearchAB extends PuppetBase {
 	//todo:this clone method is broken
 	@Override
 	public AI clone() {
-		PuppetSearchAB ps = new PuppetSearchAB(MAX_TIME, PLAYOUT_TIME, script.clone(), eval);
+		PuppetSearchAB ps = new PuppetSearchAB(MAX_TIME, PLAYOUT_TIME,MAXDEPTH, script.clone(), eval);
 		ps.currentPlan = currentPlan;
 		ps.lastSearchFrame = lastSearchFrame;
 		ps.lastSearchTime = lastSearchTime;
