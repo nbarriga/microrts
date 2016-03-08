@@ -1,5 +1,6 @@
 package ai.puppet;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import java.util.EnumMap;
@@ -183,27 +184,31 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 //    	int shotsNeeded=(int) Math.ceil(lightType.hp/(double)rangedType.damage);
 //    	int framesNeededToKill=(int) Math.ceil(shotsNeeded/(double)rangedType.attackTime);
 //    	int rangeDifference=rangedType.attackRange-lightType.attackRange;
-    	int speedDifference=(t1.moveTime+t1.attackTime)-(t2.moveTime+t2.attackTime);
-    	return t1.attackRange>t2.attackRange && speedDifference>=0;
+    	
+    	
+//    	int speedDifference=(t1.moveTime+t1.attackTime)-(t2.moveTime+t2.attackTime);
+//    	return t1.attackRange>t2.attackRange && speedDifference>=0;
+    	
+    	return false;
     			
     }
-    public UnitType mostCommonUnit(PhysicalGameState pgs, int player){
-    	int workers=0,lights=0,ranged=0,heavy=0;
-    	for (Unit u2 : pgs.getUnits()) {
-    		if(u2.getPlayer() == player){
-    			if (u2.getType() == workerType) workers++;
-    			else if (u2.getType() == lightType) lights++;
-    			else if (u2.getType() == rangedType) ranged++;
-    			else if (u2.getType() == heavyType) heavy++;
-    		}
-    	}
-    	int max=Math.max(Math.max(workers, lights), Math.max(ranged, heavy));
-    	if(max==workers)return workerType;
-    	if(max==lights)return lightType;
-    	if(max==ranged)return rangedType;
-    	if(max==heavy)return heavyType;
-		return new UnitType();
-    }
+//    public UnitType mostCommonUnit(PhysicalGameState pgs, int player){
+//    	int workers=0,lights=0,ranged=0,heavy=0;
+//    	for (Unit u2 : pgs.getUnits()) {
+//    		if(u2.getPlayer() == player){
+//    			if (u2.getType() == workerType) workers++;
+//    			else if (u2.getType() == lightType) lights++;
+//    			else if (u2.getType() == rangedType) ranged++;
+//    			else if (u2.getType() == heavyType) heavy++;
+//    		}
+//    	}
+//    	int max=Math.max(Math.max(workers, lights), Math.max(ranged, heavy));
+//    	if(max==workers)return workerType;
+//    	if(max==lights)return lightType;
+//    	if(max==ranged)return rangedType;
+//    	if(max==heavy)return heavyType;
+//		return new UnitType();
+//    }
     
     public void barracksBehavior(Unit u, Player p, PhysicalGameState pgs) {
     	UnitType toBuild=utt.getUnitType(choices.get(BasicChoicePoint.UNITTYPE));
@@ -488,7 +493,53 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 
 	@Override
 	public Collection<Options> getApplicableChoicePoints(int player, GameState gs) {
-		return getAllChoicePoints();
+		int nworkers=0;
+		int nbarracks=0;
+		int nbases=0;
+		int abandonedbases=0;
+		for (Unit u2 : gs.getPhysicalGameState().getUnits()) {
+			if(u2.getPlayer() == player){
+				if (u2.getType() == workerType){
+					nworkers++;
+				}
+				if (u2.getType() == barracksType ) {
+					nbarracks++;
+				}
+				if (u2.getType() == baseType) {
+	                nbases++;
+	                if(!gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), 10).stream()
+	                		.map((a)->a.getType()==resourceType)
+	                		.reduce((a,b)->a||b).get()){
+	                	abandonedbases++;
+	                }
+	            }
+			}
+		}
+		List<Options> choices=new ArrayList<Options>();
+		if(nworkers==2){//already have 2 workers, don't go back to 1
+			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{2}));
+		}else{
+			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{1,2}));
+		}
+		if(nbarracks>0){//already have a barracks, built combat units
+			choices.add(new Options(BasicChoicePoint.UNITTYPE.ordinal(),new int[]{
+					lightType.ID,
+					rangedType.ID,
+					heavyType.ID}));
+		}else{
+			choices.add(new Options(BasicChoicePoint.UNITTYPE.ordinal(),new int[]{
+					lightType.ID,
+					workerType.ID,
+					rangedType.ID,
+					heavyType.ID}));
+		}
+		if((nbases - abandonedbases) > 1 ){//already have an extra base
+			choices.add(new Options(BasicChoicePoint.EXPAND.ordinal(),new int[]{0}));
+		}else{
+			choices.add(new Options(BasicChoicePoint.EXPAND.ordinal(),new int[]{0,1}));
+		}
+		return choices;
+
 	}
 
 	@Override
@@ -514,7 +565,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 	}
 
 	public String toString(){
-		String str = "SingleChoicePoint(";
+		String str = "BasicScript(";
 		for(BasicChoicePoint c:BasicChoicePoint.values()){
 			str+=c.toString()+",";
 		}
