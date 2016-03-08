@@ -93,7 +93,7 @@ public class FloodFillPathFinding extends PathFinding {
 		int x=targetpos%w;
 		int y= targetpos/w;
 		
-		if(Math.abs(start.getX()-x) +Math.abs(start.getY()-y) <= 8){
+		if(Math.abs(start.getX()-x) +Math.abs(start.getY()-y) <= 4){
 			return altPF.findPathToPositionInRange(start, targetpos, range, gs, ru);
 		}
 //		if (distances==null || distances.length<w || distances[0].length<h) {
