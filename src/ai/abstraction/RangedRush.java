@@ -163,10 +163,8 @@ public class RangedRush extends AbstractionLayerAI {
             // build a base:
             if (p.getResources() >= baseType.cost + resourcesUsed) {
                 Unit u = freeWorkers.remove(0);
-                int pos = findBuildingPosition(reservedPositions, u, p, pgs);
-                build(u, baseType, pos % pgs.getWidth(), pos / pgs.getWidth());
+                buildIfNotAlreadyBuilding(u,baseType,u.getX(),u.getY(),reservedPositions,p,pgs);
                 resourcesUsed += baseType.cost;
-                reservedPositions.add(pos);
             }
         }
 
@@ -174,8 +172,7 @@ public class RangedRush extends AbstractionLayerAI {
             // build a barracks:
             if (p.getResources() >= barracksType.cost + resourcesUsed) {
                 Unit u = freeWorkers.remove(0);
-                int pos = findBuildingPosition(reservedPositions, u, p, pgs);
-                build(u, barracksType, pos % pgs.getWidth(), pos / pgs.getWidth());
+                buildIfNotAlreadyBuilding(u,barracksType,u.getX(),u.getY(),reservedPositions,p,pgs);
                 resourcesUsed += barracksType.cost;
             }
         }
@@ -211,26 +208,5 @@ public class RangedRush extends AbstractionLayerAI {
         }
     }
 
-    public int findBuildingPosition(List<Integer> reserved, Unit u, Player p, PhysicalGameState pgs) {
-        int bestPos = -1;
-        int bestScore = 0;
-
-        for (int x = 0; x < pgs.getWidth(); x++) {
-            for (int y = 0; y < pgs.getHeight(); y++) {
-                int pos = x + y * pgs.getWidth();
-                if (!reserved.contains(pos) && pgs.getUnitAt(x, y) == null) {
-                    int score = 0;
-
-                    score = -(Math.abs(u.getX() - x) + Math.abs(u.getY() - y));
-
-                    if (bestPos == -1 || score > bestScore) {
-                        bestPos = pos;
-                        bestScore = score;
-                    }
-                }
-            }
-        }
-
-        return bestPos;
-    }
+   
 }

@@ -130,15 +130,7 @@ public class GameState implements Serializable{
     // Returns an array with true if there is no unit in the specified position and no unit is executing an action that will use that position
     public boolean[][] getAllFree() {
     	
-    	boolean free[][]=new boolean[pgs.getWidth()][pgs.getHeight()];
-    	for(int x=0;x<pgs.getWidth();x++){
-    		for(int y=0;y<pgs.getHeight();y++){
-    			free[x][y]=(pgs.getTerrain(x, y)==PhysicalGameState.TERRAIN_NONE);
-    		}
-    	}
-        for(Unit u:pgs.units) {
-        	free[u.getX()][u.getY()]=false;
-        }
+    	boolean free[][]=pgs.getAllFree();
         for(UnitActionAssignment ua:unitActions.values()) {
             if (ua.action.type==UnitAction.TYPE_MOVE ||
                 ua.action.type==UnitAction.TYPE_PRODUCE) {

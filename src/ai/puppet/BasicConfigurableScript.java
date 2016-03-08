@@ -296,10 +296,8 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
             // build a base:
             if (p.getResources() >= baseType.cost + resourcesUsed) {
                 Unit u = freeWorkers.remove(0);
-                int pos = findBuildingPosition(reservedPositions, u, p, pgs);
-                build(u, baseType, pos % pgs.getWidth(), pos / pgs.getWidth());
+                buildIfNotAlreadyBuilding(u,baseType,u.getX(),u.getY(),reservedPositions,p,pgs);
                 resourcesUsed += baseType.cost;
-                reservedPositions.add(pos);
             }
         } 
      
@@ -309,12 +307,10 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
             if (p.getResources() >= barracksType.cost + resourcesUsed && !freeWorkers.isEmpty()) {
             	Unit u = freeWorkers.remove(0);
                 Unit b = bases.get(nbarracks);
-                int pos = findBuildingPosition(reservedPositions, b, p, pgs);
-                build(u, barracksType, pos % pgs.getWidth(), pos / pgs.getWidth());
+                buildIfNotAlreadyBuilding(u,barracksType,b.getX(),b.getY(),reservedPositions,p,pgs);
 //               	System.out.println("build type: "+barracksType.name+" at "+ pos % pgs.getWidth()+", "+pos / pgs.getWidth());
 //               	System.out.println("resources: "+p.getResources());
                	resourcesUsed += barracksType.cost;
-                reservedPositions.add(pos);
             }
         }
 
@@ -346,10 +342,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
                 			}, 
                 		pgs);
                 if(closestFreeResource!=null){
-                	int pos = findBuildingPosition(reservedPositions, closestFreeResource , p, pgs);
-                	build(u, baseType, pos % pgs.getWidth(), pos / pgs.getWidth());
-                	
-                	reservedPositions.add(pos);
+                	buildIfNotAlreadyBuilding(u,baseType,closestFreeResource.getX(),closestFreeResource.getY(),reservedPositions,p,pgs);
                 }
                 resourcesUsed += baseType.cost;
             }else{
@@ -392,28 +385,28 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
     }
 
     // Finds the nearest available location at which a building can be placed:
-    public int findBuildingPosition(List<Integer> reserved, Unit u, Player p, PhysicalGameState pgs) {
-        int bestPos = -1;
-        int bestScore = 0;
-
-        for (int x = 0; x < pgs.getWidth(); x++) {
-            for (int y = 0; y < pgs.getHeight(); y++) {
-                int pos = x + y * pgs.getWidth();
-                if (!reserved.contains(pos) && pgs.getUnitAt(x, y) == null) {
-                    int score = 0;
-
-                    score = -(Math.abs(u.getX() - x) + Math.abs(u.getY() - y));
-
-                    if (bestPos == -1 || score > bestScore) {
-                        bestPos = pos;
-                        bestScore = score;
-                    }
-                }
-            }
-        }
-
-        return bestPos;
-    }
+//    public int findBuildingPosition(List<Integer> reserved, Unit u, Player p, PhysicalGameState pgs) {
+//        int bestPos = -1;
+//        int bestScore = 0;
+//
+//        for (int x = 0; x < pgs.getWidth(); x++) {
+//            for (int y = 0; y < pgs.getHeight(); y++) {
+//                int pos = x + y * pgs.getWidth();
+//                if (!reserved.contains(pos) && pgs.getUnitAt(x, y) == null) {
+//                    int score = 0;
+//
+//                    score = -(Math.abs(u.getX() - x) + Math.abs(u.getY() - y));
+//
+//                    if (bestPos == -1 || score > bestScore) {
+//                        bestPos = pos;
+//                        bestScore = score;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return bestPos;
+//    }
     
     public Unit findClosest(Unit from, Predicate<Unit> predicate, PhysicalGameState pgs){
    	 Unit closestUnit = null;

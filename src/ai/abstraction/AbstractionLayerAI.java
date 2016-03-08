@@ -117,4 +117,98 @@ public abstract class AbstractionLayerAI extends AI {
     public void idle(Unit u) {
         actions.put(u,new Idle(u));
     }
+    
+ // Finds the nearest available location at which a building can be placed:
+//    public int findBuildingPosition(List<Integer> reserved, Unit u, Player p, PhysicalGameState pgs) {
+//        int bestPos = -1;
+//        int bestScore = 0;
+//
+//        for (int x = 0; x < pgs.getWidth(); x++) {
+//            for (int y = 0; y < pgs.getHeight(); y++) {
+//                int pos = x + y * pgs.getWidth();
+//                if (!reserved.contains(pos) && pgs.getUnitAt(x, y) == null) {
+//                    int score = 0;
+//
+//                    score = -(Math.abs(u.getX() - x) + Math.abs(u.getY() - y));
+//
+//                    if (bestPos == -1 || score > bestScore) {
+//                        bestPos = pos;
+//                        bestScore = score;
+//                    }
+//                }
+//            }
+//        }
+   
+    public int findBuildingPosition(List<Integer> reserved, int desiredX, int desiredY, Player p, PhysicalGameState pgs) {
+
+    	boolean[][] free=pgs.getAllFree();
+        int x,y;
+        for(int l=1;l<Math.max(pgs.getHeight(),pgs.getWidth());l++){
+        	for(int side=0;side<4;side++){
+        		switch(side){
+        		case 0://up
+        			y=desiredY-l;
+        			if(y<0)continue;
+        			for(int dx=-l;dx<=l;dx++){
+        				x=desiredX+dx;
+        				if(x<0||x>pgs.getWidth())continue;
+        				int pos = x + y * pgs.getWidth();
+        				if (!reserved.contains(pos) && free[x][y]) {
+        	        		return pos;
+        	        	}
+        			}
+        			break;
+        		case 1://right
+        			x=desiredX+l;
+        			if(x>pgs.getWidth())continue;
+        			for(int dy=-l;dy<=l;dy++){
+        				y=desiredY+dy;
+        				if(y<0||y>pgs.getHeight())continue;
+        				int pos = x + y * pgs.getWidth();
+        				if (!reserved.contains(pos) && free[x][y]) {
+        	        		return pos;
+        	        	}
+        			}
+        			break;
+        		case 2://down
+        			y=desiredY+l;
+        			if(y>pgs.getHeight())continue;
+        			for(int dx=-l;dx<=l;dx++){
+        				x=desiredX+dx;
+        				if(x<0||x>pgs.getWidth())continue;
+        				int pos = x + y * pgs.getWidth();
+        				if (!reserved.contains(pos) && free[x][y]) {
+        	        		return pos;
+        	        	}
+        			}
+        			break;
+        		case 3://left
+        			x=desiredX-l;
+        			if(x<0)continue;
+        			for(int dy=-l;dy<=l;dy++){
+        				y=desiredY+dy;
+        				if(y<0||y>pgs.getHeight())continue;
+        				int pos = x + y * pgs.getWidth();
+        				if (!reserved.contains(pos) && free[x][y]) {
+        	        		return pos;
+        	        	}
+        			}
+        			break;
+        		}
+        	}
+        }
+        return -1;
+    }
+    
+    public boolean buildIfNotAlreadyBuilding(Unit u, UnitType type, int desiredX, int desiredY, List<Integer> reservedPositions, Player p, PhysicalGameState pgs){
+    	AbstractAction action=getAbstractAction(u);
+    	if(!(action instanceof Build) || ((Build)action).type != type){
+    		int pos = findBuildingPosition(reservedPositions, desiredX, desiredY, p, pgs);
+    		build(u, type, pos % pgs.getWidth(), pos / pgs.getWidth());
+            reservedPositions.add(pos);
+    		return true;
+    	}else{
+    		return false;
+    	}
+    }
 }   

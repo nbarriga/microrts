@@ -265,5 +265,18 @@ public class PhysicalGameState implements Serializable {
 
         }
     }    
-    
+ public boolean[][] getAllFree() {
+    	
+    	boolean free[][]=new boolean[getWidth()][getHeight()];
+    	for(int x=0;x<getWidth();x++){
+    		for(int y=0;y<getHeight();y++){
+    			free[x][y]=(getTerrain(x, y)==PhysicalGameState.TERRAIN_NONE);
+    		}
+    	}
+        for(Unit u:units) {
+        	free[u.getX()][u.getY()]=false;
+        }
+      
+        return free;
+    }
 }
