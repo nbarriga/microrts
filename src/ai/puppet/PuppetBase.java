@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import ai.core.AI;
 import ai.evaluation.EvaluationFunction;
 import rts.GameState;
+import rts.PlayerAction;
 import util.Pair;
 class MoveGenerator{
 	ArrayList<ArrayList<Pair<Integer,Integer>>> choices;
@@ -52,14 +53,35 @@ public abstract class PuppetBase extends AI {
 
 
     int MAX_TIME = 100;//ms
+    protected int MAX_ITERATIONS = 100;
+	int PLAN_TIME;
+	int PLAN_PLAYOUTS;
+	int STEP_PLAYOUT_TIME;
+	boolean PLAN;
+	int PLAN_VALIDITY;
 	EvaluationFunction eval;
 	ConfigurableScript<?> script;
 	int lastSearchFrame;
 	long lastSearchTime;
 	
-	PuppetBase(int mt, ConfigurableScript<?> script, EvaluationFunction evaluation) {
+	PuppetBase(int max_time_per_frame, int max_playouts_per_frame, 
+			int max_plan_time, int max_plan_playouts,int step_playout_time,
+			ConfigurableScript<?> script, EvaluationFunction evaluation) {
 		super();
-		MAX_TIME=mt;
+		assert(max_time_per_frame>=0||max_playouts_per_frame>=0);
+		MAX_TIME=max_time_per_frame;
+		MAX_ITERATIONS=max_playouts_per_frame;
+		PLAN_TIME=max_plan_time;
+		PLAN_PLAYOUTS=max_plan_playouts;
+		STEP_PLAYOUT_TIME=step_playout_time;
+
+		if(max_plan_time>=0||max_plan_playouts>=0){
+			PLAN=true;
+			PLAN_VALIDITY=(int) (step_playout_time*1.5);
+		}else{
+			PLAN=false;
+			PLAN_VALIDITY=-1;
+		}
 		this.script=script;
 		eval=evaluation;
 		lastSearchFrame=-1;
@@ -73,7 +95,10 @@ public abstract class PuppetBase extends AI {
 		script.reset();
 	}
 
-
+	abstract void restartSearch(GameState gs, int player);
+	abstract void computeDuringOneGameFrame() throws Exception;
+	abstract PlayerAction getBestActionSoFar() throws Exception;
+	
 	static void simulate(GameState gs, AI ai1, AI ai2, int player1, int player2, int time)
 			throws Exception {
 				assert(player1!=player2);

@@ -43,6 +43,7 @@ import ai.minimax.RTMiniMax.IDRTMinimaxRandomized;
 import ai.montecarlo.MonteCarlo;
 import ai.portfolio.PortfolioAI;
 import ai.puppet.BasicConfigurableScript;
+import ai.puppet.PuppetNoPlan;
 import ai.puppet.PuppetSearchAB;
 import ai.puppet.PuppetSearchMCTS;
 import ai.puppet.SingleChoiceConfigurableScript;
@@ -193,19 +194,26 @@ public class RunConfigurableExperiments {
 				throw new RuntimeException(e);
 			}
 		case "PuppetABCDSingle":
-			return new PuppetSearchAB(TIME, PLAYOUT_TIME, 6,
+			return new PuppetNoPlan(new PuppetSearchAB(
+					100, -1,
+					-1, -1,
+					PLAYOUT_TIME,
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
 				                    new LightRush(utt, getPathFinding()),
 				                    new RangedRush(utt, getPathFinding()),
 				                    new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction());
-		case "PuppetABCDBasic":
-			return new PuppetSearchAB(TIME, PLAYOUT_TIME, 4,
-					new BasicConfigurableScript(utt, getPathFinding()), 
-					getEvaluationFunction());
+					getEvaluationFunction()))
+					;
+//		case "PuppetABCDBasic":
+//			return new PuppetSearchAB(TIME, PLAYOUT_TIME, 256,
+//					new BasicConfigurableScript(utt, getPathFinding()), 
+//					getEvaluationFunction());
 		case "PuppetMCTSSingle":
-			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME, 512,
+			return new PuppetNoPlan(new PuppetSearchMCTS(
+					100, -1,
+					-1, -1,
+					PLAYOUT_TIME, PLAYOUT_TIME,
 					//new RandomBiasedAI(),
 					new WorkerRush(utt, getPathFinding()),
 					new SingleChoiceConfigurableScript(getPathFinding(),
@@ -213,13 +221,14 @@ public class RunConfigurableExperiments {
 				                    new LightRush(utt, getPathFinding()),
 				                    new RangedRush(utt, getPathFinding()),
 				                    new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction());
-		case "PuppetMCTSBasic":
-			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME, 256,
-					//new RandomBiasedAI(),
-					new WorkerRush(utt, getPathFinding()),
-					new BasicConfigurableScript(utt, getPathFinding()), 
-					getEvaluationFunction());
+					getEvaluationFunction())
+					);
+//		case "PuppetMCTSBasic":
+//			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME, 256,
+//					//new RandomBiasedAI(),
+//					new WorkerRush(utt, getPathFinding()),
+//					new BasicConfigurableScript(utt, getPathFinding()), 
+//					getEvaluationFunction());
 		default:
 			throw new RuntimeException("AI not found");
 		}

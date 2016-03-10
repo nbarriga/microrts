@@ -50,26 +50,25 @@ public class PuppetSearchMCTS extends PuppetBase {
 	}
 	
 	int DEBUG=1;
-	int EVAL_PLAYOUT_TIME=100;
-	int STEP_PLAYOUT_TIME=100;
-	int MAX_PLAYOUTS=512;
-	int PLAN_VALIDITY=400;
+	int EVAL_PLAYOUT_TIME;
+
 	AI policy1, policy2;
 	int nPlayouts = 0, totalPlayouts = 0;
-	int nNodes = 0, totalNodes = 0;
+	long cummSearchTime;
 	
 	PuppetMCTSNode root;
 	Plan currentPlan;
-	long cummSearchTime;
-	public PuppetSearchMCTS(int max_time, int step_playout_time, int eval_playout_time, 
-			int max_playouts,
+
+	public PuppetSearchMCTS(int max_time_per_frame, int max_playouts_per_frame, 
+			int max_plan_time, int max_plan_playouts,
+			int step_playout_time, int eval_playout_time, 
 			AI policy, ConfigurableScript<?> script, EvaluationFunction evaluation) {
-		super(max_time,script,evaluation);
+		super(max_time_per_frame,max_playouts_per_frame,
+				max_plan_time, max_plan_playouts,step_playout_time,
+				script,evaluation);
 		
-		STEP_PLAYOUT_TIME=step_playout_time;
+
 		EVAL_PLAYOUT_TIME=eval_playout_time;
-		MAX_PLAYOUTS=max_playouts;
-		PLAN_VALIDITY=(int) (STEP_PLAYOUT_TIME*1.5);
 		
 		this.policy1=policy.clone();
 		this.policy2=policy.clone();
@@ -85,14 +84,13 @@ public class PuppetSearchMCTS extends PuppetBase {
 		currentPlan=new Plan();
 		root=null;
 		nPlayouts = 0; totalPlayouts = 0;
-	    nNodes = 0; totalNodes = 0;
 	}
 	
 	//todo:this clone method is broken
 	@Override
 	public AI clone() {
-		PuppetSearchMCTS clone = new PuppetSearchMCTS(MAX_TIME, STEP_PLAYOUT_TIME, EVAL_PLAYOUT_TIME,
-				MAX_PLAYOUTS,
+		PuppetSearchMCTS clone = new PuppetSearchMCTS(MAX_TIME,MAX_ITERATIONS,
+				PLAN_TIME, PLAN_PLAYOUTS, STEP_PLAYOUT_TIME, EVAL_PLAYOUT_TIME,
 				policy1.clone(),script.clone(), eval);
 		clone.currentPlan = currentPlan;
 		clone.lastSearchFrame = lastSearchFrame;
@@ -102,13 +100,9 @@ public class PuppetSearchMCTS extends PuppetBase {
 
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
-		long start = System.currentTimeMillis();
+		assert(PLAN):"This method can only be called when using a standing plan";
 		//Reinitialize the tree
-		if(lastSearchFrame==-1
-//				|| searchDone()//always replan
-				||(gs.getTime()-lastSearchFrame)>PLAN_VALIDITY
-//				||!currentPlan.valid()
-				){
+		if(lastSearchFrame==-1||(gs.getTime()-lastSearchFrame)>PLAN_VALIDITY){
 			if(DEBUG>=1){
 				System.out.println("Restarting after "+(gs.getTime()-lastSearchFrame)+" frames, "
 						+(System.currentTimeMillis()-lastSearchTime)+" ms ("+cummSearchTime+" ms)");
@@ -120,7 +114,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 		
         //Expand the tree
         if(root!=null){
-			MCTS(start + MAX_TIME);
+        	computeDuringOneGameFrame();
 		}
 		
 		//execute current plan
@@ -130,36 +124,50 @@ public class PuppetSearchMCTS extends PuppetBase {
         	script.setDefaultChoices();
         	script.setChoices(currentPlan.getChoices());
             PlayerAction pa = script.getAction(player, gs); 
-            cummSearchTime+=(System.currentTimeMillis()-start);
             return pa;
         } else {
-        	cummSearchTime+=(System.currentTimeMillis()-start);
             return new PlayerAction();
         }
 	}
+	@Override
 	void restartSearch(GameState gs, int player){
 		lastSearchFrame=gs.getTime();
 		lastSearchTime=System.currentTimeMillis();
 		root=new PuppetMCTSNode(gs.clone(),script,player,eval.upperBound(gs));
-		nPlayouts = 0;
+		totalPlayouts = 0;
 		cummSearchTime=0;
 	}
-	
-	void MCTS(long cutoffTime) throws Exception{
+	@Override
+	PlayerAction getBestActionSoFar() throws Exception{
+		assert(!PLAN):"This method can only be called when not using s standing plan";
+		System.out.println(root);
+		script.setDefaultChoices();
+    	script.setChoices(root.actions[root.bestChild().index].choices);
+        return script.getAction(root.nextPlayerInSimultaneousNode, root.gs); 
+		
+	}
+	@Override
+	void computeDuringOneGameFrame() throws Exception{
+		long start = System.currentTimeMillis();
+		long end;
+		nPlayouts=0;
         if (DEBUG>=2) System.out.println("Search...");
         
 
-        while(/*(root.gs.getTime()==0 &&!searchDone()) ||*/ System.currentTimeMillis()< cutoffTime) {
+        while(true) {
             monteCarloRun();
+            nPlayouts++;
+            end = System.currentTimeMillis();
+            if (MAX_TIME>=0 && (end - start)>=MAX_TIME) break; 
+            if (MAX_ITERATIONS>=0 && nPlayouts>=MAX_ITERATIONS) break;    
         }
-        
+
+        cummSearchTime+=(System.currentTimeMillis()-start);
         if(searchDone()){
         	currentPlan=new Plan(root);
         	root=null;
         	if (DEBUG>=1) System.out.println("Done. Updating Plan:\n"+currentPlan);
-        	
-        }
-        
+        }        
 	}
 	void monteCarloRun() throws Exception{
 		PuppetMCTSNode leaf = root.selectLeaf(STEP_PLAYOUT_TIME);
@@ -173,7 +181,9 @@ public class PuppetSearchMCTS extends PuppetBase {
 		nPlayouts++;
 	}
 	boolean searchDone(){
-		return nPlayouts>=MAX_PLAYOUTS;
+		return PLAN 
+				&& ((PLAN_PLAYOUTS>=0 && totalPlayouts>=PLAN_PLAYOUTS) 
+						|| (PLAN_TIME>=0 && cummSearchTime>PLAN_TIME));
 	}
 	
 	public String toString(){
