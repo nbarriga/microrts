@@ -5,8 +5,6 @@ import java.util.Collections;
 
 import ai.core.AI;
 import ai.evaluation.EvaluationFunction;
-import ai.puppet.PuppetSearchAB.ABCDNode;
-import ai.puppet.PuppetSearchAB.Plan;
 import rts.GameState;
 import rts.PlayerAction;
 import util.Pair;

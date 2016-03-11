@@ -10,7 +10,6 @@ import java.util.Random;
 import java.util.function.Predicate;
 
 import ai.abstraction.pathfinding.PathFinding;
-import ai.core.AI;
 import rts.GameState;
 import rts.PhysicalGameState;
 import rts.Player;
@@ -18,7 +17,6 @@ import rts.PlayerAction;
 import rts.units.Unit;
 import rts.units.UnitType;
 import rts.units.UnitTypeTable;
-import util.Pair;
 
 enum BasicChoicePoint{NWORKERS, UNITTYPE, EXPAND};
 

@@ -3,10 +3,7 @@ package ai.puppet;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.mcts.uct.UCTNode;
-import ai.puppet.MoveGenerator;
 import rts.GameState;
-import rts.PlayerAction;
 
 public class PuppetMCTSNode {
 

@@ -1,9 +1,6 @@
 package ai.puppet;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import ai.core.AI;
@@ -22,7 +19,18 @@ class MoveGenerator{
 	boolean hasNext(){
 		return current<choices.size();
 	}
-
+	void swapFront(Move bestMove){
+		for(int i=0;i<choices.size();i++){
+			if(choices.get(i).equals(bestMove.choices)){
+				if(i==0){
+					break;
+				}
+				choices.set(i, choices.get(0));
+				choices.set(0, bestMove.choices);
+				break;
+			}
+		}
+	}
 	Move next(){
 		return new Move(choices.get(current++),player);
 	}
@@ -34,18 +42,20 @@ class MoveGenerator{
 	}
 }
 class Move{
-	Collection<Pair<Integer,Integer>> choices;
+	ArrayList<Pair<Integer,Integer>> choices;
 	int player;
-	public Move(Collection<Pair<Integer,Integer>> choices, int player){
+
+	public Move(ArrayList<Pair<Integer,Integer>> choices, int player){
 		this.choices=choices;
 		this.player=player;
 	}
-		public String toString(ConfigurableScript<?> script){
-			return "choices: "+choices.stream().map(
-					(Pair<Integer,Integer>  p)-> 
-					new Pair<String,Integer>(script.choicePointValues[p.m_a].name(),p.m_b))
-			.collect(Collectors.toList())+", player: "+player;
-		}
+	public String toString(ConfigurableScript<?> script){
+		return "choices: "+choices.stream().map(
+				(Pair<Integer,Integer>  p)-> 
+				new Pair<String,Integer>(script.choicePointValues[p.m_a].name(),p.m_b))
+				.collect(Collectors.toList())+", player: "+player;
+	}
+	
 }
 
 

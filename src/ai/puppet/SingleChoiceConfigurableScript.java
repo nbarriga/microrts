@@ -1,16 +1,15 @@
 package ai.puppet;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 
 import ai.abstraction.pathfinding.PathFinding;
 import ai.core.AI;
-import ai.puppet.ConfigurableScript.Options;
 import rts.GameState;
 import rts.PlayerAction;
-import util.Pair;
+
 enum SingleChoice{SINGLE};
+
 public class SingleChoiceConfigurableScript extends ConfigurableScript<SingleChoice> {
 	AI scripts[];
 	

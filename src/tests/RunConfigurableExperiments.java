@@ -194,22 +194,58 @@ public class RunConfigurableExperiments {
 				throw new RuntimeException(e);
 			}
 		case "PuppetABCDSingle":
-			return new PuppetNoPlan(new PuppetSearchAB(
+			return //new PuppetNoPlan(
+					new PuppetSearchAB(
+					100, -1,
+					5000, -1,
+					PLAYOUT_TIME,
+					new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{
+									new WorkerRush(utt, getPathFinding()),
+				                    new LightRush(utt, getPathFinding()),
+				                    new RangedRush(utt, getPathFinding()),
+				                    new HeavyRush(utt, getPathFinding()),
+				                    }),
+					getEvaluationFunction())
+					//)
+					;
+		case "PuppetABCDSingleNoPlan":
+			return new PuppetNoPlan(
+					new PuppetSearchAB(
 					100, -1,
 					-1, -1,
 					PLAYOUT_TIME,
 					new SingleChoiceConfigurableScript(getPathFinding(),
-							new AI[]{new WorkerRush(utt, getPathFinding()),
+							new AI[]{
+									new WorkerRush(utt, getPathFinding()),
 				                    new LightRush(utt, getPathFinding()),
 				                    new RangedRush(utt, getPathFinding()),
-				                    new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction()))
+				                    new HeavyRush(utt, getPathFinding()),
+				                    }),
+					getEvaluationFunction())
+					)
 					;
 //		case "PuppetABCDBasic":
 //			return new PuppetSearchAB(TIME, PLAYOUT_TIME, 256,
 //					new BasicConfigurableScript(utt, getPathFinding()), 
 //					getEvaluationFunction());
 		case "PuppetMCTSSingle":
+			return //new PuppetNoPlan(
+					new PuppetSearchMCTS(
+					100, -1,
+					5000, -1,
+					PLAYOUT_TIME, PLAYOUT_TIME,
+					//new RandomBiasedAI(),
+					new WorkerRush(utt, getPathFinding()),
+					new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+				                    new LightRush(utt, getPathFinding()),
+				                    new RangedRush(utt, getPathFinding()),
+				                    new HeavyRush(utt, getPathFinding())}),
+					getEvaluationFunction())
+//					)
+					;
+		case "PuppetMCTSSingleNoPlan":
 			return new PuppetNoPlan(new PuppetSearchMCTS(
 					100, -1,
 					-1, -1,
