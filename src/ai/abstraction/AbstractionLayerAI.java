@@ -151,7 +151,7 @@ public abstract class AbstractionLayerAI extends AI {
         			if(y<0)continue;
         			for(int dx=-l;dx<=l;dx++){
         				x=desiredX+dx;
-        				if(x<0||x>pgs.getWidth())continue;
+        				if(x<0||x>=pgs.getWidth())continue;
         				int pos = x + y * pgs.getWidth();
         				if (!reserved.contains(pos) && free[x][y]) {
         	        		return pos;
@@ -160,10 +160,10 @@ public abstract class AbstractionLayerAI extends AI {
         			break;
         		case 1://right
         			x=desiredX+l;
-        			if(x>pgs.getWidth())continue;
+        			if(x>=pgs.getWidth())continue;
         			for(int dy=-l;dy<=l;dy++){
         				y=desiredY+dy;
-        				if(y<0||y>pgs.getHeight())continue;
+        				if(y<0||y>=pgs.getHeight())continue;
         				int pos = x + y * pgs.getWidth();
         				if (!reserved.contains(pos) && free[x][y]) {
         	        		return pos;
@@ -172,10 +172,10 @@ public abstract class AbstractionLayerAI extends AI {
         			break;
         		case 2://down
         			y=desiredY+l;
-        			if(y>pgs.getHeight())continue;
+        			if(y>=pgs.getHeight())continue;
         			for(int dx=-l;dx<=l;dx++){
         				x=desiredX+dx;
-        				if(x<0||x>pgs.getWidth())continue;
+        				if(x<0||x>=pgs.getWidth())continue;
         				int pos = x + y * pgs.getWidth();
         				if (!reserved.contains(pos) && free[x][y]) {
         	        		return pos;
@@ -187,7 +187,7 @@ public abstract class AbstractionLayerAI extends AI {
         			if(x<0)continue;
         			for(int dy=-l;dy<=l;dy++){
         				y=desiredY+dy;
-        				if(y<0||y>pgs.getHeight())continue;
+        				if(y<0||y>=pgs.getHeight())continue;
         				int pos = x + y * pgs.getWidth();
         				if (!reserved.contains(pos) && free[x][y]) {
         	        		return pos;
