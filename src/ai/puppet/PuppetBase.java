@@ -113,7 +113,7 @@ public abstract class PuppetBase extends AI {
 			throws Exception {
 				assert(player1!=player2);
 				int timeOut = gs.getTime() + time;
-				boolean gameover = false;
+				boolean gameover = gs.gameover();
 				while(!gameover && gs.getTime()<timeOut) {
 					if (gs.isComplete()) {
 						gameover = gs.cycle();

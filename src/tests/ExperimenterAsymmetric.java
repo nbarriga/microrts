@@ -55,7 +55,7 @@ public class ExperimenterAsymmetric {
                         long start=System.currentTimeMillis();
                         boolean gameover = false;
                         do {
-                        	System.gc();
+//                        	System.gc();
                             if (PRINT_BRANCHING_AT_EACH_MOVE) {
                                 String bf1 = (gs.canExecuteAnyAction(0) ? ""+BranchingFactorCalculator.branchingFactorByResourceUsageSeparatingFast(gs, 0):"-");
                                 String bf2 = (gs.canExecuteAnyAction(1) ? ""+BranchingFactorCalculator.branchingFactorByResourceUsageSeparatingFast(gs, 1):"-");

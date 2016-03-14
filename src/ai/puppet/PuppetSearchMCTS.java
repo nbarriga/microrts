@@ -155,6 +155,7 @@ public class PuppetSearchMCTS extends PuppetBase {
         while(true) {
             monteCarloRun();
             nPlayouts++;
+            totalPlayouts++;
             end = System.currentTimeMillis();
             if (MAX_TIME>=0 && (end - start)>=MAX_TIME) break; 
             if (MAX_ITERATIONS>=0 && nPlayouts>=MAX_ITERATIONS) break;    
@@ -164,19 +165,21 @@ public class PuppetSearchMCTS extends PuppetBase {
         if(searchDone()){
         	currentPlan=new Plan(root);
         	root=null;
-        	if (DEBUG>=1) System.out.println("Done. Updating Plan:\n"+currentPlan);
+        	if (DEBUG>=1) System.out.println("Done. Updating Plan:\n"+currentPlan+ " in " 
+					+ cummSearchTime
+					+" ms, wall time: "+(System.currentTimeMillis()-lastSearchTime)
+					+" ms, playouts: "+totalPlayouts);
         }        
 	}
 	void monteCarloRun() throws Exception{
 		PuppetMCTSNode leaf = root.selectLeaf(STEP_PLAYOUT_TIME);
+		if(leaf.gs.gameover())return;
 		policy1.reset();
 		policy2.reset();
 		GameState gs2=leaf.gs.clone();
 		simulate(gs2,policy1, policy2,leaf.parent.player(),leaf.player(),EVAL_PLAYOUT_TIME);
 		float e=eval.evaluate(leaf.player(),1-leaf.player(), gs2);
 		leaf.update(e, leaf.player());
-		totalPlayouts++;
-		nPlayouts++;
 	}
 	boolean searchDone(){
 		return PLAN 

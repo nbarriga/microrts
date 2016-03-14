@@ -87,7 +87,7 @@ public class Experimenter {
                         
                         boolean gameover = false;
                         do {
-                            System.gc();
+//                            System.gc();
                             PlayerAction pa1 = null, pa2 = null;
                             if (partiallyObservable) {
                                 pa1 = ai1.getAction(0, new PartiallyObservableGameState(gs,0));

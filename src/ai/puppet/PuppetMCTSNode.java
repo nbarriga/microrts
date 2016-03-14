@@ -114,6 +114,7 @@ public class PuppetMCTSNode {
 			}
 			else//second player
 			{
+				if(gs.gameover())return this;
 				GameState gs2=gs.clone();
 				ConfigurableScript<?> sc1=script.clone();
 				sc1.reset();

@@ -59,6 +59,8 @@ public class RunConfigurableExperiments {
 	private static int MAX_DEPTH = 10;
 	private static int RANDOMIZED_AB_REPEATS = 10;
 	private static int MAX_FRAMES = 3000;
+	private static int PUPPET_PLAN_TIME = 5000;
+	private static int PUPPET_PLAN_PLAYOUTS = -1;
 	
 	private static List<AI> bots1 = new LinkedList<AI>();
 	private static List<AI> bots2 = new LinkedList<AI>();
@@ -196,75 +198,109 @@ public class RunConfigurableExperiments {
 		case "PuppetABCDSingle":
 			return //new PuppetNoPlan(
 					new PuppetSearchAB(
-					100, -1,
-					5000, -1,
-					PLAYOUT_TIME,
-					new SingleChoiceConfigurableScript(getPathFinding(),
-							new AI[]{
-									new WorkerRush(utt, getPathFinding()),
-				                    new LightRush(utt, getPathFinding()),
-				                    new RangedRush(utt, getPathFinding()),
-				                    new HeavyRush(utt, getPathFinding()),
-				                    }),
-					getEvaluationFunction())
+							TIME, MAX_PLAYOUTS,
+							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
+							PLAYOUT_TIME,
+							new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{
+											new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding()),
+							}),
+							getEvaluationFunction())
 					//)
 					;
 		case "PuppetABCDSingleNoPlan":
 			return new PuppetNoPlan(
 					new PuppetSearchAB(
-					100, -1,
-					-1, -1,
-					PLAYOUT_TIME,
-					new SingleChoiceConfigurableScript(getPathFinding(),
-							new AI[]{
-									new WorkerRush(utt, getPathFinding()),
-				                    new LightRush(utt, getPathFinding()),
-				                    new RangedRush(utt, getPathFinding()),
-				                    new HeavyRush(utt, getPathFinding()),
-				                    }),
-					getEvaluationFunction())
+							TIME, MAX_PLAYOUTS,
+							-1, -1,
+							PLAYOUT_TIME,
+							new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{
+											new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding()),
+							}),
+							getEvaluationFunction())
 					)
 					;
-//		case "PuppetABCDBasic":
-//			return new PuppetSearchAB(TIME, PLAYOUT_TIME, 256,
-//					new BasicConfigurableScript(utt, getPathFinding()), 
-//					getEvaluationFunction());
+		case "PuppetABCDBasic":
+			return //new PuppetNoPlan(
+					new PuppetSearchAB(
+							TIME, MAX_PLAYOUTS,
+							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
+							PLAYOUT_TIME,
+							new BasicConfigurableScript(utt, getPathFinding()),
+							getEvaluationFunction())
+					//)
+					;
+		case "PuppetABCDBasicNoPlan":
+			return new PuppetNoPlan(
+					new PuppetSearchAB(
+							TIME, MAX_PLAYOUTS,
+							-1, -1,
+							PLAYOUT_TIME,
+							new BasicConfigurableScript(utt, getPathFinding()),
+							getEvaluationFunction())
+					)
+					;
 		case "PuppetMCTSSingle":
 			return //new PuppetNoPlan(
 					new PuppetSearchMCTS(
-					100, -1,
-					5000, -1,
-					PLAYOUT_TIME, PLAYOUT_TIME,
-					//new RandomBiasedAI(),
-					new WorkerRush(utt, getPathFinding()),
-					new SingleChoiceConfigurableScript(getPathFinding(),
-							new AI[]{new WorkerRush(utt, getPathFinding()),
-				                    new LightRush(utt, getPathFinding()),
-				                    new RangedRush(utt, getPathFinding()),
-				                    new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction())
-//					)
+							TIME, MAX_PLAYOUTS,
+							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
+							PLAYOUT_TIME, PLAYOUT_TIME,
+							//new RandomBiasedAI(),
+							new WorkerRush(utt, getPathFinding()),
+							new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding())}),
+							getEvaluationFunction())
+					//					)
 					;
 		case "PuppetMCTSSingleNoPlan":
 			return new PuppetNoPlan(new PuppetSearchMCTS(
-					100, -1,
+					TIME, MAX_PLAYOUTS,
 					-1, -1,
 					PLAYOUT_TIME, PLAYOUT_TIME,
 					//new RandomBiasedAI(),
 					new WorkerRush(utt, getPathFinding()),
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
-				                    new LightRush(utt, getPathFinding()),
-				                    new RangedRush(utt, getPathFinding()),
-				                    new HeavyRush(utt, getPathFinding())}),
+									new LightRush(utt, getPathFinding()),
+									new RangedRush(utt, getPathFinding()),
+									new HeavyRush(utt, getPathFinding())}),
 					getEvaluationFunction())
 					);
-//		case "PuppetMCTSBasic":
-//			return new PuppetSearchMCTS(TIME, PLAYOUT_TIME, PLAYOUT_TIME, 256,
-//					//new RandomBiasedAI(),
-//					new WorkerRush(utt, getPathFinding()),
-//					new BasicConfigurableScript(utt, getPathFinding()), 
-//					getEvaluationFunction());
+		case "PuppetMCTSBasic":
+			return //new PuppetNoPlan(
+					new PuppetSearchMCTS(
+							TIME, MAX_PLAYOUTS,
+							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
+							PLAYOUT_TIME, PLAYOUT_TIME,
+							//new RandomBiasedAI(),
+							new BasicConfigurableScript(utt, getPathFinding()),
+							new BasicConfigurableScript(utt, getPathFinding()),
+							getEvaluationFunction())
+					//					)
+					;
+		case "PuppetMCTSBasicNoPlan":
+			return new PuppetNoPlan(
+					new PuppetSearchMCTS(
+							TIME, MAX_PLAYOUTS,
+							-1, -1,
+							PLAYOUT_TIME, PLAYOUT_TIME,
+							//new RandomBiasedAI(),
+							new BasicConfigurableScript(utt, getPathFinding()),
+							new BasicConfigurableScript(utt, getPathFinding()),
+							getEvaluationFunction())
+					)
+					;
 		default:
 			throw new RuntimeException("AI not found");
 		}
