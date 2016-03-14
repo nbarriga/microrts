@@ -306,7 +306,7 @@ public class PuppetSearchAB extends PuppetBase {
 			ABCDNode current = stack.peek();
 
 			if(current.prevMove==null){//first side to choose move
-				if(current.depth==maxDepth|| current.gs.gs.winner()!=-1){//evaluate
+				if(current.depth==maxDepth|| current.gs.gs.gameover()){//evaluate
 					if(DEBUG>=2)System.out.println("eval");
 					nLeaves++;
 					totalLeaves++;

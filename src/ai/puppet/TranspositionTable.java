@@ -1,6 +1,5 @@
 package ai.puppet;
 
-import rts.GameState;
 
 class Entry{
 	Move _bestMove;

@@ -10,13 +10,16 @@ import util.Pair;
 class PuppetGameState{
 	GameState gs;
 	int hash;
-	static int zobrist[][][][]=new int[20][2][20][20];
+	static final int MAX_DEPTH=100;
+	static final int MAX_CHOICE_POINTS=10;
+	static final int MAX_CHOICES=10;
+	static int zobrist[][][][]=new int[MAX_DEPTH][2][MAX_CHOICE_POINTS][MAX_CHOICES];
 	static{
 		Random rng=new Random();
-		for(int depth=0;depth<20;depth++){
+		for(int depth=0;depth<MAX_DEPTH;depth++){
 			for(int p=0;p<2;p++){
-				for(int point=0;point<20;point++){
-					for(int choice=0;choice<20;choice++){
+				for(int point=0;point<MAX_CHOICE_POINTS;point++){
+					for(int choice=0;choice<MAX_CHOICES;choice++){
 						zobrist[depth][p][point][choice]=rng.nextInt(Integer.MAX_VALUE);
 					}
 				}
