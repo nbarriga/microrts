@@ -155,6 +155,22 @@ public class GameState implements Serializable{
     public boolean issue(PlayerAction pa) {
         boolean returnValue = false;
         
+        // debug:
+        /*
+        {
+            ResourceUsage pa_ru = new ResourceUsage();
+            for(Pair<Unit,UnitAction> tmp:pa.getActions()) {
+                ResourceUsage ua_ru = tmp.m_b.resourceUsage(tmp.m_a, pgs);
+                pa_ru.merge(ua_ru);
+            }
+            pa_ru.positionsUsed.clear();
+            ResourceUsage gs_ru = getResourceUsage();
+            if (!pa_ru.consistentWith(gs_ru, this)) {
+                System.err.println("issuing conflicting player action!");
+            }  
+        }
+        */
+        
         for(Pair<Unit,UnitAction> p:pa.actions) {
             if (p.m_a==null) {
                 System.err.println("Issuing an action to a null unit!!!");
@@ -198,7 +214,11 @@ public class GameState implements Serializable{
                             // (probably in one of the AIs)
                             System.err.println("Inconsistent actions were executed!");
                             System.err.println(uaa);
+                            System.err.println("  Resources: " + uaa.action.resourceUsage(uaa.unit, pgs));
                             System.err.println(p.m_a + " assigned action " + p.m_b + " at time " + time);
+                            System.err.println("  Resources: " + ru);
+                            System.err.println("Player resources: " + pgs.getPlayer(0).getResources() + ", " + pgs.getPlayer(1).getResources());
+                            System.err.println("Resource Consistency: " + uaa.action.resourceUsage(uaa.unit, pgs).consistentWith(ru, this));
                             
                             try {
                                 throw new Exception("dummy");   // just to be able to print the stack trace
@@ -495,7 +515,14 @@ public class GameState implements Serializable{
     public String toString() {
         String tmp = "ObservableGameState: " + time + "\n";
         for(Player p:pgs.getPlayers()) tmp += "player " + p.ID + ": " + p.getResources() + "\n";
-        for(Unit u:unitActions.keySet()) tmp += "    " + u + " -> " + unitActions.get(u).time + " " + unitActions.get(u).action + "\n";
+        for(Unit u:unitActions.keySet()) {
+            UnitActionAssignment ua = unitActions.get(u);
+            if (ua==null) {
+                tmp += "    " + u + " -> null (ERROR!)\n";
+            } else {
+                tmp += "    " + u + " -> " + ua.time + " " + ua.action + "\n";
+            }
+        }
         tmp += pgs;
         return tmp;
     }

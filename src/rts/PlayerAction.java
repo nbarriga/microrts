@@ -21,6 +21,7 @@ public class PlayerAction {
         
     }
     
+    
     public boolean equals(Object o) {
         if (!(o instanceof PlayerAction)) return false;
         PlayerAction a = (PlayerAction)o;
@@ -146,7 +147,7 @@ public class PlayerAction {
     
     public boolean integrityCheck() {
         int player = -1;
-        List<Unit> alreadyUsed = new LinkedList<Unit>();
+//        List<Unit> alreadyUsed = new LinkedList<Unit>();
         for(Pair<Unit,UnitAction> uaa:actions) {
             Unit u = uaa.m_a;
             if (player==-1) {
@@ -161,9 +162,12 @@ public class PlayerAction {
         return true;
     }
     
-    public PlayerAction clone() throws CloneNotSupportedException {
-        PlayerAction clone = (PlayerAction) super.clone();
-        clone.actions = (LinkedList<Pair<Unit,UnitAction>>) ((LinkedList<Pair<Unit,UnitAction>>) actions).clone();
+    public PlayerAction clone() {
+        PlayerAction clone = new PlayerAction();
+        clone.actions = new LinkedList<>();
+        for(Pair<Unit,UnitAction> tmp:actions) {
+            clone.actions.add(new Pair<Unit,UnitAction>(tmp.m_a, tmp.m_b));
+        }
         clone.r = r.clone();
         return clone;
     }

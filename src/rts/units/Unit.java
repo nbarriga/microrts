@@ -76,6 +76,11 @@ public class Unit implements Serializable {
         return ID;
     }
     
+    // note: Do not use this function unless you know what you are doing!
+    public void setID(long a_ID) {
+        ID = a_ID;
+    }
+    
     public int getPosition(PhysicalGameState pgs) {
         return x + pgs.getWidth()*y;
     }

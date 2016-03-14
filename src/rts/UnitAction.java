@@ -60,15 +60,27 @@ public class UnitAction implements Serializable {
         y = a_y;
     }
     
+    public UnitAction(UnitAction ua) {
+        type = ua.type;
+        parameter = ua.parameter;
+        x = ua.x;
+        y = ua.y;
+        unitType = ua.unitType;
+    }
+    
     public boolean equals(Object o) {
         if (!(o instanceof UnitAction)) return false;
         UnitAction a = (UnitAction)o;
         
-        if (a.type!=type ||
-            a.parameter!=parameter ||
-            a.x!=x ||
-            a.y!=y ||
-            a.unitType!=unitType) return false;
+        if (a.type!=type) return false;
+        if (type==TYPE_NONE || type==TYPE_MOVE || type==TYPE_HARVEST || type==TYPE_RETURN) {
+            if (a.parameter != parameter) return false;
+        } else if (type==TYPE_ATTACK_LOCATION) {
+            if (a.x != x || a.y != y) return false;
+        } else {
+            if (a.parameter != parameter ||
+                a.unitType != unitType) return false;
+        }
         
         return true;
     }
@@ -214,7 +226,11 @@ public class UnitAction implements Serializable {
                     newUnit = new Unit(u.getPlayer(), unitType, targetx, targety, 0);
                     pgs.addUnit(newUnit);
                     Player p = pgs.getPlayer(u.getPlayer());
-                    p.setResources(p.getResources() - newUnit.getCost());                    
+                    p.setResources(p.getResources() - newUnit.getCost());
+                    if (p.getResources()<0) {
+                        System.err.print("Illegal action executed! resources of player " + p.ID + " are now " + p.getResources() + "\n");
+                        System.err.print(s);
+                    }
                 }
                 break;
         }        

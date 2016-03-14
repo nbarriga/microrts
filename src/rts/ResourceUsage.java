@@ -15,13 +15,22 @@ import java.util.List;
 public class ResourceUsage implements Serializable {
     List<Integer> positionsUsed = new LinkedList<Integer>();
     int []resourcesUsed = new int[2];   // 2 players is hardcoded here! FIX!!!
+
+    
+    public ResourceUsage() {
+        
+    }
+    
     
     public boolean consistentWith(ResourceUsage u, GameState gs) {
         for(Integer pos:positionsUsed) 
             if (u.positionsUsed.contains(pos)) return false;
         
         for(int i = 0;i<resourcesUsed.length;i++) {
-            if (resourcesUsed[i] + u.resourcesUsed[i] > gs.getPlayer(i).getResources()) return false;            
+            if (resourcesUsed[i] + u.resourcesUsed[i] > 0 &&    // this extra condition (which should not be needed), is because
+                                                                // if an AI has a bug and allows execution of actions that
+                                                                // brings resources below 0, this code would fail.
+                resourcesUsed[i] + u.resourcesUsed[i] > gs.getPlayer(i).getResources()) return false;            
         }
         
         return true;
