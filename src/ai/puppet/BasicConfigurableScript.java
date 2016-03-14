@@ -40,6 +40,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
     int abandonedbases;
     int freeresources;
     int nworkers;
+    private static final int BASE_RESOURCE_RADIUS = 8;
     
     // Strategy implemented by this class:
     // If we have any "light": send it to attack to the nearest enemy unit
@@ -104,7 +105,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
             if (u2.getType() == baseType
                     && u2.getPlayer() == p.getID()) {
                 nbases++;
-                if(!pgs.getUnitsAround(u2.getX(), u2.getY(), 10).stream()
+                if(!pgs.getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
                 		.map((a)->a.getType()==resourceType)
                 		.reduce((a,b)->a||b).get()){
                 	abandonedbases++;
@@ -116,12 +117,12 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
             }
             if(u2.getType() == resourceType){
             	nresources++;
-            	if(pgs.getUnitsAround(u2.getX(), u2.getY(), 10).stream()
+            	if(pgs.getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
 				.map((a)->a.getPlayer()==p.getID()&&a.getType()==baseType)
 				.reduce((a,b)->a||b).get()){
             		ownresources++;
             	}
-            	if(!pgs.getUnitsAround(u2.getX(), u2.getY(), 10).stream()
+            	if(!pgs.getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
             			.map((a)->a.getPlayer()!=(1-p.getID())&&a.getType()!=baseType)
             			.reduce((a,b)->a&&b).get()){
             		freeresources++;
@@ -495,6 +496,9 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 		int nbarracks=0;
 		int nbases=0;
 		int abandonedbases=0;
+        int ownresources = 0;
+        int nresources = 0;
+        int freeresources = 0;
 		for (Unit u2 : gs.getPhysicalGameState().getUnits()) {
 			if(u2.getPlayer() == player){
 				if (u2.getType() == workerType){
@@ -505,12 +509,25 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 				}
 				if (u2.getType() == baseType) {
 	                nbases++;
-	                if(!gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), 10).stream()
+	                if(!gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
 	                		.map((a)->a.getType()==resourceType)
 	                		.reduce((a,b)->a||b).get()){
 	                	abandonedbases++;
 	                }
-	            }
+				}
+				if(u2.getType() == resourceType){
+					nresources++;
+					if(gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
+							.map((a)->a.getPlayer()==player&&a.getType()==baseType)
+							.reduce((a,b)->a||b).get()){
+						ownresources++;
+					}
+					if(!gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
+							.map((a)->a.getPlayer()!=(1-player)&&a.getType()!=baseType)
+							.reduce((a,b)->a&&b).get()){
+						freeresources++;
+					}
+				}
 			}
 		}
 		List<Options> choices=new ArrayList<Options>();
@@ -531,7 +548,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 					rangedType.ID,
 					heavyType.ID}));
 		}
-		if((nbases - abandonedbases) > 1 ){//already have an extra base
+		if((nbases - abandonedbases) > 1 || freeresources==0 ){//already have an extra base
 			choices.add(new Options(BasicChoicePoint.EXPAND.ordinal(),new int[]{0}));
 		}else{
 			choices.add(new Options(BasicChoicePoint.EXPAND.ordinal(),new int[]{0,1}));
