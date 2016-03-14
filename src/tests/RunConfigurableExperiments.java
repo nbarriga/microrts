@@ -329,8 +329,10 @@ public class RunConfigurableExperiments {
         		ExperimenterAsymmetric.runExperiments(bots1,bots2,
         				maps, utt, iterations, MAX_FRAMES, 300, true, out);
         	}else{
-        		Experimenter.runExperiments(bots1, 
-        				maps, utt, iterations, MAX_FRAMES, 300, false, out);
+//        		Experimenter.runExperiments(bots1, 
+//        				maps, utt, iterations, MAX_FRAMES, 300, false, out);
+        		Experimenter.runExperiments(bots1, maps, utt, iterations, MAX_FRAMES, 300, false, out, 
+                        -1, true, false);
         	}
         }else{// Separate the matches by map:
         	for(PhysicalGameState map:maps){
