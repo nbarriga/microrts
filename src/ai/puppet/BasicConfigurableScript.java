@@ -256,14 +256,16 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
         		int xDiff=u.getX()-closestEnemy.getX();//>0 enemy LEFT
         		int yDiff=u.getY()-closestEnemy.getY();//>0 enemy UP
         		int targetX,targetY;
-        		if (Math.abs(xDiff)- Math.abs(yDiff)>0){//run horizontally
+        		if (Math.abs(xDiff)> Math.abs(yDiff)){//run horizontally
         			targetY=u.getY();
         			if(xDiff>0)targetX=u.getX()+1;
-        			else targetX=u.getX()-1;
+        			else if(xDiff<0) targetX=u.getX()-1;
+        			else targetX=u.getX();
         		}else{
         			targetX=u.getX();
         			if(yDiff>0)targetY=u.getY()+1;
-        			else targetY=u.getY()-1;
+        			else if (yDiff<0) targetY=u.getY()-1;
+        			else targetY=u.getY();
         		}
         		if(gs.free(targetX,targetY)){
             		move(u,targetX,targetY);
