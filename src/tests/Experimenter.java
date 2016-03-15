@@ -5,13 +5,13 @@
 package tests;
 
 import ai.core.AI;
-import ai.*;
 import gui.PhysicalGameStateJFrame;
 import gui.PhysicalGameStatePanel;
+
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.JFrame;
+
 import rts.GameState;
 import rts.PartiallyObservableGameState;
 import rts.PhysicalGameState;
@@ -149,32 +149,13 @@ public class Experimenter {
                             wins[ai2_idx][ai1_idx]++;
                             win_time[ai2_idx][ai1_idx]+=gs.getTime();
                         }                        
-                    }                    
+                    } 
                 }
             }
+            printResults(wins,ties,loses,out);
         }
 
-        out.println("Wins: ");
-        for (int ai1_idx = 0; ai1_idx < bots.size(); ai1_idx++) {
-            for (int ai2_idx = 0; ai2_idx < bots.size(); ai2_idx++) {
-                out.print(wins[ai1_idx][ai2_idx] + ", ");
-            }
-            out.println("");
-        }
-        out.println("Ties: ");
-        for (int ai1_idx = 0; ai1_idx < bots.size(); ai1_idx++) {
-            for (int ai2_idx = 0; ai2_idx < bots.size(); ai2_idx++) {
-                out.print(ties[ai1_idx][ai2_idx] + ", ");
-            }
-            out.println("");
-        }
-        out.println("Loses: ");
-        for (int ai1_idx = 0; ai1_idx < bots.size(); ai1_idx++) {
-            for (int ai2_idx = 0; ai2_idx < bots.size(); ai2_idx++) {
-                out.print(loses[ai1_idx][ai2_idx] + ", ");
-            }
-            out.println("");
-        }        
+       
         out.println("Win average time: ");
         for (int ai1_idx = 0; ai1_idx < bots.size(); ai1_idx++) {
             for (int ai2_idx = 0; ai2_idx < bots.size(); ai2_idx++) {
@@ -209,5 +190,29 @@ public class Experimenter {
             out.println("");
         }              
         out.flush();
+    }
+    
+    static void printResults(int wins[][], int ties[][], int loses[][], PrintStream out){
+    	 out.println("Wins: ");
+         for (int ai1_idx = 0; ai1_idx < wins.length; ai1_idx++) {
+             for (int ai2_idx = 0; ai2_idx < wins[ai1_idx].length; ai2_idx++) {
+                 out.print(wins[ai1_idx][ai2_idx] + ", ");
+             }
+             out.println("");
+         }
+         out.println("Ties: ");
+         for (int ai1_idx = 0; ai1_idx < ties.length; ai1_idx++) {
+             for (int ai2_idx = 0; ai2_idx < ties[ai1_idx].length; ai2_idx++) {
+                 out.print(ties[ai1_idx][ai2_idx] + ", ");
+             }
+             out.println("");
+         }
+         out.println("Loses: ");
+         for (int ai1_idx = 0; ai1_idx < loses.length; ai1_idx++) {
+             for (int ai2_idx = 0; ai2_idx < loses[ai1_idx].length; ai2_idx++) {
+                 out.print(loses[ai1_idx][ai2_idx] + ", ");
+             }
+             out.println("");
+         }        
     }
 }

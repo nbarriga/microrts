@@ -3,7 +3,6 @@ package ai.puppet;
 import java.util.Random;
 
 import rts.GameState;
-import sun.security.x509.NetscapeCertTypeExtension;
 import util.Pair;
 
 
