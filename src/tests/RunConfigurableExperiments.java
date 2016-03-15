@@ -47,6 +47,7 @@ import ai.puppet.PuppetNoPlan;
 import ai.puppet.PuppetSearchAB;
 import ai.puppet.PuppetSearchMCTS;
 import ai.puppet.SingleChoiceConfigurableScript;
+import rts.GameState;
 import rts.PhysicalGameState;
 import rts.units.UnitTypeTable;
 
@@ -61,7 +62,9 @@ public class RunConfigurableExperiments {
 	private static int MAX_FRAMES = 3000;
 	private static int PUPPET_PLAN_TIME = 5000;
 	private static int PUPPET_PLAN_PLAYOUTS = -1;
-	
+	static{
+		GameState.TIME_LIMIT=MAX_FRAMES;
+	}
 	private static List<AI> bots1 = new LinkedList<AI>();
 	private static List<AI> bots2 = new LinkedList<AI>();
 	private static List<PhysicalGameState> maps = new LinkedList<PhysicalGameState>();

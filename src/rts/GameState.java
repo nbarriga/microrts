@@ -16,7 +16,7 @@ import util.Pair;
  */
 public class GameState implements Serializable{
 	static Random r = new Random();         // only used if the action conflict resolution strategy is set to random
-    
+    public static int TIME_LIMIT=-1;
     int unitCancelationCounter = 0;  // only used if the action conflict resolution strategy is set to alternating
     
     int time = 0;
@@ -77,10 +77,12 @@ public class GameState implements Serializable{
     }
     
     public int winner() {
+    	if(TIME_LIMIT!=-1&&getTime()>=TIME_LIMIT) return -1;
         return pgs.winner();
     }
     
     public boolean gameover() {
+    	if(TIME_LIMIT!=-1&&getTime()>=TIME_LIMIT) return true;
         return pgs.gameover();
     }
     

@@ -49,7 +49,7 @@ class PuppetGameState{
 		}
 		for (Pair<Integer,Integer> c : move2.choices)
 		{
-			_hash ^= zobrist[depth][1][c.m_a][c.m_b];
+			_hash ^= zobrist[depth+1][1][c.m_a][c.m_b];
 		}
 		return _hash;
 	}

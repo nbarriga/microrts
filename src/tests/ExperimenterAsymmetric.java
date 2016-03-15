@@ -52,6 +52,12 @@ public class ExperimenterAsymmetric {
 
                         out.println("MATCH UP: " + ai1+ " vs " + ai2);
                         
+                        System.gc();
+                        try {
+                            Thread.sleep(100);                 
+                        } catch(InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
                         long start=System.currentTimeMillis();
                         boolean gameover = false;
                         do {

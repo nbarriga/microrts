@@ -236,7 +236,6 @@ public class PuppetSearchAB extends PuppetBase {
 		long start = System.currentTimeMillis();
 		long prev=start;;
 		nLeaves = 0;
-		//	        Result bestMove = ABCD(gs, null, alpha, beta, depth, MAXPLAYER,"");
 		do{
 			if(DEPTH==0){//just started
 				DEPTH+=2;
@@ -298,7 +297,6 @@ public class PuppetSearchAB extends PuppetBase {
 		long start = System.currentTimeMillis();
 		assert(maxDepth%2==0);
 
-
 		if(DEBUG>=2)System.out.println("ABCD at " + head.gs.gs.getTime());
 
 		while(!stack.isEmpty()&&(System.currentTimeMillis()-start)<MAX_TIME&&!searchDone()) {
@@ -314,16 +312,14 @@ public class PuppetSearchAB extends PuppetBase {
 					ABCDNode parent= stack.peek();
 					Result result = new Result(parent.nextMoves.last(),eval.evaluate(MAXPLAYER, 1-MAXPLAYER, current.gs.gs));
 					parent.setResult(result, current);
-					continue;
-				}
-				if(current.nextMoves.hasNext()){//check children
+				}else if(current.nextMoves.hasNext()){//check children
 					if(tt&&current.nextMoves.current==0){//if first child, check TT first
 						Entry ttEntry=TT.lookup(current.gs);
 						ttQueries++;
 						if(ttEntry!=null){
 							current.nextMoves.swapFront(ttEntry._bestMove);
 							ttHits++;
-//							System.out.println("first");
+							//							System.out.println("first");
 						}
 					}
 					if(DEBUG>=2)System.out.println("current.nextMoves.hasNext()");
@@ -335,17 +331,15 @@ public class PuppetSearchAB extends PuppetBase {
 							current.depth+1, 
 							1-current.nextPlayerInSimultaneousNode, 
 							null));
-					continue;
 				}else{//all children checked, return up
 					stack.pop();
 					if(!stack.empty()){
 						ABCDNode parent= stack.peek();
 						parent.setResult(new Result(parent.nextMoves.last(),current.best.score),current);
-//						TT.store(parent.gs, parent.depth, parent.prevMove, parent.best.m, parent.best.score, parent.alpha, parent.beta, maxDepth-parent.depth);
+						//						TT.store(parent.gs, parent.depth, parent.prevMove, parent.best.m, parent.best.score, parent.alpha, parent.beta, maxDepth-parent.depth);
 					}
 					if(tt)TT.store(current.gs, current.best.m, current.best.score, current.alpha, current.beta, maxDepth-current.depth);
-					
-					continue;
+
 				}
 			}else{//second side to choose move
 				if(current.nextMoves.hasNext()){//check children
@@ -355,18 +349,18 @@ public class PuppetSearchAB extends PuppetBase {
 						if(ttEntry!=null){
 							current.nextMoves.swapFront(ttEntry._bestMove);
 							ttHits++;
-//							System.out.println("second");
+							//							System.out.println("second");
 						}
 					}
 					Move next=current.nextMoves.next();
 					PuppetGameState gs2=null;
 					CacheEntry ctEntry;
-
 					if(ct){
-						ctEntry=CT.lookup(current.gs, current.depth, current.prevMove, next);
+						ctEntry=CT.lookup(current.gs, current.depth-1, current.prevMove, next);
 						ctQueries++;
 						if(ctEntry!=null){
 							gs2=ctEntry._state;
+
 							ctHits++;
 						}
 					}
@@ -383,7 +377,7 @@ public class PuppetSearchAB extends PuppetBase {
 
 						simulate(gsTemp,sc1,sc2,current.prevMove.player,next.player, STEP_PLAYOUT_TIME);
 
-						gs2=new PuppetGameState(current.gs,gsTemp,current.depth,current.prevMove, next);
+						gs2=new PuppetGameState(current.gs,gsTemp,current.depth-1,current.prevMove, next);
 						if(ct)CT.store(current.gs, gs2);
 					}
 					stack.push(new ABCDNode(
@@ -394,14 +388,12 @@ public class PuppetSearchAB extends PuppetBase {
 							current.depth+1, 
 							current.nextPlayerInSimultaneousNode, 
 							null));
-					continue;
 				}else{//all children checked, return up
 					stack.pop();
 					ABCDNode parent= stack.peek();
 					parent.setResult(new Result(parent.nextMoves.last(),current.best.score),current);
-//					TT.store(parent.gs, parent.best.m, parent.best.score, parent.alpha, parent.beta, maxDepth-parent.depth);
+					//					TT.store(parent.gs, parent.best.m, parent.best.score, parent.alpha, parent.beta, maxDepth-parent.depth);
 					if(tt)TT.store(current.gs, current.depth, current.prevMove, current.best.m, current.best.score, current.alpha, current.beta, maxDepth-current.depth);
-					continue;
 				}
 			}	
 		}

@@ -84,10 +84,15 @@ public class Experimenter {
                         if (visualize) w = PhysicalGameStatePanel.newVisualizer(gs, 600, 600, partiallyObservable);
 
                         out.println("MATCH UP: " + ai1+ " vs " + ai2);
-                        
+
+                        System.gc();
+                        try {
+                            Thread.sleep(100);            
+                        } catch(InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
                         boolean gameover = false;
                         do {
-//                            System.gc();
                             PlayerAction pa1 = null, pa2 = null;
                             if (partiallyObservable) {
                                 pa1 = ai1.getAction(0, new PartiallyObservableGameState(gs,0));

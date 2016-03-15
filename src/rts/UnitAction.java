@@ -203,7 +203,7 @@ public class UnitAction implements Serializable {
                 	case DIRECTION_DOWN:    base = pgs.getUnitAt(u.getX(), u.getY()+1); break;
                 	case DIRECTION_LEFT:    base = pgs.getUnitAt(u.getX()-1, u.getY()); break;
                 	}
-                	if (base!=null&&u.getResources()>0) { 
+                	if (base!=null&&base.getType().isStockpile&&u.getResources()>0) { 
                 		Player p = pgs.getPlayer(u.getPlayer());
                 		p.setResources(p.getResources() + u.getResources());
                 		u.setResources(0);
