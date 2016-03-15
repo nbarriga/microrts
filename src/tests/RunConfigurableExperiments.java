@@ -53,14 +53,14 @@ import rts.units.UnitTypeTable;
 
 public class RunConfigurableExperiments {
 	private static boolean CONTINUING = true;
-	private static int TIME = 100;
+	private static int TIME = -1;
 	private static int MAX_ACTIONS = 100;
-	private static int MAX_PLAYOUTS = -1;
+	private static int MAX_PLAYOUTS = 200;
 	private static int PLAYOUT_TIME = 100;
 	private static int MAX_DEPTH = 10;
 	private static int RANDOMIZED_AB_REPEATS = 10;
 	private static int MAX_FRAMES = 3000;
-	private static int PUPPET_PLAN_TIME = 5000;
+	private static int PUPPET_PLAN_TIME = 3000;
 	private static int PUPPET_PLAN_PLAYOUTS = -1;
 	static{
 		GameState.TIME_LIMIT=MAX_FRAMES;

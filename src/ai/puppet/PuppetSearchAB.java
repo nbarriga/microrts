@@ -132,8 +132,6 @@ public class PuppetSearchAB extends PuppetBase {
 	protected int DEBUG=1;
 	protected int DEPTH;
 	protected int MAXPLAYER=-1;
-	int nLeaves = 0, totalLeaves = 0;
-	long cummSearchTime;
 
 	Stack<ABCDNode> stack=new Stack<ABCDNode>();
 	ABCDNode head;
@@ -165,7 +163,6 @@ public class PuppetSearchAB extends PuppetBase {
 		stack.clear();
 		head=null;
 		DEPTH=0;
-		nLeaves = 0; totalLeaves = 0;
 	}
 	//todo:this clone method is broken
 	@Override
@@ -219,7 +216,7 @@ public class PuppetSearchAB extends PuppetBase {
 				null));
 		head=stack.peek();
 		totalLeaves = 0;
-		cummSearchTime=0;
+		totalTime=0;
 		DEPTH=0;
 	}
 	@Override
@@ -233,9 +230,9 @@ public class PuppetSearchAB extends PuppetBase {
 	}
 	@Override
 	void computeDuringOneGameFrame() throws Exception{
-		long start = System.currentTimeMillis();
-		long prev=start;;
-		nLeaves = 0;
+		frameStartTime=System.currentTimeMillis();
+		long prev=frameStartTime;
+		frameLeaves = 0;
 		do{
 			if(DEPTH==0){//just started
 				DEPTH+=2;
@@ -264,9 +261,10 @@ public class PuppetSearchAB extends PuppetBase {
 				lastFinishedHead=head;
 			}
 			long next=System.currentTimeMillis();
-			cummSearchTime+=next-prev;
+			totalTime+=next-prev;
 			prev=next;
-		}while((prev-start)<MAX_TIME && !searchDone());
+			frameTime=prev-frameStartTime;
+		}while(!frameBudgetExpired() && !searchDone());
 		//		cummSearchTime+=(System.currentTimeMillis()-start);
 
 		if(!PLAN){
@@ -277,16 +275,14 @@ public class PuppetSearchAB extends PuppetBase {
 			stack.clear();
 			currentPlan=new Plan(lastFinishedHead);
 			if (DEBUG>=1) System.out.println("ABCD:\n" + currentPlan + " in " 
-					+ cummSearchTime
+					+ totalTime
 					+" ms, wall time: "+(System.currentTimeMillis()-lastSearchTime)
 					+" ms, leaves: "+totalLeaves);
 		}
 	}
 	boolean searchDone(){
 //				return stack.empty()&&DEPTH==8;
-		return PLAN 
-				&& ((PLAN_PLAYOUTS>=0 && totalLeaves>=PLAN_PLAYOUTS) 
-						|| (PLAN_TIME>=0 && cummSearchTime>PLAN_TIME));
+		return PLAN && planBudgetExpired();
 	}
 	int ttHits=0;
 	int ttQueries=0;
@@ -294,19 +290,18 @@ public class PuppetSearchAB extends PuppetBase {
 	int ctQueries=0;
 	boolean tt=true,ct=true;
 	protected void iterativeABCD(int maxDepth) throws Exception {
-		long start = System.currentTimeMillis();
 		assert(maxDepth%2==0);
 
 		if(DEBUG>=2)System.out.println("ABCD at " + head.gs.gs.getTime());
 
-		while(!stack.isEmpty()&&(System.currentTimeMillis()-start)<MAX_TIME&&!searchDone()) {
+		while(!stack.isEmpty()&&!frameBudgetExpired()&&!searchDone()) {
 			if(DEBUG>=2)System.out.println(stack);
 			ABCDNode current = stack.peek();
 
 			if(current.prevMove==null){//first side to choose move
 				if(current.depth==maxDepth|| current.gs.gs.gameover()){//evaluate
 					if(DEBUG>=2)System.out.println("eval");
-					nLeaves++;
+					frameLeaves++;
 					totalLeaves++;
 					stack.pop();
 					ABCDNode parent= stack.peek();
@@ -395,7 +390,8 @@ public class PuppetSearchAB extends PuppetBase {
 					//					TT.store(parent.gs, parent.best.m, parent.best.score, parent.alpha, parent.beta, maxDepth-parent.depth);
 					if(tt)TT.store(current.gs, current.depth, current.prevMove, current.best.m, current.best.score, current.alpha, current.beta, maxDepth-current.depth);
 				}
-			}	
+			}
+			frameTime=System.currentTimeMillis()-frameStartTime;
 		}
 	}
 

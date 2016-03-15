@@ -51,8 +51,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 	int EVAL_PLAYOUT_TIME;
 
 	AI policy1, policy2;
-	int nPlayouts = 0, totalPlayouts = 0;
-	long cummSearchTime;
+
 	
 	PuppetMCTSNode root;
 	Plan currentPlan;
@@ -81,7 +80,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 		policy2.reset();
 		currentPlan=new Plan();
 		root=null;
-		nPlayouts = 0; totalPlayouts = 0;
+
 	}
 	
 	//todo:this clone method is broken
@@ -100,10 +99,11 @@ public class PuppetSearchMCTS extends PuppetBase {
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
 		assert(PLAN):"This method can only be called when using a standing plan";
 		//Reinitialize the tree
-		if(lastSearchFrame==-1||(gs.getTime()-lastSearchFrame)>PLAN_VALIDITY){
+		if(lastSearchFrame==-1//||(gs.getTime()-lastSearchFrame)>PLAN_VALIDITY
+				){
 			if(DEBUG>=1){
 				System.out.println("Restarting after "+(gs.getTime()-lastSearchFrame)+" frames, "
-						+(System.currentTimeMillis()-lastSearchTime)+" ms ("+cummSearchTime+" ms)");
+						+(System.currentTimeMillis()-lastSearchTime)+" ms ("+totalTime+" ms)");
 			}
 			restartSearch(gs, player);
 			
@@ -132,13 +132,16 @@ public class PuppetSearchMCTS extends PuppetBase {
 		lastSearchFrame=gs.getTime();
 		lastSearchTime=System.currentTimeMillis();
 		root=new PuppetMCTSNode(gs.clone(),script,player,eval.upperBound(gs));
-		totalPlayouts = 0;
-		cummSearchTime=0;
+		totalLeaves = 0;
+		totalTime=0;
 	}
 	@Override
 	PlayerAction getBestActionSoFar() throws Exception{
 		assert(!PLAN):"This method can only be called when not using s standing plan";
-		System.out.println(root);
+		if (DEBUG>=1) System.out.println("Done. Moves:\n"+root+ " in " 
+				+ totalTime
+				+" ms, wall time: "+(System.currentTimeMillis()-lastSearchTime)
+				+" ms, playouts: "+totalLeaves);
 		script.setDefaultChoices();
     	script.setChoices(root.actions[root.bestChild().index].choices);
         return script.getAction(root.nextPlayerInSimultaneousNode, root.gs); 
@@ -146,45 +149,47 @@ public class PuppetSearchMCTS extends PuppetBase {
 	}
 	@Override
 	void computeDuringOneGameFrame() throws Exception{
-		long start = System.currentTimeMillis();
-		long end;
-		nPlayouts=0;
+		frameStartTime = System.currentTimeMillis();
+		long prev=frameStartTime;
+		frameLeaves=0;
         if (DEBUG>=2) System.out.println("Search...");
         
 
-        while(true) {
+        do{
             monteCarloRun();
-            nPlayouts++;
-            totalPlayouts++;
-            end = System.currentTimeMillis();
-            if (MAX_TIME>=0 && (end - start)>=MAX_TIME) break; 
-            if (MAX_ITERATIONS>=0 && nPlayouts>=MAX_ITERATIONS) break;    
-        }
+            frameLeaves++;
+            totalLeaves++;
+            long next=System.currentTimeMillis();
+			totalTime+=next-prev;
+			prev=next;
+			frameTime=next-frameStartTime;
+        }while(!frameBudgetExpired() && !searchDone());
 
-        cummSearchTime+=(System.currentTimeMillis()-start);
         if(searchDone()){
         	currentPlan=new Plan(root);
         	root=null;
         	if (DEBUG>=1) System.out.println("Done. Updating Plan:\n"+currentPlan+ " in " 
-					+ cummSearchTime
+					+ totalTime
 					+" ms, wall time: "+(System.currentTimeMillis()-lastSearchTime)
-					+" ms, playouts: "+totalPlayouts);
+					+" ms, playouts: "+totalLeaves);
         }        
 	}
 	void monteCarloRun() throws Exception{
 		PuppetMCTSNode leaf = root.selectLeaf(STEP_PLAYOUT_TIME);
-		if(leaf.gs.gameover())return;
-		policy1.reset();
-		policy2.reset();
-		GameState gs2=leaf.gs.clone();
-		simulate(gs2,policy1, policy2,leaf.parent.player(),leaf.player(),EVAL_PLAYOUT_TIME);
-		float e=eval.evaluate(leaf.player(),1-leaf.player(), gs2);
+		float e;
+		if(!leaf.gs.gameover()){
+			policy1.reset();
+			policy2.reset();
+			GameState gs2=leaf.gs.clone();
+			simulate(gs2,policy1, policy2,leaf.parent.player(),leaf.player(),EVAL_PLAYOUT_TIME);
+			e=eval.evaluate(leaf.player(),1-leaf.player(), gs2);
+		}else{
+			e=eval.evaluate(leaf.player(),1-leaf.player(), leaf.gs);
+		}
 		leaf.update(e, leaf.player());
 	}
 	boolean searchDone(){
-		return PLAN 
-				&& ((PLAN_PLAYOUTS>=0 && totalPlayouts>=PLAN_PLAYOUTS) 
-						|| (PLAN_TIME>=0 && cummSearchTime>PLAN_TIME));
+		return PLAN && planBudgetExpired();
 	}
 	
 	public String toString(){

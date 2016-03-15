@@ -62,10 +62,10 @@ class Move{
 public abstract class PuppetBase extends AI {
 
 
-    int MAX_TIME = 100;//ms
-    protected int MAX_ITERATIONS = 100;
-	int PLAN_TIME;
-	int PLAN_PLAYOUTS;
+   int MAX_TIME = 100;//ms
+   int MAX_ITERATIONS = -1;
+   int PLAN_TIME;
+   int PLAN_PLAYOUTS;
 	int STEP_PLAYOUT_TIME;
 	boolean PLAN;
 	int PLAN_VALIDITY;
@@ -73,6 +73,8 @@ public abstract class PuppetBase extends AI {
 	ConfigurableScript<?> script;
 	int lastSearchFrame;
 	long lastSearchTime;
+	int frameLeaves = 0, totalLeaves = 0;
+	long frameStartTime=0,frameTime=0, totalTime = 0;
 	
 	PuppetBase(int max_time_per_frame, int max_playouts_per_frame, 
 			int max_plan_time, int max_plan_playouts,int step_playout_time,
@@ -103,25 +105,37 @@ public abstract class PuppetBase extends AI {
 		lastSearchFrame=-1;
 		lastSearchTime=-1;
 		script.reset();
+		frameLeaves = 0; totalLeaves = 0;
+		frameTime=0; totalTime = 0;
 	}
 
+	boolean planBudgetExpired(){
+		return (PLAN_PLAYOUTS>=0 && totalLeaves>=PLAN_PLAYOUTS) 
+				|| (PLAN_TIME>=0 && totalTime>PLAN_TIME);
+	}
+	boolean frameBudgetExpired(){
+		return (MAX_ITERATIONS>=0 && frameLeaves>=MAX_ITERATIONS) 
+				|| (MAX_TIME>=0 && frameTime>MAX_TIME);
+	}
 	abstract void restartSearch(GameState gs, int player);
 	abstract void computeDuringOneGameFrame() throws Exception;
 	abstract PlayerAction getBestActionSoFar() throws Exception;
 	
+	
+	
 	static void simulate(GameState gs, AI ai1, AI ai2, int player1, int player2, int time)
 			throws Exception {
-				assert(player1!=player2);
-				int timeOut = gs.getTime() + time;
-				boolean gameover = gs.gameover();
-				while(!gameover && gs.getTime()<timeOut) {
-					if (gs.isComplete()) {
-						gameover = gs.cycle();
-					} else {
-						gs.issue(ai1.getAction(player1, gs));
-						gs.issue(ai2.getAction(player2, gs));
-					}
-				}    
+		assert(player1!=player2);
+		int timeOut = gs.getTime() + time;
+		boolean gameover = gs.gameover();
+		while(!gameover && gs.getTime()<timeOut) {
+			if (gs.isComplete()) {
+				gameover = gs.cycle();
+			} else {
+				gs.issue(ai1.getAction(player1, gs));
+				gs.issue(ai2.getAction(player2, gs));
 			}
+		}    
+	}
 
 }
