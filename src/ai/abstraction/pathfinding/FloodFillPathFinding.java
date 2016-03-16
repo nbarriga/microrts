@@ -190,6 +190,11 @@ public class FloodFillPathFinding extends PathFinding {
 						//					System.out.println("In cache, invalid, calculating");
 					}
 				}
+			}else{
+//				System.out.println("found null action");
+				//this is to fix cases where there used to be no path to get somewhere, but now there is
+				cache.remove(targetpos);
+				return calculateDistances(start, targetpos, range,gs,ru);
 			}
 			//			System.out.println("In cache, OK");
 			return action;
