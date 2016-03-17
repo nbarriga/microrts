@@ -1,0 +1,6 @@
+maps/BroodWar/(4)Blood Bath.scmA.xml
+maps/BroodWar/(4)Blood Bath.scmB.xml
+maps/BroodWar/(4)Blood Bath.scmC.xml
+maps/BroodWar/(4)Blood Bath.scmD.xml
+maps/BroodWar/(4)Blood Bath.scmE.xml
+maps/BroodWar/(4)Blood Bath.scmF.xml

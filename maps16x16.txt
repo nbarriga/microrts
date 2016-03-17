@@ -1,0 +1,12 @@
+maps/16x16/basesWorkers16x16A.xml
+maps/16x16/basesWorkers16x16B.xml
+maps/16x16/basesWorkers16x16C.xml
+maps/16x16/basesWorkers16x16D.xml
+maps/16x16/basesWorkers16x16E.xml
+maps/16x16/basesWorkers16x16F.xml
+maps/16x16/basesWorkers16x16G.xml
+maps/16x16/basesWorkers16x16H.xml
+maps/16x16/basesWorkers16x16I.xml
+maps/16x16/basesWorkers16x16J.xml
+maps/16x16/basesWorkers16x16K.xml
+maps/16x16/basesWorkers16x16L.xml

@@ -1,0 +1,12 @@
+maps/24x24/basesWorkers24x24A.xml
+maps/24x24/basesWorkers24x24B.xml
+maps/24x24/basesWorkers24x24C.xml
+maps/24x24/basesWorkers24x24D.xml
+maps/24x24/basesWorkers24x24E.xml
+maps/24x24/basesWorkers24x24F.xml
+maps/24x24/basesWorkers24x24G.xml
+maps/24x24/basesWorkers24x24H.xml
+maps/24x24/basesWorkers24x24I.xml
+maps/24x24/basesWorkers24x24J.xml
+maps/24x24/basesWorkers24x24K.xml
+maps/24x24/basesWorkers24x24L.xml
