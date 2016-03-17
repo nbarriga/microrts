@@ -10,8 +10,7 @@ public class PuppetMCTSNode {
 	GameState gs;
 //	float accum_evaluation=0;
 //	int visit_count=0;
-	static final int n_thr=1;//expansion threshold
-	static final float C=0.1f;//exploration constant
+	float C;//exploration constant
 	PuppetMCTSNode parent;
 	ConfigurableScript<?> script;
 //	boolean fullState;//do we have moves for both players and just ran a simulation?
@@ -46,7 +45,8 @@ public class PuppetMCTSNode {
     
 	public PuppetMCTSNode(
 			GameState gs, 
-			ConfigurableScript<?> script, 
+			ConfigurableScript<?> script,
+			float C,
 			int nextPlayerInSimultaneousNode,
 			float bound,
 			PuppetMCTSNode parent,
@@ -54,6 +54,7 @@ public class PuppetMCTSNode {
 			int index) {
 		this.gs=gs;
 		this.script=script;
+		this.C=C;
 		this.nextPlayerInSimultaneousNode=nextPlayerInSimultaneousNode;
 		evaluation_bound=bound;
 		this.parent=parent;
@@ -69,9 +70,10 @@ public class PuppetMCTSNode {
 	public PuppetMCTSNode(
 			GameState gs, 
 			ConfigurableScript<?> script, 
+			float C,
 			int nextPlayerInSimultaneousNode,
 			float bound) {
-		this(gs,script,nextPlayerInSimultaneousNode,bound,null,null,-1);
+		this(gs,script,C,nextPlayerInSimultaneousNode,bound,null,null,-1);
 	}
 	
     int toMove(){
@@ -108,7 +110,7 @@ public class PuppetMCTSNode {
 			//if first player
 			if(prevMove==null)
 			{
-				PuppetMCTSNode node= new PuppetMCTSNode(gs, script, 1-nextPlayerInSimultaneousNode,evaluation_bound, this,m,children.size());
+				PuppetMCTSNode node= new PuppetMCTSNode(gs, script, C, 1-nextPlayerInSimultaneousNode,evaluation_bound, this,m,children.size());
 				children.add(node);
 				return node.selectLeaf(STEP_PLAYOUT_TIME);
 			}
@@ -125,7 +127,7 @@ public class PuppetMCTSNode {
 				sc2.setChoices(m.choices);
 
 				PuppetBase.simulate(gs2,sc1,sc2,prevMove.player,m.player, STEP_PLAYOUT_TIME);
-				PuppetMCTSNode node= new PuppetMCTSNode(gs2, script, nextPlayerInSimultaneousNode, evaluation_bound, this,null,children.size() );//players alternate in 1-2-2-1
+				PuppetMCTSNode node= new PuppetMCTSNode(gs2, script, C, nextPlayerInSimultaneousNode, evaluation_bound, this,null,children.size() );//players alternate in 1-2-2-1
 				children.add(node);
 				return node;
 			}

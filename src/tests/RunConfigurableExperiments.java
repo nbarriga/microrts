@@ -62,6 +62,7 @@ public class RunConfigurableExperiments {
 	private static int MAX_FRAMES = 3000;
 	private static int PUPPET_PLAN_TIME = 5000;
 	private static int PUPPET_PLAN_PLAYOUTS = -1;
+	private static float PUPPET_UCT_C = 0.1f;
 	static{
 		GameState.TIME_LIMIT=MAX_FRAMES;
 	}
@@ -263,7 +264,8 @@ public class RunConfigurableExperiments {
 											new LightRush(utt, getPathFinding()),
 											new RangedRush(utt, getPathFinding()),
 											new HeavyRush(utt, getPathFinding())}),
-							getEvaluationFunction())
+							getEvaluationFunction(),
+							PUPPET_UCT_C)
 					//					)
 					;
 		case "PuppetMCTSSingleNoPlan":
@@ -278,50 +280,50 @@ public class RunConfigurableExperiments {
 									new LightRush(utt, getPathFinding()),
 									new RangedRush(utt, getPathFinding()),
 									new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction())
+					getEvaluationFunction(),
+					PUPPET_UCT_C)
 					);
-		case "PuppetTestRandom":
+		case "PuppetTest.01":
 			return new PuppetNoPlan(new PuppetSearchMCTS(
 					TIME, MAX_PLAYOUTS,
 					-1, -1,
 					PLAYOUT_TIME, PLAYOUT_TIME,
-					new RandomBiasedAI(),
-					//new WorkerRush(utt, getPathFinding()),
-					new SingleChoiceConfigurableScript(getPathFinding(),
-							new AI[]{new WorkerRush(utt, getPathFinding()),
-									new LightRush(utt, getPathFinding()),
-									new RangedRush(utt, getPathFinding()),
-									new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction())
-					);
-		case "PuppetTestLight":
-			return new PuppetNoPlan(new PuppetSearchMCTS(
-					TIME, MAX_PLAYOUTS,
-					-1, -1,
-					PLAYOUT_TIME, PLAYOUT_TIME,
-					//new RandomBiasedAI(),
-					new LightRush(utt, getPathFinding()),
-					new SingleChoiceConfigurableScript(getPathFinding(),
-							new AI[]{new WorkerRush(utt, getPathFinding()),
-									new LightRush(utt, getPathFinding()),
-									new RangedRush(utt, getPathFinding()),
-									new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction())
-					);
-		case "PuppetTestSquare":
-			return new PuppetNoPlan(new PuppetSearchMCTS(
-					TIME, MAX_PLAYOUTS,
-					-1, -1,
-					PLAYOUT_TIME, PLAYOUT_TIME,
-					//new RandomBiasedAI(),
 					new WorkerRush(utt, getPathFinding()),
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
 									new LightRush(utt, getPathFinding()),
 									new RangedRush(utt, getPathFinding()),
 									new HeavyRush(utt, getPathFinding())}),
-					//getEvaluationFunction()
-					new SimpleSqrtEvaluationFunction3()
+					getEvaluationFunction(),
+					0.01f)
+					);
+		case "PuppetTest1":
+			return new PuppetNoPlan(new PuppetSearchMCTS(
+					TIME, MAX_PLAYOUTS,
+					-1, -1,
+					PLAYOUT_TIME, PLAYOUT_TIME,
+					new WorkerRush(utt, getPathFinding()),
+					new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+									new LightRush(utt, getPathFinding()),
+									new RangedRush(utt, getPathFinding()),
+									new HeavyRush(utt, getPathFinding())}),
+					getEvaluationFunction(),
+					1.0f)
+					);
+		case "PuppetTest10":
+			return new PuppetNoPlan(new PuppetSearchMCTS(
+					TIME, MAX_PLAYOUTS,
+					-1, -1,
+					PLAYOUT_TIME, PLAYOUT_TIME,
+					new WorkerRush(utt, getPathFinding()),
+					new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+									new LightRush(utt, getPathFinding()),
+									new RangedRush(utt, getPathFinding()),
+									new HeavyRush(utt, getPathFinding())}),
+					getEvaluationFunction(),
+					10.0f
 					)
 					);
 		case "PuppetMCTSBasic":
@@ -333,7 +335,8 @@ public class RunConfigurableExperiments {
 							//new RandomBiasedAI(),
 							new BasicConfigurableScript(utt, getPathFinding()),
 							new BasicConfigurableScript(utt, getPathFinding()),
-							getEvaluationFunction())
+							getEvaluationFunction(),
+							PUPPET_UCT_C)
 					//					)
 					;
 		case "PuppetMCTSBasicNoPlan":
@@ -345,7 +348,8 @@ public class RunConfigurableExperiments {
 							//new RandomBiasedAI(),
 							new BasicConfigurableScript(utt, getPathFinding()),
 							new BasicConfigurableScript(utt, getPathFinding()),
-							getEvaluationFunction())
+							getEvaluationFunction(),
+							PUPPET_UCT_C)
 					)
 					;
 		default:

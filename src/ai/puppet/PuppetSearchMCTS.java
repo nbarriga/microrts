@@ -55,11 +55,12 @@ public class PuppetSearchMCTS extends PuppetBase {
 	
 	PuppetMCTSNode root;
 	Plan currentPlan;
-
+	float C;//UCT exploration constant
 	public PuppetSearchMCTS(int max_time_per_frame, int max_playouts_per_frame, 
 			int max_plan_time, int max_plan_playouts,
 			int step_playout_time, int eval_playout_time, 
-			AI policy, ConfigurableScript<?> script, EvaluationFunction evaluation) {
+			AI policy, ConfigurableScript<?> script, EvaluationFunction evaluation,
+			float C) {
 		super(max_time_per_frame,max_playouts_per_frame,
 				max_plan_time, max_plan_playouts,step_playout_time,
 				script,evaluation);
@@ -69,6 +70,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 		
 		this.policy1=policy.clone();
 		this.policy2=policy.clone();
+		this.C=C;
 		currentPlan=new Plan();
 		root=null;
 	}
@@ -88,7 +90,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 	public AI clone() {
 		PuppetSearchMCTS clone = new PuppetSearchMCTS(MAX_TIME,MAX_ITERATIONS,
 				PLAN_TIME, PLAN_PLAYOUTS, STEP_PLAYOUT_TIME, EVAL_PLAYOUT_TIME,
-				policy1.clone(),script.clone(), eval);
+				policy1.clone(),script.clone(), eval, C);
 		clone.currentPlan = currentPlan;
 		clone.lastSearchFrame = lastSearchFrame;
 		clone.lastSearchTime = lastSearchTime;
@@ -131,7 +133,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 	void restartSearch(GameState gs, int player){
 		lastSearchFrame=gs.getTime();
 		lastSearchTime=System.currentTimeMillis();
-		root=new PuppetMCTSNode(gs.clone(),script,player,eval.upperBound(gs));
+		root=new PuppetMCTSNode(gs.clone(),script,C,player,eval.upperBound(gs));
 		totalLeaves = 0;
 		totalTime=0;
 	}
