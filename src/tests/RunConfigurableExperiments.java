@@ -53,14 +53,14 @@ import rts.units.UnitTypeTable;
 
 public class RunConfigurableExperiments {
 	private static boolean CONTINUING = true;
-	private static int TIME = -1;
+	private static int TIME = 100;
 	private static int MAX_ACTIONS = 100;
-	private static int MAX_PLAYOUTS = 200;
+	private static int MAX_PLAYOUTS = -1;
 	private static int PLAYOUT_TIME = 100;
 	private static int MAX_DEPTH = 10;
 	private static int RANDOMIZED_AB_REPEATS = 10;
 	private static int MAX_FRAMES = 3000;
-	private static int PUPPET_PLAN_TIME = 3000;
+	private static int PUPPET_PLAN_TIME = 5000;
 	private static int PUPPET_PLAN_PLAYOUTS = -1;
 	static{
 		GameState.TIME_LIMIT=MAX_FRAMES;
@@ -280,6 +280,50 @@ public class RunConfigurableExperiments {
 									new HeavyRush(utt, getPathFinding())}),
 					getEvaluationFunction())
 					);
+		case "PuppetTestRandom":
+			return new PuppetNoPlan(new PuppetSearchMCTS(
+					TIME, MAX_PLAYOUTS,
+					-1, -1,
+					PLAYOUT_TIME, PLAYOUT_TIME,
+					new RandomBiasedAI(),
+					//new WorkerRush(utt, getPathFinding()),
+					new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+									new LightRush(utt, getPathFinding()),
+									new RangedRush(utt, getPathFinding()),
+									new HeavyRush(utt, getPathFinding())}),
+					getEvaluationFunction())
+					);
+		case "PuppetTestLight":
+			return new PuppetNoPlan(new PuppetSearchMCTS(
+					TIME, MAX_PLAYOUTS,
+					-1, -1,
+					PLAYOUT_TIME, PLAYOUT_TIME,
+					//new RandomBiasedAI(),
+					new LightRush(utt, getPathFinding()),
+					new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+									new LightRush(utt, getPathFinding()),
+									new RangedRush(utt, getPathFinding()),
+									new HeavyRush(utt, getPathFinding())}),
+					getEvaluationFunction())
+					);
+		case "PuppetTestSquare":
+			return new PuppetNoPlan(new PuppetSearchMCTS(
+					TIME, MAX_PLAYOUTS,
+					-1, -1,
+					PLAYOUT_TIME, PLAYOUT_TIME,
+					//new RandomBiasedAI(),
+					new WorkerRush(utt, getPathFinding()),
+					new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+									new LightRush(utt, getPathFinding()),
+									new RangedRush(utt, getPathFinding()),
+									new HeavyRush(utt, getPathFinding())}),
+					//getEvaluationFunction()
+					new SimpleSqrtEvaluationFunction3()
+					)
+					);
 		case "PuppetMCTSBasic":
 			return //new PuppetNoPlan(
 					new PuppetSearchMCTS(
@@ -363,14 +407,14 @@ public class RunConfigurableExperiments {
         PrintStream out = new PrintStream(new File(args[3]));
         int iterations = Integer.parseInt(args[4]);
         
-        if(true){
+        if(false){
         	if(asymetric){
         		ExperimenterAsymmetric.runExperiments(bots1,bots2,
         				maps, utt, iterations, MAX_FRAMES, 300, true, out);
         	}else{
 //        		Experimenter.runExperiments(bots1, 
 //        				maps, utt, iterations, MAX_FRAMES, 300, false, out);
-        		Experimenter.runExperiments(bots1, maps, utt, iterations, MAX_FRAMES, 300, false, out, 
+        		Experimenter.runExperiments(bots1, maps, utt, iterations, MAX_FRAMES, 300, true, out, 
                         -1, true, false);
         	}
         }else{// Separate the matches by map:
@@ -380,7 +424,8 @@ public class RunConfigurableExperiments {
         					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, false, out);
         		}else{
         			Experimenter.runExperiments(bots1, 
-        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, false, out);
+        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, false, out,
+        					-1, true, false);
         		}
         	}
         }
