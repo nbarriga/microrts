@@ -68,7 +68,7 @@ public abstract class PuppetBase extends AI {
    int PLAN_PLAYOUTS;
 	int STEP_PLAYOUT_TIME;
 	boolean PLAN;
-	int PLAN_VALIDITY;
+//	int PLAN_VALIDITY;
 	EvaluationFunction eval;
 	ConfigurableScript<?> script;
 	int lastSearchFrame;
@@ -89,10 +89,10 @@ public abstract class PuppetBase extends AI {
 
 		if(max_plan_time>=0||max_plan_playouts>=0){
 			PLAN=true;
-			PLAN_VALIDITY=(int) (step_playout_time*1.5);
+//			PLAN_VALIDITY=(int) (step_playout_time*1.5);
 		}else{
 			PLAN=false;
-			PLAN_VALIDITY=-1;
+//			PLAN_VALIDITY=-1;
 		}
 		this.script=script;
 		eval=evaluation;

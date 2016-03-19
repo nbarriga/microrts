@@ -42,6 +42,7 @@ import ai.minimax.RTMiniMax.IDRTMinimax;
 import ai.minimax.RTMiniMax.IDRTMinimaxRandomized;
 import ai.montecarlo.MonteCarlo;
 import ai.portfolio.PortfolioAI;
+import ai.portfolio.portfoliogreedysearch.PGSAI;
 import ai.puppet.BasicConfigurableScript;
 import ai.puppet.PuppetNoPlan;
 import ai.puppet.PuppetSearchAB;
@@ -59,10 +60,10 @@ public class RunConfigurableExperiments {
 	private static int PLAYOUT_TIME = 100;
 	private static int MAX_DEPTH = 10;
 	private static int RANDOMIZED_AB_REPEATS = 10;
-	private static int MAX_FRAMES = 3000;
+	private static int MAX_FRAMES = 3000;//size<24x24:3000; size>24x24:5000
 	private static int PUPPET_PLAN_TIME = 5000;
 	private static int PUPPET_PLAN_PLAYOUTS = -1;
-	private static float PUPPET_UCT_C = 0.1f;
+	private static float PUPPET_UCT_C = 0.01f;//8x8:1.0f;16x16:10.0f;24x24:0.01f
 	static{
 		GameState.TIME_LIMIT=MAX_FRAMES;
 	}
@@ -123,6 +124,8 @@ public class RunConfigurableExperiments {
                     new RandomBiasedAI()}, 
            new boolean[]{true,true,true,false}, 
            TIME, MAX_PLAYOUTS, PLAYOUT_TIME*4, getEvaluationFunction());
+		case "PGSAI":
+			return new PGSAI(TIME,MAX_PLAYOUTS,PLAYOUT_TIME*4,1,0,getEvaluationFunction(),utt,getPathFinding());
 		case "IDRTMinimax":
 			return new IDRTMinimax(TIME, getEvaluationFunction());
 		case "IDRTMinimaxRandomized":
@@ -231,6 +234,38 @@ public class RunConfigurableExperiments {
 							getEvaluationFunction())
 					)
 					;
+		case "PuppetABCDSingleNoPlan200":
+			return new PuppetNoPlan(
+					new PuppetSearchAB(
+							TIME, MAX_PLAYOUTS,
+							-1, -1,
+							PLAYOUT_TIME*2,
+							new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{
+											new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding()),
+							}),
+							getEvaluationFunction())
+					)
+					;
+		case "PuppetABCDSingleNoPlan400":
+			return new PuppetNoPlan(
+					new PuppetSearchAB(
+							TIME, MAX_PLAYOUTS,
+							-1, -1,
+							PLAYOUT_TIME*4,
+							new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{
+											new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding()),
+							}),
+							getEvaluationFunction())
+					)
+					;
 		case "PuppetABCDBasic":
 			return //new PuppetNoPlan(
 					new PuppetSearchAB(
@@ -257,8 +292,8 @@ public class RunConfigurableExperiments {
 							TIME, MAX_PLAYOUTS,
 							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
 							PLAYOUT_TIME, PLAYOUT_TIME,
-							//new RandomBiasedAI(),
-							new WorkerRush(utt, getPathFinding()),
+							new RandomBiasedAI(),
+							//new WorkerRush(utt, getPathFinding()),
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
@@ -273,8 +308,8 @@ public class RunConfigurableExperiments {
 					TIME, MAX_PLAYOUTS,
 					-1, -1,
 					PLAYOUT_TIME, PLAYOUT_TIME,
-					//new RandomBiasedAI(),
-					new WorkerRush(utt, getPathFinding()),
+					new RandomBiasedAI(),
+					//new WorkerRush(utt, getPathFinding()),
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
 									new LightRush(utt, getPathFinding()),
@@ -283,57 +318,87 @@ public class RunConfigurableExperiments {
 					getEvaluationFunction(),
 					PUPPET_UCT_C)
 					);
-		case "PuppetTest.01":
+		case "PuppetMCTSSingleNoPlan200":
 			return new PuppetNoPlan(new PuppetSearchMCTS(
 					TIME, MAX_PLAYOUTS,
 					-1, -1,
-					PLAYOUT_TIME, PLAYOUT_TIME,
-					new WorkerRush(utt, getPathFinding()),
+					PLAYOUT_TIME*2, PLAYOUT_TIME,
+					new RandomBiasedAI(),
+					//new WorkerRush(utt, getPathFinding()),
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
 									new LightRush(utt, getPathFinding()),
 									new RangedRush(utt, getPathFinding()),
 									new HeavyRush(utt, getPathFinding())}),
 					getEvaluationFunction(),
-					0.01f)
+					PUPPET_UCT_C)
 					);
-		case "PuppetTest1":
+		case "PuppetMCTSSingleNoPlan400":
 			return new PuppetNoPlan(new PuppetSearchMCTS(
 					TIME, MAX_PLAYOUTS,
 					-1, -1,
-					PLAYOUT_TIME, PLAYOUT_TIME,
-					new WorkerRush(utt, getPathFinding()),
+					PLAYOUT_TIME*4, PLAYOUT_TIME,
+					new RandomBiasedAI(),
+					//new WorkerRush(utt, getPathFinding()),
 					new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
 									new LightRush(utt, getPathFinding()),
 									new RangedRush(utt, getPathFinding()),
 									new HeavyRush(utt, getPathFinding())}),
 					getEvaluationFunction(),
-					1.0f)
+					PUPPET_UCT_C)
 					);
-		case "PuppetTest10":
-			return new PuppetNoPlan(new PuppetSearchMCTS(
-					TIME, MAX_PLAYOUTS,
-					-1, -1,
-					PLAYOUT_TIME, PLAYOUT_TIME,
-					new WorkerRush(utt, getPathFinding()),
-					new SingleChoiceConfigurableScript(getPathFinding(),
-							new AI[]{new WorkerRush(utt, getPathFinding()),
-									new LightRush(utt, getPathFinding()),
-									new RangedRush(utt, getPathFinding()),
-									new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction(),
-					10.0f
-					)
-					);
+//		case "PuppetTest.01":
+//			return new PuppetNoPlan(new PuppetSearchMCTS(
+//					TIME, MAX_PLAYOUTS,
+//					-1, -1,
+//					PLAYOUT_TIME, PLAYOUT_TIME,
+//					new WorkerRush(utt, getPathFinding()),
+//					new SingleChoiceConfigurableScript(getPathFinding(),
+//							new AI[]{new WorkerRush(utt, getPathFinding()),
+//									new LightRush(utt, getPathFinding()),
+//									new RangedRush(utt, getPathFinding()),
+//									new HeavyRush(utt, getPathFinding())}),
+//					getEvaluationFunction(),
+//					0.01f)
+//					);
+//		case "PuppetTest1":
+//			return new PuppetNoPlan(new PuppetSearchMCTS(
+//					TIME, MAX_PLAYOUTS,
+//					-1, -1,
+//					PLAYOUT_TIME, PLAYOUT_TIME,
+//					new WorkerRush(utt, getPathFinding()),
+//					new SingleChoiceConfigurableScript(getPathFinding(),
+//							new AI[]{new WorkerRush(utt, getPathFinding()),
+//									new LightRush(utt, getPathFinding()),
+//									new RangedRush(utt, getPathFinding()),
+//									new HeavyRush(utt, getPathFinding())}),
+//					getEvaluationFunction(),
+//					1.0f)
+//					);
+//		case "PuppetTest10":
+//			return new PuppetNoPlan(new PuppetSearchMCTS(
+//					TIME, MAX_PLAYOUTS,
+//					-1, -1,
+//					PLAYOUT_TIME, PLAYOUT_TIME,
+//					new WorkerRush(utt, getPathFinding()),
+//					new SingleChoiceConfigurableScript(getPathFinding(),
+//							new AI[]{new WorkerRush(utt, getPathFinding()),
+//									new LightRush(utt, getPathFinding()),
+//									new RangedRush(utt, getPathFinding()),
+//									new HeavyRush(utt, getPathFinding())}),
+//					getEvaluationFunction(),
+//					10.0f
+//					)
+//					);
 		case "PuppetMCTSBasic":
 			return //new PuppetNoPlan(
 					new PuppetSearchMCTS(
 							TIME, MAX_PLAYOUTS,
 							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
 							PLAYOUT_TIME, PLAYOUT_TIME,
-							//new RandomBiasedAI(),
-							new BasicConfigurableScript(utt, getPathFinding()),
+							new RandomBiasedAI(),
+							//new BasicConfigurableScript(utt, getPathFinding()),
 							new BasicConfigurableScript(utt, getPathFinding()),
 							getEvaluationFunction(),
 							PUPPET_UCT_C)
@@ -345,8 +410,8 @@ public class RunConfigurableExperiments {
 							TIME, MAX_PLAYOUTS,
 							-1, -1,
 							PLAYOUT_TIME, PLAYOUT_TIME,
-							//new RandomBiasedAI(),
-							new BasicConfigurableScript(utt, getPathFinding()),
+							new RandomBiasedAI(),
+							//new BasicConfigurableScript(utt, getPathFinding()),
 							new BasicConfigurableScript(utt, getPathFinding()),
 							getEvaluationFunction(),
 							PUPPET_UCT_C)
@@ -418,15 +483,15 @@ public class RunConfigurableExperiments {
         	}else{
 //        		Experimenter.runExperiments(bots1, 
 //        				maps, utt, iterations, MAX_FRAMES, 300, false, out);
-        		Experimenter.runExperiments(bots1, maps, utt, iterations, MAX_FRAMES, 300, true, out, 
+        		Experimenter.runExperiments(bots1, maps, utt, iterations, MAX_FRAMES, 300, false, out, 
                         -1, true, false);
         	}
         }else{// Separate the matches by map:
         	for(PhysicalGameState map:maps){
         		if(asymetric){
         			ExperimenterAsymmetric.runExperiments(bots1,bots2,
-        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, false, out);
-        		}else{
+        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, true, out);
+        		}else{  
         			Experimenter.runExperiments(bots1, 
         					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, false, out,
         					-1, true, false);
