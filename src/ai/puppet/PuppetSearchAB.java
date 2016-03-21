@@ -176,7 +176,7 @@ public class PuppetSearchAB extends PuppetBase {
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
 		assert(PLAN):"This method can only be called when using a standing plan";
-		if(lastSearchFrame==-1//||(gs.getTime()-lastSearchFrame)>PLAN_VALIDITY
+		if(lastSearchFrame==-1||stack.empty()//||(gs.getTime()-lastSearchFrame)>PLAN_VALIDITY
 				){
 			if(DEBUG>=1){
 				System.out.println("Restarting after "+(gs.getTime()-lastSearchFrame)+" frames, "

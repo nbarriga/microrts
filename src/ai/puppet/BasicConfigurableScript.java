@@ -514,28 +514,28 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 	                	abandonedbases++;
 	                }
 				}
-				if(u2.getType() == resourceType){
-					nresources++;
-					if(gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
-							.map((a)->a.getPlayer()==player&&a.getType()==baseType)
-							.reduce((a,b)->a||b).get()){
-						ownresources++;
-					}
-					if(!gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
-							.map((a)->a.getPlayer()!=(1-player)&&a.getType()!=baseType)
-							.reduce((a,b)->a&&b).get()){
-						freeresources++;
-					}
+			}
+			if(u2.getType() == resourceType){
+				nresources++;
+				if(gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
+						.map((a)->a.getPlayer()==player&&a.getType()==baseType)
+						.reduce((a,b)->a||b).get()){
+					ownresources++;
+				}
+				if(!gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
+						.map((a)->a.getPlayer()!=(1-player)&&a.getType()!=baseType)
+						.reduce((a,b)->a&&b).get()){
+					freeresources++;
 				}
 			}
 		}
 		List<Options> choices=new ArrayList<Options>();
-		if(nworkers==2){//already have 2 workers, don't go back to 1
+		if(nworkers>=2){//already have 2 workers, don't go back to 1
 			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{2}));
 		}else{
 			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{1,2}));
 		}
-		if(nbarracks>0){//already have a barracks, built combat units
+		if(nbarracks>0){//already have a barracks, build combat units
 			choices.add(new Options(BasicChoicePoint.UNITTYPE.ordinal(),new int[]{
 					lightType.ID,
 					rangedType.ID,
@@ -547,13 +547,14 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 					rangedType.ID,
 					heavyType.ID}));
 		}
-		if((nbases - abandonedbases) > 1 || freeresources==0 ){//already have an extra base
+		if(nbarracks<1 || (nbases - abandonedbases) > 1 || freeresources==0 ){//already have an extra base
 			choices.add(new Options(BasicChoicePoint.EXPAND.ordinal(),new int[]{0}));
+		}else if(ownresources==0){//no resources, force expansion
+			choices.add(new Options(BasicChoicePoint.EXPAND.ordinal(),new int[]{1}));
 		}else{
 			choices.add(new Options(BasicChoicePoint.EXPAND.ordinal(),new int[]{0,1}));
 		}
 		return choices;
-
 	}
 
 	@Override
