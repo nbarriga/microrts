@@ -153,7 +153,11 @@ public class Experimenter {
                         	trace.addEntry(te);
                         	XMLWriter xml;
                         	ZipOutputStream zip = null;
-                        	String filename=traceDir+"/"+ai1.toString()+"Vs"+ai2.toString()+"-"+m+"-"+i;
+                        	String filename=ai1.toString()+"Vs"+ai2.toString()+"-"+m+"-"+i;
+                        	filename=filename.replace("/", "");
+                        	filename=filename.replace(")", "");
+                        	filename=filename.replace("(", "");
+                        	filename=traceDir+"/"+filename;
                         	if(saveZip){
                         		zip=new ZipOutputStream(new FileOutputStream(filename+".zip"));
                         		zip.putNextEntry(new ZipEntry("game.xml"));
