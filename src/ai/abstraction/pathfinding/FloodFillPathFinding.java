@@ -14,7 +14,7 @@ import util.Pair;
 
 public class FloodFillPathFinding extends PathFinding {
 	PathFinding altPF=new AStarPathFinding();
-	private static final int ALT_THRESHOLD = 6;
+	private static final int ALT_THRESHOLD = 0;
 	HashMap<Integer,int[][]> cache=new HashMap<Integer,int[][]>();
 	boolean free[][] = null;
 	int distances[][] = null;
@@ -45,12 +45,13 @@ public class FloodFillPathFinding extends PathFinding {
 	private boolean bounds(int x, int y){
 		return x>=0&&y>=0&&x<w&&y<h;
 	}
-	private void doFloodFill(int x, int y, GameState gs){
+	private void doFloodFill(int x, int y, GameState gs, int finalX, int finalY){
 		assert(distances[x][y]!=Integer.MAX_VALUE);
 		boolean gsFree[][]=gs.getAllFree();
 		int index=0;
 		ArrayList<Pair<Integer,Integer>> fringe=new ArrayList<Pair<Integer,Integer>>(h*w);
 		fringe.add(new Pair<Integer,Integer>(x,y));
+		boolean reached=false;
 		while(index<fringe.size()){
 			x=fringe.get(index).m_a;
 			y=fringe.get(index).m_b;
@@ -58,6 +59,7 @@ public class FloodFillPathFinding extends PathFinding {
 			//left
 			int nextX=x-1;
 			int nextY=y;
+			if(nextX==finalX&&nextY==finalY)reached=true;
 			if(bounds(nextX,nextY)&&distances[nextX][nextY]==Integer.MAX_VALUE&&free[nextX][nextY]&&gsFree[nextX][nextY]){
 				distances[nextX][nextY]=distances[x][y]+1;
 				fringe.add(new Pair<Integer,Integer>(nextX,nextY));
@@ -66,6 +68,7 @@ public class FloodFillPathFinding extends PathFinding {
 			//up
 			nextX=x;
 			nextY=y-1;
+			if(nextX==finalX&&nextY==finalY)reached=true;
 			if(bounds(nextX,nextY)&&distances[nextX][nextY]==Integer.MAX_VALUE&&free[nextX][nextY]&&gsFree[nextX][nextY]){
 				distances[nextX][nextY]=distances[x][y]+1;
 				fringe.add(new Pair<Integer,Integer>(nextX,nextY));
@@ -74,6 +77,7 @@ public class FloodFillPathFinding extends PathFinding {
 			//right
 			nextX=x+1;
 			nextY=y;
+			if(nextX==finalX&&nextY==finalY)reached=true;
 			if(bounds(nextX,nextY)&&distances[nextX][nextY]==Integer.MAX_VALUE&&free[nextX][nextY]&&gsFree[nextX][nextY]){
 				distances[nextX][nextY]=distances[x][y]+1;
 				fringe.add(new Pair<Integer,Integer>(nextX,nextY));
@@ -82,11 +86,15 @@ public class FloodFillPathFinding extends PathFinding {
 			//down
 			nextX=x;
 			nextY=y+1;
+			if(nextX==finalX&&nextY==finalY)reached=true;
 			if(bounds(nextX,nextY)&&distances[nextX][nextY]==Integer.MAX_VALUE&&free[nextX][nextY]&&gsFree[nextX][nextY]){
 				distances[nextX][nextY]=distances[x][y]+1;
 				fringe.add(new Pair<Integer,Integer>(nextX,nextY));
 			}
-			
+			if(reached){
+//				System.out.println("breaking early");
+				break;
+			}
 			index++;
 		}
 	}
@@ -106,7 +114,7 @@ public class FloodFillPathFinding extends PathFinding {
 
 
 		distances[x][y]=0;
-		doFloodFill(x, y, gs);
+		doFloodFill(x, y, gs, start.getX(), start.getY());
 		cache.put(targetpos, distances);
 		return getAction(start);
 	}
@@ -187,8 +195,8 @@ public class FloodFillPathFinding extends PathFinding {
 				for(int pos:r.getPositionsUsed()){
 					if(!free[pos%w][pos/w]||!gs.free(pos%w, pos/w)){
 						cache.remove(targetpos);
+//						System.out.println("In cache, invalid, calculating");
 						return calculateDistances(start, targetpos, range,gs,ru);
-						//					System.out.println("In cache, invalid, calculating");
 					}
 				}
 			}else{
