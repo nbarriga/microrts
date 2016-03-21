@@ -7,13 +7,23 @@ package tests;
 import ai.BranchingFactorCalculator;
 import ai.core.AI;
 import gui.PhysicalGameStatePanel;
+
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import javax.swing.JFrame;
 import rts.GameState;
 import rts.PhysicalGameState;
 import rts.PlayerAction;
+import rts.Trace;
+import rts.TraceEntry;
 import rts.units.UnitTypeTable;
+import util.XMLWriter;
 
 /**
  *
@@ -22,8 +32,8 @@ import rts.units.UnitTypeTable;
 public class ExperimenterAsymmetric {
     public static boolean PRINT_BRANCHING_AT_EACH_MOVE = false;
 
-    public static void runExperiments(List<AI> bots1, List<AI> bots2, List<PhysicalGameState> maps, UnitTypeTable utt, int iterations, int max_cycles, int max_inactive_cycles, boolean visualize, PrintStream out) throws Exception {
-        int wins[][] = new int[bots1.size()][bots2.size()];
+    public static void runExperiments(List<AI> bots1, List<AI> bots2, List<PhysicalGameState> maps, UnitTypeTable utt, int iterations, int max_cycles, int max_inactive_cycles, boolean visualize, PrintStream out, boolean saveTrace, boolean saveZip, String traceDir) throws Exception {
+    	int wins[][] = new int[bots1.size()][bots2.size()];
         int ties[][] = new int[bots1.size()][bots2.size()];
         int loses[][] = new int[bots1.size()][bots2.size()];
         
@@ -36,6 +46,7 @@ public class ExperimenterAsymmetric {
         {
             for (int ai2_idx = 0; ai2_idx < bots2.size(); ai2_idx++) 
             {
+            	int m=0;
                 for(PhysicalGameState pgs:maps) {
                     
                     for (int i = 0; i < iterations; i++) {
@@ -60,6 +71,14 @@ public class ExperimenterAsymmetric {
                         }
                         long start=System.currentTimeMillis();
                         boolean gameover = false;
+                        Trace trace = null;
+                        TraceEntry te;
+                        if(saveTrace){
+                        	trace = new Trace(utt);
+                        	te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
+                            trace.addEntry(te);
+                        }
+                        
                         do {
 //                        	System.gc();
                             if (PRINT_BRANCHING_AT_EACH_MOVE) {
@@ -71,6 +90,14 @@ public class ExperimenterAsymmetric {
                             }
                             PlayerAction pa1 = ai1.getAction(0, gs);
                             PlayerAction pa2 = ai2.getAction(1, gs);
+                            
+                            if (saveTrace && (!pa1.isEmpty() || !pa2.isEmpty())) {
+                                te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
+                                te.addPlayerAction(pa1.clone());
+                                te.addPlayerAction(pa2.clone());
+                                trace.addEntry(te);
+                            }
+                            
                             if (gs.issueSafe(pa1)) lastTimeActionIssued = gs.getTime();
                             if (gs.issueSafe(pa2)) lastTimeActionIssued = gs.getTime();
                             gameover = gs.cycle();
@@ -85,6 +112,26 @@ public class ExperimenterAsymmetric {
                         } while (!gameover && 
                                  (gs.getTime() < max_cycles) && 
                                  (gs.getTime() - lastTimeActionIssued < max_inactive_cycles));
+                        if(saveTrace){
+                        	te = new TraceEntry(gs.getPhysicalGameState().clone(), gs.getTime());
+                        	trace.addEntry(te);
+                        	XMLWriter xml;
+                        	ZipOutputStream zip = null;
+                        	String filename=traceDir+"/"+ai1.toString()+"Vs"+ai2.toString()+"-"+m+"-"+i;
+                        	if(saveZip){
+                        		zip=new ZipOutputStream(new FileOutputStream(filename+".zip"));
+                        		zip.putNextEntry(new ZipEntry("game.xml"));
+                        		xml = new XMLWriter(new OutputStreamWriter(zip));
+                        	}else{
+                        		xml = new XMLWriter(new FileWriter(filename+".xml"));
+                        	}
+                        	trace.toxml(xml);
+                        	xml.flush();
+                        	if(saveZip){
+                        		zip.closeEntry();
+                        		zip.close();
+                        	}
+                        }
                         long end=System.currentTimeMillis();
                         if (w!=null) w.dispose();
                         int winner = gs.winner();
@@ -106,6 +153,7 @@ public class ExperimenterAsymmetric {
                         }                        
                     }                    
                 }
+                m++;
             }
         }
         avgFPS/=(bots1.size()*bots2.size()*maps.size()*iterations);

@@ -475,26 +475,31 @@ public class RunConfigurableExperiments {
         loadMaps(args[2]);
         PrintStream out = new PrintStream(new File(args[3]));
         int iterations = Integer.parseInt(args[4]);
-        
+        String traceDir=null;
+        boolean saveTrace=false;
+        if(args.length>=6){
+        	saveTrace=true;
+        	traceDir=args[5];
+        }
         if(false){
         	if(asymetric){
         		ExperimenterAsymmetric.runExperiments(bots1,bots2,
-        				maps, utt, iterations, MAX_FRAMES, 300, true, out);
+        				maps, utt, iterations, MAX_FRAMES, 300, true, out, saveTrace, saveTrace, traceDir);
         	}else{
 //        		Experimenter.runExperiments(bots1, 
 //        				maps, utt, iterations, MAX_FRAMES, 300, false, out);
         		Experimenter.runExperiments(bots1, maps, utt, iterations, MAX_FRAMES, 300, false, out, 
-                        -1, true, false);
+                        -1, true, false, saveTrace, saveTrace, traceDir);
         	}
         }else{// Separate the matches by map:
         	for(PhysicalGameState map:maps){
         		if(asymetric){
         			ExperimenterAsymmetric.runExperiments(bots1,bots2,
-        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, true, out);
+        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, true, out, saveTrace, saveTrace, traceDir);
         		}else{  
         			Experimenter.runExperiments(bots1, 
-        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, false, out,
-        					-1, true, false);
+        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, true, out,
+        					-1, true, false, saveTrace, saveTrace, traceDir);
         		}
         	}
         }

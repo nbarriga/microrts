@@ -8,15 +8,23 @@ import ai.core.AI;
 import gui.PhysicalGameStateJFrame;
 import gui.PhysicalGameStatePanel;
 
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import rts.GameState;
 import rts.PartiallyObservableGameState;
 import rts.PhysicalGameState;
 import rts.PlayerAction;
+import rts.Trace;
+import rts.TraceEntry;
 import rts.units.UnitTypeTable;
+import util.XMLWriter;
 
 /**
  *
@@ -43,11 +51,13 @@ public class Experimenter {
 
     public static void runExperiments(List<AI> bots, List<PhysicalGameState> maps, UnitTypeTable utt, int iterations, int max_cycles, int max_inactive_cycles, boolean visualize, PrintStream out, 
                                       int run_only_those_involving_this_AI, boolean partiallyObservable) throws Exception {
-        runExperiments(bots, maps, utt, iterations, max_cycles, max_inactive_cycles, visualize, out, run_only_those_involving_this_AI, false, partiallyObservable);
+        runExperiments(bots, maps, utt, iterations, max_cycles, max_inactive_cycles, visualize, out, run_only_those_involving_this_AI, false, partiallyObservable,
+        		false, false, "");
     }
 
     public static void runExperiments(List<AI> bots, List<PhysicalGameState> maps, UnitTypeTable utt, int iterations, int max_cycles, int max_inactive_cycles, boolean visualize, PrintStream out, 
-                                      int run_only_those_involving_this_AI, boolean skip_self_play, boolean partiallyObservable) throws Exception {
+                                      int run_only_those_involving_this_AI, boolean skip_self_play, boolean partiallyObservable,
+                                      boolean saveTrace, boolean saveZip, String traceDir) throws Exception {
         int wins[][] = new int[bots.size()][bots.size()];
         int ties[][] = new int[bots.size()][bots.size()];
         int loses[][] = new int[bots.size()][bots.size()];
@@ -68,7 +78,7 @@ public class Experimenter {
                     ai2_idx!=run_only_those_involving_this_AI) continue;
 //                if (ai1_idx==0 && ai2_idx==0) continue;
                 if (skip_self_play && ai1_idx==ai2_idx) continue;
-                
+                int m=0;
                 for(PhysicalGameState pgs:maps) {
                     
                     for (int i = 0; i < iterations; i++) {
@@ -92,6 +102,13 @@ public class Experimenter {
                             Thread.currentThread().interrupt();
                         }
                         boolean gameover = false;
+                        Trace trace = null;
+                        TraceEntry te;
+                        if(saveTrace){
+                        	trace = new Trace(utt);
+                        	te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
+                            trace.addEntry(te);
+                        }
                         do {
                             PlayerAction pa1 = null, pa2 = null;
                             if (partiallyObservable) {
@@ -105,6 +122,13 @@ public class Experimenter {
                                 pa2 = ai2.getAction(1, gs);
                                 if (DEBUG>=1) {System.out.println("AI2 done.");out.flush();}
                             }
+                            if (saveTrace && (!pa1.isEmpty() || !pa2.isEmpty())) {
+                                te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
+                                te.addPlayerAction(pa1.clone());
+                                te.addPlayerAction(pa2.clone());
+                                trace.addEntry(te);
+                            }
+                            
                             if (gs.issueSafe(pa1)) lastTimeActionIssued = gs.getTime();
 //                            if (DEBUG>=1) {System.out.println("issue action AI1 done: " + pa1);out.flush();}
                             if (gs.issueSafe(pa2)) lastTimeActionIssued = gs.getTime();
@@ -124,6 +148,26 @@ public class Experimenter {
                         } while (!gameover && 
                                  (gs.getTime() < max_cycles) && 
                                  (gs.getTime() - lastTimeActionIssued < max_inactive_cycles));
+                        if(saveTrace){
+                        	te = new TraceEntry(gs.getPhysicalGameState().clone(), gs.getTime());
+                        	trace.addEntry(te);
+                        	XMLWriter xml;
+                        	ZipOutputStream zip = null;
+                        	String filename=traceDir+"/"+ai1.toString()+"Vs"+ai2.toString()+"-"+m+"-"+i;
+                        	if(saveZip){
+                        		zip=new ZipOutputStream(new FileOutputStream(filename+".zip"));
+                        		zip.putNextEntry(new ZipEntry("game.xml"));
+                        		xml = new XMLWriter(new OutputStreamWriter(zip));
+                        	}else{
+                        		xml = new XMLWriter(new FileWriter(filename+".xml"));
+                        	}
+                        	trace.toxml(xml);
+                        	xml.flush();
+                        	if(saveZip){
+                        		zip.closeEntry();
+                        		zip.close();
+                        	}
+                        }
                         if (w!=null) w.dispose();
                         int winner = gs.winner();
                         out.println("Winner: " + winner + "  in " + gs.getTime() + " cycles");
@@ -151,6 +195,7 @@ public class Experimenter {
                         }                        
                     } 
                 }
+                m++;
             }
             printResults(wins,ties,loses,out);
         }
