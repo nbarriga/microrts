@@ -163,6 +163,7 @@ public class PuppetSearchAB extends PuppetBase {
 		stack.clear();
 		head=null;
 		DEPTH=0;
+		clearStats();
 	}
 	//todo:this clone method is broken
 	@Override
@@ -202,6 +203,20 @@ public class PuppetSearchAB extends PuppetBase {
 		}
 	}
 	@Override
+	public String statisticsString() {
+		return "Average Number of Leaves: "+allLeaves/allSearches+
+				", Average Depth: "+allDepth/allSearches+
+				", Average Time: "+allTime/allSearches;
+	}
+	void clearStats(){
+		allTime=allLeaves=allDepth=0;
+		allSearches=-1;
+	}
+	long allLeaves;
+	long allTime;
+	long allDepth;
+	long allSearches;
+	@Override
 	void restartSearch(GameState gs, int player){
 		MAXPLAYER=player;
 		lastSearchFrame=gs.getTime();
@@ -216,6 +231,10 @@ public class PuppetSearchAB extends PuppetBase {
 				MAXPLAYER, 
 				null));
 		head=stack.peek();
+		allLeaves+=totalLeaves;
+		allTime+=totalTime;
+		allDepth+=DEPTH;
+		allSearches++;
 		totalLeaves = 0;
 		totalTime=0;
 		DEPTH=0;
@@ -237,7 +256,9 @@ public class PuppetSearchAB extends PuppetBase {
 		do{
 			if(DEPTH==0){//just started
 				DEPTH+=2;
+				reached=false;
 			}else if(stack.empty()){//just finished a depth
+				if(!reached)break;
 				lastFinishedHead=head;
 				if (DEBUG>=2) System.out.println("ABCD:\n" + lastFinishedHead + " in " 
 						+ (System.currentTimeMillis()-lastSearchTime)+" ms, leaves: "+totalLeaves+
@@ -252,7 +273,7 @@ public class PuppetSearchAB extends PuppetBase {
 						MAXPLAYER, 
 						null));
 				head=stack.peek();
-
+				reached=false;
 			}else{//continuing from last frame
 
 			}
@@ -290,6 +311,7 @@ public class PuppetSearchAB extends PuppetBase {
 	int ctHits=0;
 	int ctQueries=0;
 	boolean tt=true,ct=true;
+	boolean reached;
 	protected void iterativeABCD(int maxDepth) throws Exception {
 		assert(maxDepth%2==0);
 
@@ -302,6 +324,7 @@ public class PuppetSearchAB extends PuppetBase {
 			if(current.prevMove==null){//first side to choose move
 				if(current.depth==maxDepth|| current.gs.gs.gameover()){//evaluate
 					if(DEBUG>=2)System.out.println("eval");
+					if(current.depth==maxDepth)reached=true;
 					frameLeaves++;
 					totalLeaves++;
 					stack.pop();

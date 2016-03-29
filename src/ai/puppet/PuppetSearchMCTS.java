@@ -82,9 +82,20 @@ public class PuppetSearchMCTS extends PuppetBase {
 		policy2.reset();
 		currentPlan=new Plan();
 		root=null;
-
+		clearStats();
 	}
-	
+	@Override
+	public String statisticsString() {
+		return "Average Number of Leaves: "+allLeaves/allSearches+
+				", Average Time: "+allTime/allSearches;
+	}
+	void clearStats(){
+		allTime=allLeaves=0;
+		allSearches=-1;
+	}
+	long allLeaves;
+	long allTime;
+	long allSearches;
 	//todo:this clone method is broken
 	@Override
 	public AI clone() {
@@ -134,6 +145,9 @@ public class PuppetSearchMCTS extends PuppetBase {
 		lastSearchFrame=gs.getTime();
 		lastSearchTime=System.currentTimeMillis();
 		root=new PuppetMCTSNode(gs.clone(),script,C,player,eval.upperBound(gs));
+		allLeaves+=totalLeaves;
+		allTime+=totalTime;
+		allSearches++;
 		totalLeaves = 0;
 		totalTime=0;
 	}
@@ -159,8 +173,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 
         do{
             monteCarloRun();
-            frameLeaves++;
-            totalLeaves++;
+
             long next=System.currentTimeMillis();
 			totalTime+=next-prev;
 			prev=next;
@@ -180,6 +193,8 @@ public class PuppetSearchMCTS extends PuppetBase {
 		PuppetMCTSNode leaf = root.selectLeaf(STEP_PLAYOUT_TIME);
 		float e;
 		if(!leaf.gs.gameover()){
+            frameLeaves++;
+            totalLeaves++;
 			policy1.reset();
 			policy2.reset();
 			GameState gs2=leaf.gs.clone();
