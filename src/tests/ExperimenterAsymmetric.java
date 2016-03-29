@@ -51,112 +51,121 @@ public class ExperimenterAsymmetric {
                 for(PhysicalGameState pgs:maps) {
                     
                     for (int i = 0; i < iterations; i++) {
-                        AI ai1 = bots1.get(ai1_idx);
-                        AI ai2 = bots2.get(ai2_idx);
-                        long lastTimeActionIssued = 0;
+                    	for(int j = 0; j<2;j++){//swap starting positions
+                    		AI ai1, ai2;
+                    		if(j==0){
+                    			ai1 = bots1.get(ai1_idx);
+                    			ai2 = bots2.get(ai2_idx);
+                    		}else{
+                    			ai1 = bots2.get(ai2_idx);
+                    			ai2 = bots1.get(ai1_idx);
+                    		}
 
-                        ai1.reset();
-                        ai2.reset();
+                    		long lastTimeActionIssued = 0;
 
-                        GameState gs = new GameState(pgs.clone(),utt);
-                        JFrame w = null;
-                        if (visualize) w = PhysicalGameStatePanel.newVisualizer(gs, 600, 600);
+                    		ai1.reset();
+                    		ai2.reset();
 
-                        out.println("MATCH UP: " + ai1+ " vs " + ai2);
-                        
-                        System.gc();
-                        try {
-                            Thread.sleep(100);                 
-                        } catch(InterruptedException ex) {
-                            Thread.currentThread().interrupt();
-                        }
-                        long start=System.currentTimeMillis();
-                        boolean gameover = false;
-                        Trace trace = null;
-                        TraceEntry te;
-                        if(saveTrace){
-                        	trace = new Trace(utt);
-                        	te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
-                            trace.addEntry(te);
-                        }
-                        
-                        do {
-//                        	System.gc();
-                            if (PRINT_BRANCHING_AT_EACH_MOVE) {
-                                String bf1 = (gs.canExecuteAnyAction(0) ? ""+BranchingFactorCalculator.branchingFactorByResourceUsageSeparatingFast(gs, 0):"-");
-                                String bf2 = (gs.canExecuteAnyAction(1) ? ""+BranchingFactorCalculator.branchingFactorByResourceUsageSeparatingFast(gs, 1):"-");
-                                if (!bf1.equals("-") || !bf2.equals("-")) {
-                                    out.print("branching\t" + bf1 + "\t" + bf2 + "\n");
-                                }
-                            }
-                            PlayerAction pa1 = ai1.getAction(0, gs);
-                            PlayerAction pa2 = ai2.getAction(1, gs);
-                            
-                            if (saveTrace && (!pa1.isEmpty() || !pa2.isEmpty())) {
-                                te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
-                                te.addPlayerAction(pa1.clone());
-                                te.addPlayerAction(pa2.clone());
-                                trace.addEntry(te);
-                            }
-                            
-                            if (gs.issueSafe(pa1)) lastTimeActionIssued = gs.getTime();
-                            if (gs.issueSafe(pa2)) lastTimeActionIssued = gs.getTime();
-                            gameover = gs.cycle();
-                            if (w!=null){ 
-                            	w.repaint();
-                            	try {
-                            		Thread.sleep(1);    // give time to the window to repaint
-                            	} catch (Exception e) {
-                            		e.printStackTrace();
-                            	}
-                            }
-                        } while (!gameover && 
-                                 (gs.getTime() < max_cycles) && 
-                                 (gs.getTime() - lastTimeActionIssued < max_inactive_cycles));
-                        if(saveTrace){
-                        	te = new TraceEntry(gs.getPhysicalGameState().clone(), gs.getTime());
-                        	trace.addEntry(te);
-                        	XMLWriter xml;
-                        	ZipOutputStream zip = null;
-                        	
-                        	String filename=ai1.toString()+"Vs"+ai2.toString()+"-"+m+"-"+i;
-                        	filename=filename.replace("/", "");
-                        	filename=filename.replace(")", "");
-                        	filename=filename.replace("(", "");
-                        	filename=traceDir+"/"+filename;
-                        	if(saveZip){
-                        		zip=new ZipOutputStream(new FileOutputStream(filename+".zip"));
-                        		zip.putNextEntry(new ZipEntry("game.xml"));
-                        		xml = new XMLWriter(new OutputStreamWriter(zip));
-                        	}else{
-                        		xml = new XMLWriter(new FileWriter(filename+".xml"));
-                        	}
-                        	trace.toxml(xml);
-                        	xml.flush();
-                        	if(saveZip){
-                        		zip.closeEntry();
-                        		zip.close();
-                        	}
-                        }
-                        long end=System.currentTimeMillis();
-                        if (w!=null) w.dispose();
-                        int winner = gs.winner();
-                        float fps=gs.getTime()*1000.0f/(end-start);
-                        avgFPS+=fps;
-                        out.println("Winner: " + winner + "  in " + gs.getTime() + " cycles, at "+fps+" FPS");
-                        out.println(ai1 + " : " + ai1.statisticsString());
-                        out.println(ai2 + " : " + ai2.statisticsString());
-                        out.flush();
-                        if (winner == -1) {
-                            ties[ai1_idx][ai2_idx]++;
-                            tie_time[ai1_idx][ai2_idx]+=gs.getTime();
-                        } else if (winner == 0) {
-                            wins[ai1_idx][ai2_idx]++;
-                            win_time[ai1_idx][ai2_idx]+=gs.getTime();
-                        } else if (winner == 1) {
-                            loses[ai1_idx][ai2_idx]++;
-                            lose_time[ai1_idx][ai2_idx]+=gs.getTime();
-                        }                        
+                    		GameState gs = new GameState(pgs.clone(),utt);
+                    		JFrame w = null;
+                    		if (visualize) w = PhysicalGameStatePanel.newVisualizer(gs, 600, 600);
+
+                    		out.println("MATCH UP: " + ai1+ " vs " + ai2);
+
+                    		System.gc();
+                    		try {
+                    			Thread.sleep(100);                 
+                    		} catch(InterruptedException ex) {
+                    			Thread.currentThread().interrupt();
+                    		}
+                    		long start=System.currentTimeMillis();
+                    		boolean gameover = false;
+                    		Trace trace = null;
+                    		TraceEntry te;
+                    		if(saveTrace){
+                    			trace = new Trace(utt);
+                    			te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
+                    			trace.addEntry(te);
+                    		}
+
+                    		do {
+                    			//                        	System.gc();
+                    			if (PRINT_BRANCHING_AT_EACH_MOVE) {
+                    				String bf1 = (gs.canExecuteAnyAction(0) ? ""+BranchingFactorCalculator.branchingFactorByResourceUsageSeparatingFast(gs, 0):"-");
+                    				String bf2 = (gs.canExecuteAnyAction(1) ? ""+BranchingFactorCalculator.branchingFactorByResourceUsageSeparatingFast(gs, 1):"-");
+                    				if (!bf1.equals("-") || !bf2.equals("-")) {
+                    					out.print("branching\t" + bf1 + "\t" + bf2 + "\n");
+                    				}
+                    			}
+                    			PlayerAction pa1 = ai1.getAction(0, gs);
+                    			PlayerAction pa2 = ai2.getAction(1, gs);
+
+                    			if (saveTrace && (!pa1.isEmpty() || !pa2.isEmpty())) {
+                    				te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
+                    				te.addPlayerAction(pa1.clone());
+                    				te.addPlayerAction(pa2.clone());
+                    				trace.addEntry(te);
+                    			}
+
+                    			if (gs.issueSafe(pa1)) lastTimeActionIssued = gs.getTime();
+                    			if (gs.issueSafe(pa2)) lastTimeActionIssued = gs.getTime();
+                    			gameover = gs.cycle();
+                    			if (w!=null){ 
+                    				w.repaint();
+                    				try {
+                    					Thread.sleep(1);    // give time to the window to repaint
+                    				} catch (Exception e) {
+                    					e.printStackTrace();
+                    				}
+                    			}
+                    		} while (!gameover && 
+                    				(gs.getTime() < max_cycles) && 
+                    				(gs.getTime() - lastTimeActionIssued < max_inactive_cycles));
+                    		if(saveTrace){
+                    			te = new TraceEntry(gs.getPhysicalGameState().clone(), gs.getTime());
+                    			trace.addEntry(te);
+                    			XMLWriter xml;
+                    			ZipOutputStream zip = null;
+
+                    			String filename=ai1.toString()+"Vs"+ai2.toString()+"-"+m+"-"+i;
+                    			filename=filename.replace("/", "");
+                    			filename=filename.replace(")", "");
+                    			filename=filename.replace("(", "");
+                    			filename=traceDir+"/"+filename;
+                    			if(saveZip){
+                    				zip=new ZipOutputStream(new FileOutputStream(filename+".zip"));
+                    				zip.putNextEntry(new ZipEntry("game.xml"));
+                    				xml = new XMLWriter(new OutputStreamWriter(zip));
+                    			}else{
+                    				xml = new XMLWriter(new FileWriter(filename+".xml"));
+                    			}
+                    			trace.toxml(xml);
+                    			xml.flush();
+                    			if(saveZip){
+                    				zip.closeEntry();
+                    				zip.close();
+                    			}
+                    		}
+                    		long end=System.currentTimeMillis();
+                    		if (w!=null) w.dispose();
+                    		int winner = gs.winner();
+                    		float fps=gs.getTime()*1000.0f/(end-start);
+                    		avgFPS+=fps;
+                    		out.println("Winner: " + winner + "  in " + gs.getTime() + " cycles, at "+fps+" FPS");
+                    		out.println(ai1 + " : " + ai1.statisticsString());
+                    		out.println(ai2 + " : " + ai2.statisticsString());
+                    		out.flush();
+                    		if (winner == -1) {
+                    			ties[ai1_idx][ai2_idx]++;
+                    			tie_time[ai1_idx][ai2_idx]+=gs.getTime();
+                    		} else if (winner == j) {
+                    			wins[ai1_idx][ai2_idx]++;
+                    			win_time[ai1_idx][ai2_idx]+=gs.getTime();
+                    		} else if (winner == (1-j)) {
+                    			loses[ai1_idx][ai2_idx]++;
+                    			lose_time[ai1_idx][ai2_idx]+=gs.getTime();
+                    		}   
+                    	}
                     }                    
                 }
                 m++;
