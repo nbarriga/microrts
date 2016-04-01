@@ -43,4 +43,9 @@ public class PuppetNoPlan extends InterruptibleAIWithComputationBudget {
 	public String toString(){
 		return "PuppetNoPlan("+puppet.toString()+")";
 	}
+	
+	@Override
+	public String statisticsString() {
+		return puppet.statisticsString();
+	}   
 }
