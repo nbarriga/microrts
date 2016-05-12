@@ -59,8 +59,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 	public PuppetSearchMCTS(int max_time_per_frame, int max_playouts_per_frame, 
 			int max_plan_time, int max_plan_playouts,
 			int step_playout_time, int eval_playout_time, 
-			AI policy, ConfigurableScript<?> script, EvaluationFunction evaluation,
-			float C) {
+			AI policy, ConfigurableScript<?> script, EvaluationFunction evaluation) {
 		super(max_time_per_frame,max_playouts_per_frame,
 				max_plan_time, max_plan_playouts,step_playout_time,
 				script,evaluation);
@@ -70,7 +69,6 @@ public class PuppetSearchMCTS extends PuppetBase {
 		
 		this.policy1=policy.clone();
 		this.policy2=policy.clone();
-		this.C=C;
 		currentPlan=new Plan();
 		root=null;
 	}
@@ -101,16 +99,26 @@ public class PuppetSearchMCTS extends PuppetBase {
 	public AI clone() {
 		PuppetSearchMCTS clone = new PuppetSearchMCTS(MAX_TIME,MAX_ITERATIONS,
 				PLAN_TIME, PLAN_PLAYOUTS, STEP_PLAYOUT_TIME, EVAL_PLAYOUT_TIME,
-				policy1.clone(),script.clone(), eval, C);
+				policy1.clone(),script.clone(), eval);
 		clone.currentPlan = currentPlan;
 		clone.lastSearchFrame = lastSearchFrame;
 		clone.lastSearchTime = lastSearchTime;
 		return clone;
 	}
 
+	private void setC(GameState gs){
+		if(gs.getPhysicalGameState().getWidth()<=8){
+			C=1.0f;
+		}else  if(gs.getPhysicalGameState().getWidth()<=16){
+			C=10.0f;
+		}else  {
+			C=0.1f;
+		}
+	}
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
 		assert(PLAN):"This method can only be called when using a standing plan";
+		setC(gs);
 		//Reinitialize the tree
 		if(lastSearchFrame==-1||root==null//||(gs.getTime()-lastSearchFrame)>PLAN_VALIDITY
 				){
@@ -142,6 +150,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 	}
 	@Override
 	void restartSearch(GameState gs, int player){
+		setC(gs);
 		lastSearchFrame=gs.getTime();
 		lastSearchTime=System.currentTimeMillis();
 		root=new PuppetMCTSNode(gs.clone(),script,C,player,eval.upperBound(gs));

@@ -62,7 +62,7 @@ public class RunConfigurableExperiments {
 //	private static int MAX_FRAMES = 3000;//size<=24x24:3000; size>24x24:5000; size >64x64:7000
 	private static int PUPPET_PLAN_TIME = 5000;
 	private static int PUPPET_PLAN_PLAYOUTS = -1;
-	private static float PUPPET_UCT_C =0.01f;//8x8:1.0f;16x16:10.0f;24x24:0.01f
+//	private static float PUPPET_UCT_C =0.01f;//8x8:1.0f;16x16:10.0f;24x24:0.01f
 //	static{
 //		GameState.TIME_LIMIT=MAX_FRAMES;
 //	}
@@ -298,8 +298,7 @@ public class RunConfigurableExperiments {
 											new LightRush(utt, getPathFinding()),
 											new RangedRush(utt, getPathFinding()),
 											new HeavyRush(utt, getPathFinding())}),
-							getEvaluationFunction(),
-							PUPPET_UCT_C)
+							getEvaluationFunction())
 					//					)
 					;
 		case "PuppetMCTSSingleNoPlan":
@@ -314,8 +313,7 @@ public class RunConfigurableExperiments {
 									new LightRush(utt, getPathFinding()),
 									new RangedRush(utt, getPathFinding()),
 									new HeavyRush(utt, getPathFinding())}),
-					getEvaluationFunction(),
-					PUPPET_UCT_C)
+					getEvaluationFunction())
 					);
 		case "PuppetMCTSBasic":
 			return //new PuppetNoPlan(
@@ -326,8 +324,7 @@ public class RunConfigurableExperiments {
 							new RandomBiasedAI(),
 							//new BasicConfigurableScript(utt, getPathFinding()),
 							new BasicConfigurableScript(utt, getPathFinding()),
-							getEvaluationFunction(),
-							PUPPET_UCT_C)
+							getEvaluationFunction())
 					//					)
 					;
 		case "PuppetMCTSBasicNoPlan":
@@ -339,8 +336,7 @@ public class RunConfigurableExperiments {
 							new RandomBiasedAI(),
 							//new BasicConfigurableScript(utt, getPathFinding()),
 							new BasicConfigurableScript(utt, getPathFinding()),
-							getEvaluationFunction(),
-							PUPPET_UCT_C)
+							getEvaluationFunction())
 					)
 					;
 		default:
