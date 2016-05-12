@@ -95,12 +95,7 @@ public class Experimenter {
 
                         out.println("MATCH UP: " + ai1+ " vs " + ai2);
 
-                        System.gc();
-                        try {
-                            Thread.sleep(100);            
-                        } catch(InterruptedException ex) {
-                            Thread.currentThread().interrupt();
-                        }
+
                         boolean gameover = false;
                         Trace trace = null;
                         TraceEntry te;
@@ -117,8 +112,20 @@ public class Experimenter {
                                 pa2 = ai2.getAction(1, new PartiallyObservableGameState(gs,1));
 //                                if (DEBUG>=1) {System.out.println("AI2 done.");out.flush();}
                             } else {
+                                System.gc();
+                                try {
+                                    Thread.sleep(1);            
+                                } catch(InterruptedException ex) {
+                                    Thread.currentThread().interrupt();
+                                }
                                 pa1 = ai1.getAction(0, gs);
                                 if (DEBUG>=1) {System.out.println("AI1 done.");out.flush();}
+                                System.gc();
+                                try {
+                                    Thread.sleep(1);            
+                                } catch(InterruptedException ex) {
+                                    Thread.currentThread().interrupt();
+                                }
                                 pa2 = ai2.getAction(1, gs);
                                 if (DEBUG>=1) {System.out.println("AI2 done.");out.flush();}
                             }
@@ -146,7 +153,7 @@ public class Experimenter {
 //                              if (DEBUG>=1) {System.out.println("repaint done.");out.flush();}
                             }
                         } while (!gameover && 
-                                 (gs.getTime() < max_cycles) && 
+//                                 (gs.getTime() < max_cycles) && 
                                  (gs.getTime() - lastTimeActionIssued < max_inactive_cycles));
                         if(saveTrace){
                         	te = new TraceEntry(gs.getPhysicalGameState().clone(), gs.getTime());

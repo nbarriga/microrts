@@ -59,13 +59,13 @@ public class RunConfigurableExperiments {
 	private static int PLAYOUT_TIME = 100;//size<=16x16:200; size>=24x24:100
 	private static int MAX_DEPTH = 10;
 	private static int RANDOMIZED_AB_REPEATS = 10;
-	private static int MAX_FRAMES = 3000;//size<=24x24:3000; size>24x24:5000; size >64x64:7000
+//	private static int MAX_FRAMES = 3000;//size<=24x24:3000; size>24x24:5000; size >64x64:7000
 	private static int PUPPET_PLAN_TIME = 5000;
 	private static int PUPPET_PLAN_PLAYOUTS = -1;
 	private static float PUPPET_UCT_C =0.01f;//8x8:1.0f;16x16:10.0f;24x24:0.01f
-	static{
-		GameState.TIME_LIMIT=MAX_FRAMES;
-	}
+//	static{
+//		GameState.TIME_LIMIT=MAX_FRAMES;
+//	}
 	private static List<AI> bots1 = new LinkedList<AI>();
 	private static List<AI> bots2 = new LinkedList<AI>();
 	private static List<PhysicalGameState> maps = new LinkedList<PhysicalGameState>();
@@ -410,19 +410,19 @@ public class RunConfigurableExperiments {
         if(true){
         	if(asymetric){
         		ExperimenterAsymmetric.runExperiments(bots1,bots2,
-        				maps, utt, iterations, MAX_FRAMES, 300, true, out, saveTrace, saveTrace, traceDir);
+        				maps, utt, iterations, -1, 300, true, out, saveTrace, saveTrace, traceDir);
         	}else{
-        		Experimenter.runExperiments(bots1, maps, utt, iterations, MAX_FRAMES, 300, false, out, 
+        		Experimenter.runExperiments(bots1, maps, utt, iterations, -1, 300, false, out, 
                         -1, true, false, saveTrace, saveTrace, traceDir);
         	}
         }else{// Separate the matches by map:
         	for(PhysicalGameState map:maps){
         		if(asymetric){
         			ExperimenterAsymmetric.runExperiments(bots1,bots2,
-        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, true, out, saveTrace, saveTrace, traceDir);
+        					Collections.singletonList(map), utt, iterations, -1, 300, true, out, saveTrace, saveTrace, traceDir);
         		}else{  
         			Experimenter.runExperiments(bots1, 
-        					Collections.singletonList(map), utt, iterations, MAX_FRAMES, 300, true, out,
+        					Collections.singletonList(map), utt, iterations, -1, 300, true, out,
         					-1, true, false, saveTrace, saveTrace, traceDir);
         		}
         	}

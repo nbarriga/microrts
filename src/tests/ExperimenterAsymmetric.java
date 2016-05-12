@@ -72,12 +72,7 @@ public class ExperimenterAsymmetric {
 
                     		out.println("MATCH UP: " + ai1+ " vs " + ai2);
 
-                    		System.gc();
-                    		try {
-                    			Thread.sleep(100);                 
-                    		} catch(InterruptedException ex) {
-                    			Thread.currentThread().interrupt();
-                    		}
+
                     		long start=System.currentTimeMillis();
                     		boolean gameover = false;
                     		Trace trace = null;
@@ -97,7 +92,19 @@ public class ExperimenterAsymmetric {
                     					out.print("branching\t" + bf1 + "\t" + bf2 + "\n");
                     				}
                     			}
+                        		System.gc();
+                        		try {
+                        			Thread.sleep(1);                 
+                        		} catch(InterruptedException ex) {
+                        			Thread.currentThread().interrupt();
+                        		}
                     			PlayerAction pa1 = ai1.getAction(0, gs);
+                        		System.gc();
+                        		try {
+                        			Thread.sleep(1);                 
+                        		} catch(InterruptedException ex) {
+                        			Thread.currentThread().interrupt();
+                        		}
                     			PlayerAction pa2 = ai2.getAction(1, gs);
 
                     			if (saveTrace && (!pa1.isEmpty() || !pa2.isEmpty())) {
@@ -119,7 +126,7 @@ public class ExperimenterAsymmetric {
                     				}
                     			}
                     		} while (!gameover && 
-                    				(gs.getTime() < max_cycles) && 
+//                    				(gs.getTime() < max_cycles) && 
                     				(gs.getTime() - lastTimeActionIssued < max_inactive_cycles));
                     		if(saveTrace){
                     			te = new TraceEntry(gs.getPhysicalGameState().clone(), gs.getTime());

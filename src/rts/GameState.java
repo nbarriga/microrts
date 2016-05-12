@@ -16,7 +16,6 @@ import util.Pair;
  */
 public class GameState implements Serializable{
 	static Random r = new Random();         // only used if the action conflict resolution strategy is set to random
-    public static int TIME_LIMIT=-1;
     int unitCancelationCounter = 0;  // only used if the action conflict resolution strategy is set to alternating
     
     int time = 0;
@@ -24,10 +23,27 @@ public class GameState implements Serializable{
     HashMap<Unit,UnitActionAssignment> unitActions = new LinkedHashMap<Unit,UnitActionAssignment>();
 
     UnitTypeTable utt = null;
-
+    
+    int maxFrames;
+    
     public GameState(PhysicalGameState a_pgs, UnitTypeTable a_utt) {
         pgs = a_pgs;
         utt = a_utt;
+        if(pgs.width<=8){
+        	maxFrames=3000;
+        }else if(pgs.width<=16){
+        	maxFrames=4000;
+        }else if(pgs.width<=24){
+        	maxFrames=5000;
+        }if(pgs.width<=64){
+        	maxFrames=8000;
+        }else{
+        	maxFrames=12000;
+        }
+    }
+    
+    public boolean timeUp(){
+    	return getTime()>=maxFrames;
     }
     
     public int getTime() {
@@ -77,12 +93,12 @@ public class GameState implements Serializable{
     }
     
     public int winner() {
-    	if(TIME_LIMIT!=-1&&getTime()>=TIME_LIMIT) return -1;
+    	if(timeUp()) return -1;
         return pgs.winner();
     }
     
     public boolean gameover() {
-    	if(TIME_LIMIT!=-1&&getTime()>=TIME_LIMIT) return true;
+    	if(timeUp()) return true;
         return pgs.gameover();
     }
     

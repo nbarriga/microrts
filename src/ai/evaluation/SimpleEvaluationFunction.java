@@ -22,7 +22,7 @@ public class SimpleEvaluationFunction extends EvaluationFunction {
     
     public float evaluate(int maxplayer, int minplayer, GameState gs) {
         //System.out.println("SimpleEvaluationFunction: " + base_score(maxplayer,gs) + " - " + base_score(minplayer,gs));
-    	if(GameState.TIME_LIMIT!=-1&&gs.getTime()>=GameState.TIME_LIMIT)return 0;//tie
+    	if(gs.timeUp())return 0;//tie
     	return base_score(maxplayer,gs) - base_score(minplayer,gs);
     }
     
