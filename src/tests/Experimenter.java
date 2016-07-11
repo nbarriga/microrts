@@ -54,7 +54,7 @@ public class Experimenter {
         runExperiments(bots, maps, utt, iterations, max_cycles, max_inactive_cycles, visualize, out, run_only_those_involving_this_AI, false, partiallyObservable,
         		false, false, "");
     }
-
+    
     public static void runExperiments(List<AI> bots, List<PhysicalGameState> maps, UnitTypeTable utt, int iterations, int max_cycles, int max_inactive_cycles, boolean visualize, PrintStream out, 
                                       int run_only_those_involving_this_AI, boolean skip_self_play, boolean partiallyObservable,
                                       boolean saveTrace, boolean saveZip, String traceDir) throws Exception {
@@ -104,7 +104,9 @@ public class Experimenter {
                         	te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
                             trace.addEntry(te);
                         }
+                        gc(1000);
                         do {
+                        	if(gs.getTime()%100==0)gc(10);
                             PlayerAction pa1 = null, pa2 = null;
                             if (partiallyObservable) {
                                 pa1 = ai1.getAction(0, new PartiallyObservableGameState(gs,0));
@@ -112,20 +114,10 @@ public class Experimenter {
                                 pa2 = ai2.getAction(1, new PartiallyObservableGameState(gs,1));
 //                                if (DEBUG>=1) {System.out.println("AI2 done.");out.flush();}
                             } else {
-                                System.gc();
-                                try {
-                                    Thread.sleep(1);            
-                                } catch(InterruptedException ex) {
-                                    Thread.currentThread().interrupt();
-                                }
+//                                gc(1);
                                 pa1 = ai1.getAction(0, gs);
                                 if (DEBUG>=1) {System.out.println("AI1 done.");out.flush();}
-                                System.gc();
-                                try {
-                                    Thread.sleep(1);            
-                                } catch(InterruptedException ex) {
-                                    Thread.currentThread().interrupt();
-                                }
+//                                gc(1);
                                 pa2 = ai2.getAction(1, gs);
                                 if (DEBUG>=1) {System.out.println("AI2 done.");out.flush();}
                             }
@@ -246,6 +238,17 @@ public class Experimenter {
             out.println("");
         }              
         out.flush();
+    }
+    static void gc(){
+    	gc(0);
+    }
+    static void gc(int sleepTime){
+      System.gc();
+      try {
+          Thread.sleep(sleepTime);            
+      } catch(InterruptedException ex) {
+          Thread.currentThread().interrupt();
+      }
     }
     
     static void printResults(int wins[][], int ties[][], int loses[][], PrintStream out){

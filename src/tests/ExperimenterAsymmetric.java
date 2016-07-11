@@ -82,7 +82,7 @@ public class ExperimenterAsymmetric {
                     			te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
                     			trace.addEntry(te);
                     		}
-
+                    		gc(1000);
                     		do {
                     			//                        	System.gc();
                     			if (PRINT_BRANCHING_AT_EACH_MOVE) {
@@ -92,19 +92,9 @@ public class ExperimenterAsymmetric {
                     					out.print("branching\t" + bf1 + "\t" + bf2 + "\n");
                     				}
                     			}
-                        		System.gc();
-                        		try {
-                        			Thread.sleep(1);                 
-                        		} catch(InterruptedException ex) {
-                        			Thread.currentThread().interrupt();
-                        		}
+//                        		gc(1);
                     			PlayerAction pa1 = ai1.getAction(0, gs);
-                        		System.gc();
-                        		try {
-                        			Thread.sleep(1);                 
-                        		} catch(InterruptedException ex) {
-                        			Thread.currentThread().interrupt();
-                        		}
+//                        		gc(1);
                     			PlayerAction pa2 = ai2.getAction(1, gs);
 
                     			if (saveTrace && (!pa1.isEmpty() || !pa2.isEmpty())) {
@@ -237,5 +227,16 @@ public class ExperimenterAsymmetric {
             out.println("");
         }              
         out.flush();
+    }
+    static void gc(){
+    	gc(0);
+    }
+    static void gc(int sleepTime){
+      System.gc();
+      try {
+          Thread.sleep(sleepTime);            
+      } catch(InterruptedException ex) {
+          Thread.currentThread().interrupt();
+      }
     }
 }
