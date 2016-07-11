@@ -35,7 +35,7 @@ public class GameState implements Serializable{
         	maxFrames=4000;
         }else if(pgs.width<=24){
         	maxFrames=5000;
-        }if(pgs.width<=64){
+        }else if(pgs.width<=64){
         	maxFrames=8000;
         }else{
         	maxFrames=12000;
