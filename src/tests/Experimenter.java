@@ -10,8 +10,11 @@ import gui.PhysicalGameStatePanel;
 
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -104,9 +107,18 @@ public class Experimenter {
                         	te = new TraceEntry(gs.getPhysicalGameState().clone(),gs.getTime());
                             trace.addEntry(te);
                         }
+                        out.println(getLoad());
                         gc(1000);
+                        long prev=System.currentTimeMillis();
                         do {
-                        	if(gs.getTime()%100==0)gc(10);
+                        	if(gs.getTime()%100==0){
+                        		long next=System.currentTimeMillis();
+                        		System.out.println("FPS: "+100.0/(next-prev)*1000);
+                        		prev=next;
+                        		memDebug();
+                        		gc(10);
+                        		memDebug();
+                        	}
                             PlayerAction pa1 = null, pa2 = null;
                             if (partiallyObservable) {
                                 pa1 = ai1.getAction(0, new PartiallyObservableGameState(gs,0));
@@ -249,6 +261,28 @@ public class Experimenter {
       } catch(InterruptedException ex) {
           Thread.currentThread().interrupt();
       }
+    }
+    static String getLoad(){
+    	byte buffer[]=new byte[256];
+    	try {
+			Runtime.getRuntime().exec("uptime").getInputStream().read(buffer);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+		}
+    	return new String(buffer);
+    }
+    static void memDebug(){
+    	long total=Runtime.getRuntime().totalMemory();
+    	long free=Runtime.getRuntime().freeMemory();
+    	System.out.println("Max: "+Runtime.getRuntime().maxMemory()/1024/1024+
+        		" Total: "+total/1024/1024+
+        		" Free: "+free/1024/1024+
+        		" Used: "+(total-free)/1024/1024);
+        List<GarbageCollectorMXBean> l = ManagementFactory.getGarbageCollectorMXBeans();
+        for(GarbageCollectorMXBean b : l) {
+            System.out.println(b.getName()+": "+b.getCollectionTime()/1024+"[s]");
+        }
     }
     
     static void printResults(int wins[][], int ties[][], int loses[][], PrintStream out){
