@@ -83,6 +83,7 @@ public class RunConfigurableExperiments {
 	}
 	
 	public static void loadMaps(String mapFileName) throws IOException  {
+		if(mapFileName.endsWith(".txt")){
 		try (Stream<String> lines = Files.lines(Paths.get(mapFileName), Charset.defaultCharset())) {
 			lines.forEachOrdered(line -> {
 				try {
@@ -91,6 +92,16 @@ public class RunConfigurableExperiments {
 					throw new RuntimeException(ex);
 				}
 			});
+		}
+		}else if(mapFileName.endsWith(".xml")){
+			try {
+				maps.add(PhysicalGameState.load(mapFileName,utt));
+			} catch (Exception ex) {
+				throw new RuntimeException(ex);
+			}
+		}else{
+			throw new IllegalArgumentException("Map file name must end in .txt "
+					+ "(for a list of maps) or .xml (for a single map).");
 		}
 	}
 
