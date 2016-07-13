@@ -29,7 +29,9 @@ import ai.core.ContinuingAI;
 import ai.core.InterruptibleAIWithComputationBudget;
 import ai.core.PseudoContinuingAI;
 import ai.evaluation.EvaluationFunction;
+import ai.evaluation.LanchesterEvaluationFunction;
 import ai.evaluation.SimpleEvaluationFunction;
+import ai.evaluation.SimpleOptEvaluationFunction;
 import ai.evaluation.SimpleSqrtEvaluationFunction2;
 import ai.evaluation.SimpleSqrtEvaluationFunction3;
 import ai.mcts.naivemcts.NaiveMCTS;
@@ -79,7 +81,9 @@ public class RunConfigurableExperiments {
 		return new FloodFillPathFinding();
 	}
 	public static EvaluationFunction getEvaluationFunction(){
-		return new SimpleEvaluationFunction();
+//		return new SimpleEvaluationFunction();
+//		return new SimpleOptEvaluationFunction();
+		return new LanchesterEvaluationFunction();
 	}
 	
 	public static void loadMaps(String mapFileName) throws IOException  {
