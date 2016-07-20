@@ -1,4 +1,5 @@
 #!/bin/bash
-for i in `seq 1 4`;do
-	ssh barriga@fedorah$i.cs.ualberta.ca "ps aux|grep RunConfigurable|head -n1"
+for i in {00..34};do
+	echo ug$i
+	ssh barriga@ug$i.cs.ualberta.ca "ps aux|grep RunConfigurable|grep -v grep|grep -v bash"
 done
