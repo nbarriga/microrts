@@ -71,7 +71,7 @@ public class Experimenter {
 
         List<AI> bots2 = new LinkedList<>();
         for(AI bot:bots) bots2.add(bot.clone());
-        
+        memDebug();
         for (int ai1_idx = 0; ai1_idx < bots.size(); ai1_idx++) 
         {
             for (int ai2_idx = 0; ai2_idx < bots.size(); ai2_idx++) 
@@ -109,18 +109,20 @@ public class Experimenter {
                         }
                         out.println(getLoad());
                         gc(500);
+                        memDebug();
                         long prev=System.currentTimeMillis();
                         do {
                         	if(gs.getTime()%100==0){
                         		long next=System.currentTimeMillis();
-                        		System.out.println("FPS: "+100.0/(next-prev)*1000);
+                        		System.out.println("Frame: "+gs.getTime()+", FPS: "+100.0/(next-prev)*1000);
                         		prev=next;
-                        		memDebug();
-                        	}
-                        	if(gs.getTime()%100==0){
                         		gc();
-                        		memDebug();
+//                        		memDebug();
                         	}
+//                        	if(gs.getTime()%100==0){
+//                        		gc();
+//                        		memDebug();
+//                        	}
                             PlayerAction pa1 = null, pa2 = null;
                             if (partiallyObservable) {
                                 pa1 = ai1.getAction(0, new PartiallyObservableGameState(gs,0));
@@ -209,7 +211,9 @@ public class Experimenter {
 
                             wins[ai2_idx][ai1_idx]++;
                             win_time[ai2_idx][ai1_idx]+=gs.getTime();
-                        }                        
+                        }   
+                        ai1.reset();
+                        ai2.reset();
                     } 
                 }
                 m++;
