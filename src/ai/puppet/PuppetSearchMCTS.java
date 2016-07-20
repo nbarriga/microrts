@@ -47,7 +47,7 @@ public class PuppetSearchMCTS extends PuppetBase {
 		}
 	}
 	
-	int DEBUG=1;
+	int DEBUG=0;
 	int EVAL_PLAYOUT_TIME;
 
 	AI policy1, policy2;

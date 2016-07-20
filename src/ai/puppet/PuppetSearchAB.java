@@ -129,7 +129,7 @@ public class PuppetSearchAB extends PuppetBase {
 		}
 	}
 
-	protected int DEBUG=1;
+	protected int DEBUG=0;
 	protected int DEPTH;
 	protected int MAXPLAYER=-1;
 
@@ -293,7 +293,7 @@ public class PuppetSearchAB extends PuppetBase {
 			currentPlan=new Plan(lastFinishedHead);
 		}
 		if(searchDone()){
-			System.out.println(ttHits+"/"+ttQueries+" TT, "+ctHits+"/"+ctQueries+" CT");
+			if(DEBUG>=1)System.out.println(ttHits+"/"+ttQueries+" TT, "+ctHits+"/"+ctQueries+" CT");
 			stack.clear();
 			currentPlan=new Plan(lastFinishedHead);
 			if (DEBUG>=1) System.out.println("ABCD:\n" + currentPlan + " in " 
