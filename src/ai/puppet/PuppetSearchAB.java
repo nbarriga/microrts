@@ -162,6 +162,7 @@ public class PuppetSearchAB extends PuppetBase {
 		currentPlan=new Plan();
 		stack.clear();
 		head=null;
+		lastFinishedHead=null;
 		DEPTH=0;
 		clearStats();
 	}
