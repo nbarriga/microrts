@@ -108,7 +108,7 @@ public class Experimenter {
                             trace.addEntry(te);
                         }
                         out.println(getLoad());
-                        gc(1000);
+                        gc(500);
                         long prev=System.currentTimeMillis();
                         do {
                         	if(gs.getTime()%100==0){
@@ -116,7 +116,9 @@ public class Experimenter {
                         		System.out.println("FPS: "+100.0/(next-prev)*1000);
                         		prev=next;
                         		memDebug();
-                        		gc(10);
+                        	}
+                        	if(gs.getTime()%100==0){
+                        		gc();
                         		memDebug();
                         	}
                             PlayerAction pa1 = null, pa2 = null;
@@ -255,12 +257,14 @@ public class Experimenter {
     	gc(0);
     }
     static void gc(int sleepTime){
-      System.gc();
-      try {
-          Thread.sleep(sleepTime);            
-      } catch(InterruptedException ex) {
-          Thread.currentThread().interrupt();
-      }
+    	System.gc();
+    	if(sleepTime>0){
+    		try {
+    			Thread.sleep(sleepTime);            
+    		} catch(InterruptedException ex) {
+    			Thread.currentThread().interrupt();
+    		}
+    	}
     }
     static String getLoad(){
     	byte buffer[]=new byte[256];
