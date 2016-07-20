@@ -43,7 +43,7 @@ public class LanchesterEvaluationFunction extends EvaluationFunction {
     
     public float evaluate(int maxplayer, int minplayer, GameState gs) {
         //System.out.println("SimpleEvaluationFunction: " + base_score(maxplayer,gs) + " - " + base_score(minplayer,gs));
-    	if(gs.timeUp())return 0;//tie
+//    	if(gs.timeUp())return 0;//tie
     	return 2.0f*sigmoid(base_score(maxplayer,gs) - base_score(minplayer,gs))-1.0f;
     }
     
