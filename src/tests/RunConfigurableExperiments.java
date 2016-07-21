@@ -81,9 +81,9 @@ public class RunConfigurableExperiments {
 		return new FloodFillPathFinding();
 	}
 	public static EvaluationFunction getEvaluationFunction(){
-//		return new SimpleEvaluationFunction();
+		return new SimpleEvaluationFunction();
 //		return new SimpleOptEvaluationFunction();
-		return new LanchesterEvaluationFunction();
+//		return new LanchesterEvaluationFunction();
 	}
 	
 	public static void loadMaps(String mapFileName) throws IOException  {
