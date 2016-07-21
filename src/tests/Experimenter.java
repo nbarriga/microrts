@@ -85,8 +85,8 @@ public class Experimenter {
                 for(PhysicalGameState pgs:maps) {
                     
                     for (int i = 0; i < iterations; i++) {
-                        AI ai1 = bots.get(ai1_idx);
-                        AI ai2 = bots2.get(ai2_idx);
+                        AI ai1 = bots.get(ai1_idx).clone();
+                        AI ai2 = bots2.get(ai2_idx).clone();
                         long lastTimeActionIssued = 0;
 
                         ai1.reset();
@@ -119,10 +119,6 @@ public class Experimenter {
                         		gc();
 //                        		memDebug();
                         	}
-//                        	if(gs.getTime()%100==0){
-//                        		gc();
-//                        		memDebug();
-//                        	}
                             PlayerAction pa1 = null, pa2 = null;
                             if (partiallyObservable) {
                                 pa1 = ai1.getAction(0, new PartiallyObservableGameState(gs,0));
@@ -212,8 +208,6 @@ public class Experimenter {
                             wins[ai2_idx][ai1_idx]++;
                             win_time[ai2_idx][ai1_idx]+=gs.getTime();
                         }   
-                        ai1.reset();
-                        ai2.reset();
                     } 
                 }
                 m++;
