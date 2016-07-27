@@ -173,7 +173,9 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
     }
 
     public void baseBehavior(Unit u, Player p, PhysicalGameState pgs) {
-        if (nworkers < choices.get(BasicChoicePoint.NWORKERS) && p.getResources() >= workerType.cost + resourcesUsed) {
+        if ((choices.get(BasicChoicePoint.UNITTYPE)==workerType.ID
+        			|| nworkers < choices.get(BasicChoicePoint.NWORKERS) )
+        		&& p.getResources() >= workerType.cost + resourcesUsed) {
             train(u, workerType);
             resourcesUsed+=workerType.cost;
         }
@@ -211,9 +213,11 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
     
     public void barracksBehavior(Unit u, Player p, PhysicalGameState pgs) {
     	UnitType toBuild=utt.getUnitType(choices.get(BasicChoicePoint.UNITTYPE));
-    	if (p.getResources() >= toBuild.cost + resourcesUsed) {
-    		train(u, toBuild);
-    		resourcesUsed+=toBuild.cost;
+    	if(!toBuild.canHarvest){
+    		if (p.getResources() >= toBuild.cost + resourcesUsed) {
+    			train(u, toBuild);
+    			resourcesUsed+=toBuild.cost;
+    		}
     	}
 //    	if (p.getResources() >= heavyType.cost*2 + resourcesUsed) {
 //    		train(u, heavyType);
