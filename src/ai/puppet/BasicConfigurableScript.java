@@ -18,7 +18,9 @@ import rts.units.Unit;
 import rts.units.UnitType;
 import rts.units.UnitTypeTable;
 
-enum BasicChoicePoint{NWORKERS, UNITTYPE, EXPAND};
+//enum BasicChoicePoint{NWORKERS, UNITTYPE, EXPAND};
+enum BasicChoicePoint{UNITTYPE, EXPAND};
+
 
 public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint> {
 
@@ -85,7 +87,6 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
     public PlayerAction getAction(int player, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
         Player p = gs.getPlayer(player);
-//        System.out.println("LightRushAI for player " + player + " (cycle " + gs.getTime() + ")");
         resourcesUsed=gs.getResourceUsage().getResourcesUsed(player); 
         nworkers=0;
         nbases = 0;
@@ -129,7 +130,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
             	}
             }
         }
-
+//        System.out.println(nbases+" "+abandonedbases+" "+ownresources);
 
         // behavior of bases:
         for (Unit u : pgs.getUnits()) {
@@ -174,7 +175,9 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 
     public void baseBehavior(Unit u, Player p, PhysicalGameState pgs) {
         if ((choices.get(BasicChoicePoint.UNITTYPE)==workerType.ID
-        			|| nworkers < choices.get(BasicChoicePoint.NWORKERS) )
+//        		|| nworkers < 4
+//        			|| nworkers < choices.get(BasicChoicePoint.NWORKERS)
+        			)
         		&& p.getResources() >= workerType.cost + resourcesUsed) {
             train(u, workerType);
             resourcesUsed+=workerType.cost;
@@ -327,7 +330,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
         		&& (nbases - abandonedbases) <= 1 
         		&& freeresources > 0  
         		&& !freeWorkers.isEmpty()) {
-        	//System.out.println("should expand");
+//        	System.out.println("should expand");
             // build a base:
             if (p.getResources() >= baseType.cost + resourcesUsed ) {
             	//System.out.println("expanding");
@@ -357,9 +360,11 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
             	resourcesUsed+=  baseType.cost;
             }
         }
-        
-        while(freeWorkers.size()>choices.get(BasicChoicePoint.NWORKERS))
-        	 meleeUnitBehavior(freeWorkers.remove(0), p, gs);
+        while(choices.get(BasicChoicePoint.UNITTYPE)==workerType.ID &&
+        		freeWorkers.size()>1
+        //freeWorkers.size()>choices.get(BasicChoicePoint.NWORKERS)
+        )
+        	meleeUnitBehavior(freeWorkers.remove(0), p, gs);
         // harvest with all the free workers:
         for (Unit u : freeWorkers) {
             Unit closestBase = null;
@@ -527,18 +532,41 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 					ownresources++;
 				}
 				if(!gs.getPhysicalGameState().getUnitsAround(u2.getX(), u2.getY(), BASE_RESOURCE_RADIUS).stream()
-						.map((a)->a.getPlayer()!=(1-player)&&a.getType()!=baseType)
-						.reduce((a,b)->a&&b).get()){
+						.map((a)->/*a.getPlayer()==(1-player)&&*/a.getType()==baseType)
+						.reduce((a,b)->a||b).get()){
 					freeresources++;
 				}
 			}
 		}
+//		System.out.println(nresources+" "+ ownresources+" "+freeresources+" "+nbases+" "+abandonedbases);
 		List<Options> choices=new ArrayList<Options>();
-		if(nworkers>=2){//already have 2 workers, don't go back to 1
-			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{2}));
-		}else{
-			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{1,2}));
-		}
+//		switch(nworkers){
+//		case 0:
+//		case 1:
+//			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{1,2}));
+//			break;
+//		case 2:
+//			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{1,2,3}));
+//			break;
+//		case 3:
+//			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{2,3,4}));
+//			break;
+//		case 4:
+//			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{3,4,5}));
+//			break;
+//		case 5:
+//			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{4,5,6}));
+//			break;
+//		default://>5 workers
+//		choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{5,6}));
+//		break;
+//		}
+
+//		if(nworkers>=2){//already have 2 workers, don't go back to 1
+//			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{2}));
+//		}else{
+//			choices.add(new Options(BasicChoicePoint.NWORKERS.ordinal(),new int[]{1,2}));
+//		}
 		if(nbarracks>0){//already have a barracks, build combat units
 			choices.add(new Options(BasicChoicePoint.UNITTYPE.ordinal(),new int[]{
 					lightType.ID,
@@ -546,11 +574,12 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 					heavyType.ID}));
 		}else{
 			choices.add(new Options(BasicChoicePoint.UNITTYPE.ordinal(),new int[]{
-					lightType.ID,
 					workerType.ID,
+					lightType.ID,
 					rangedType.ID,
 					heavyType.ID}));
 		}
+		
 		if(nbarracks<1 || (nbases - abandonedbases) > 1 || freeresources==0 ){//already have an extra base
 			choices.add(new Options(BasicChoicePoint.EXPAND.ordinal(),new int[]{0}));
 		}else if(ownresources==0){//no resources, force expansion
@@ -565,9 +594,9 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 	public void initializeChoices() {
 		for(BasicChoicePoint c:choicePointValues){
 			switch(c){
-			case NWORKERS: 
-				choicePoints.put(c, new Options(c.ordinal(),new int[]{1,2}));
-				break;
+//			case NWORKERS: 
+//				choicePoints.put(c, new Options(c.ordinal(),new int[]{1,2}));
+//				break;
 			case UNITTYPE:
 				choicePoints.put(c, new Options(c.ordinal(),new int[]{
 						lightType.ID,
