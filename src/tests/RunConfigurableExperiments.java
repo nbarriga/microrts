@@ -176,7 +176,7 @@ public class RunConfigurableExperiments {
 					new RandomBiasedAI(), getEvaluationFunction());
 		case "AHTN-LL":
 			try {
-				return new AHTNAI("ahtn/microrts-ahtn-definition-lowest-level.lisp",TIME, 
+				return new AHTNAI("data/ahtn/microrts-ahtn-definition-lowest-level.lisp",TIME, 
 						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
@@ -184,7 +184,7 @@ public class RunConfigurableExperiments {
 			}
 		case "AHTN-LLPF":
 			try {
-				return new AHTNAI("ahtn/microrts-ahtn-definition-low-level.lisp",TIME, 
+				return new AHTNAI("data/ahtn/microrts-ahtn-definition-low-level.lisp",TIME, 
 						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
@@ -192,7 +192,7 @@ public class RunConfigurableExperiments {
 			}
 		case "AHTN-P":
 			try {
-				return new AHTNAI("ahtn/microrts-ahtn-definition-portfolio.lisp",TIME, 
+				return new AHTNAI("data/ahtn/microrts-ahtn-definition-portfolio.lisp",TIME, 
 						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
@@ -200,7 +200,7 @@ public class RunConfigurableExperiments {
 			}
 		case "AHTN-F":
 			try {
-				return new AHTNAI("ahtn/microrts-ahtn-definition-flexible-portfolio.lisp",TIME, 
+				return new AHTNAI("data/ahtn/microrts-ahtn-definition-flexible-portfolio.lisp",TIME, 
 						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
@@ -208,7 +208,7 @@ public class RunConfigurableExperiments {
 			}
 		case "AHTN-FST":
 			try {
-				return new AHTNAI("ahtn/microrts-ahtn-definition-flexible-single-target-portfolio.lisp",TIME, 
+				return new AHTNAI("data/ahtn/microrts-ahtn-definition-flexible-single-target-portfolio.lisp",TIME, 
 						MAX_PLAYOUTS, PLAYOUT_TIME, getEvaluationFunction(),
 						new RandomBiasedAI());
 			} catch (Exception e) {
