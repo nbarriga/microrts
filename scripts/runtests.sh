@@ -116,7 +116,15 @@ mapPaths=$(echo maps/$mapDir/${mapName}{A..F}.xml)
 mapNamesArr+=($mapNames)
 mapPathsArr+=($mapPaths)
 
+
+botsFile=bots.txt
+mainDir=~/git-working/microrts
 outDir=resultsLanchester100ms
+cd $mainDir
+mkdir -p $outDir
+cp $botsFile $outDir
+cp scripts/runtests.sh $outDir
+cp src/tests/RunConfigurableExperiments.java $outDir
 
 for machine in {00..34}; do
 	mapPath=${mapPathsArr[10#$machine]}
@@ -130,5 +138,5 @@ for machine in {00..34}; do
 	fi
 	#ssh -f barriga@$m${machine}.cs.ualberta.ca "cd git-working/microrts&& mkdir -p $outDir && nice -n19 ~/jdk1.8.0_66/bin/java -Xmx4096m -cp bin/:lib/jdom.jar tests.RunConfigurableExperiments bots2.txt - $mapPath $outDir/results-$mapName.txt 1 &> $outDir/output-$mapName.out"
 	
-	ssh -f barriga@$m${machine}.cs.ualberta.ca "cd git-working/microrts&& mkdir -p $outDir && mkdir -p ${traceDir} && nice -n19 ~/jdk1.8.0_66/bin/java -Xmx4096m -cp bin/:lib/jdom.jar tests.RunConfigurableExperiments bots.txt - $mapPath $outDir/results-$mapName.txt 1 ${traceDir} &> $outDir/output-$mapName.out && nice -n19 ~/jdk1.8.0_66/bin/java -Xmx4096m -cp bin/:lib/jdom.jar tests.RunConfigurableExperiments bots.txt - $mapPath2 $outDir/results-$mapName2.txt 1 ${traceDir2} &> $outDir/output-$mapName2.out"
+	ssh -f barriga@$m${machine}.cs.ualberta.ca "cd git-working/microrts&& mkdir -p $outDir && mkdir -p ${traceDir} && nice -n19 ~/jdk1.8.0_66/bin/java -Xmx4096m -cp bin/:lib/jdom.jar tests.RunConfigurableExperiments $botsFile - $mapPath $outDir/results-$mapName.txt 1 ${traceDir} &> $outDir/output-$mapName.out && nice -n19 ~/jdk1.8.0_66/bin/java -Xmx4096m -cp bin/:lib/jdom.jar tests.RunConfigurableExperiments $botsFile - $mapPath2 $outDir/results-$mapName2.txt 1 ${traceDir2} &> $outDir/output-$mapName2.out"
 done
