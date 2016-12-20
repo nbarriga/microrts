@@ -89,7 +89,17 @@ public class Experimenter {
                 if (skip_self_play && ai1_idx==ai2_idx) continue;
                 int m=0;
                 for(PhysicalGameState pgs:maps) {
-                    
+                	if(pgs.getWidth()<=8){
+                    	max_cycles=3000;
+                    }else if(pgs.getWidth()<=16){
+                    	max_cycles=4000;
+                    }else if(pgs.getWidth()<=24){
+                    	max_cycles=5000;
+                    }else if(pgs.getWidth()<=64){
+                    	max_cycles=8000;
+                    }else{
+                    	max_cycles=12000;
+                    }
                     for (int i = 0; i < iterations; i++) {
                     	//cloning just in case an AI has a memory leak
                     	//by using a clone, it is discarded, along with the leaked memory,
