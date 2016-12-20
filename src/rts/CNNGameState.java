@@ -79,7 +79,7 @@ public class CNNGameState extends GameState {
 		return baos.toString();
 	}
 	
-	public String writePlanes() throws FileNotFoundException 
+	public String writePlanes()  
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
