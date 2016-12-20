@@ -18,6 +18,9 @@ import util.XMLWriter;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+
+import com.sun.javafx.geom.transform.GeneralTransform3D;
+
 import rts.units.UnitTypeTable;
 
 
@@ -34,7 +37,7 @@ public class PhysicalGameState implements Serializable {
     int terrain[] = null;
     List<Player> players = new ArrayList<Player>();
     List<Unit> units = new LinkedList<Unit>();
-    
+    long maxID = -1;
     
     public static PhysicalGameState load(String fileName, UnitTypeTable utt) throws JDOMException, IOException {
         try{
@@ -43,17 +46,27 @@ public class PhysicalGameState implements Serializable {
         	throw new IllegalArgumentException("Error loading map: "+fileName,ex);
         }
     }
-    
+
+    private void updateMaxID(long newID){
+    	if(newID>maxID){
+    		maxID=newID;
+    	}
+    }
+    public long getNextID(){
+    	return ++maxID;
+    }
     public PhysicalGameState(int a_width, int a_height) {
         width = a_width;
         height = a_height;
         terrain = new int[width*height];
+        maxID=-1;
     }
     
     PhysicalGameState(int a_width, int a_height, int t[]) {
         width = a_width;
         height = a_height;
         terrain = t;
+        maxID=-1;
     }
     
     public int getWidth() {
@@ -101,6 +114,10 @@ public class PhysicalGameState implements Serializable {
     		}
     	}
         units.add(u);
+        if(u.getID()==-1)
+        	u.setID(getNextID());
+        else
+        	updateMaxID(u.getID());
     }
     
     public void removeUnit(Unit u) {
@@ -197,6 +214,7 @@ public class PhysicalGameState implements Serializable {
         for(Unit u:units) {
             pgs.units.add(u.clone());
         }
+        pgs.maxID=maxID;
         return pgs;
     }
 

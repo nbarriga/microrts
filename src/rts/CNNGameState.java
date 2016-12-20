@@ -145,7 +145,7 @@ public class CNNGameState extends GameState {
 						uaa.unit.getX()+ UnitAction.DIRECTION_OFFSET_X[uaa.action.parameter],
 						uaa.unit.getY()+ UnitAction.DIRECTION_OFFSET_Y[uaa.action.parameter]
 								,0);
-
+				newUnit.setID(pgs.getNextID());
 				units.add(newUnit);
 				remainingT = uaa.action.ETA(uaa.unit) + uaa.time - getTime();       
 				remainingTimes.put(newUnit, remainingT);    

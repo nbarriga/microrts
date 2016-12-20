@@ -23,7 +23,6 @@ import ai.evaluation.SimpleSqrtEvaluationFunction3;
 import rts.GameState;
 import rts.Trace;
 import rts.units.UnitTypeTable;
-import rts.TraceEntry;
 
 public class CompareEvaluations {
 
@@ -69,6 +68,7 @@ public class CompareEvaluations {
 		Trace t = new Trace(new SAXBuilder().build(zip).getRootElement(), utt);
 
 		int winner = t.getGameStateAtCycle(t.getLength()).winner();
+
 		if(winner == -1) {
 			return new Sample(states,t.getLength(),-1);
 		}
@@ -76,11 +76,7 @@ public class CompareEvaluations {
 
 		for(int i=0; i<n; i++)
 		{
-
-			int frameNR = generator.nextInt(t.getLength());
-
-			GameState gs = t.getGameStateAtCycle(frameNR);
-			states.add(gs);
+			states.add(t.getGameStateAtCycle(generator.nextInt(t.getLength())));
 		}
 		return new Sample(states,t.getLength(),winner);
 	}
@@ -92,7 +88,8 @@ public class CompareEvaluations {
 				new SimpleOptEvaluationFunction(),
 				new LanchesterEvaluationFunction(),
 				new SimpleSqrtEvaluationFunction3(),
-				NetEvaluationFunction.getInstance()};
+				NetEvaluationFunction.getInstance()
+				};
 
 
 		List<File> files = new ArrayList<File>();
@@ -103,7 +100,6 @@ public class CompareEvaluations {
 		int[][] counts = new int[ef.length][21];
 		try {
 
-					int count=0;
 			for(File f : files){
 
 				Sample samples = getSamples(f, 3);
@@ -112,7 +108,6 @@ public class CompareEvaluations {
 				for (GameState gs : samples.states) {
 
 					int plotIndex = (gs.getTime()*20/samples.length); //every 5%! 
-					System.out.println(""+gs.getTime()+" "+samples.length+" "+plotIndex);
 
 
 					for(int eval=0;eval<ef.length;eval++){
@@ -122,10 +117,8 @@ public class CompareEvaluations {
 							accurate[eval][plotIndex]++;
 						}
 						counts[eval][plotIndex]++;
-						count++;
 					}
 				}
-				if(count==10000)break;
 			}
 
 		} catch (JDOMException e) {

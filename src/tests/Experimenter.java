@@ -162,7 +162,7 @@ public class Experimenter {
                         	XMLWriter xml;
                         	ZipOutputStream zip = null;
                         	//String filename=ai1.toString()+"Vs"+ai1.toString()+"-"+m+"-"+i;
-                        	String filename="AI:"+ai1_idx+"VsAI:"+ai2_idx+"-map:"+m+"-it:"+i;
+                        	String filename="AI"+ai1_idx+"VsAI"+ai2_idx+"-map"+m+"-it"+i;
                         	filename=filename.replace("/", "");
                         	filename=filename.replace(")", "");
                         	filename=filename.replace("(", "");
