@@ -29,7 +29,7 @@ public class NetEvaluationFunction extends EvaluationFunction {
 		if(instance == null) {
 			instance = new NetEvaluationFunction();
 			// instance.init("python echo.py");
-			instance.init("python py/interface.py 8 25");
+			instance.init("python src/py/interface.py 8 25");
 		}
 		return instance;
 	}

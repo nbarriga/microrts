@@ -28,7 +28,7 @@ while True:
     data = sock.recv(8192)
     a = map(int, data.split())
     w, l, planes = a[0:3]
-    # print w,l,p
+    #print w,l,planes
 
     # f = open("debug", "w")
     # f.write(data)
@@ -42,11 +42,13 @@ while True:
     # net.blobs['data'].data[...] = np.reshape(a[3:len(a)], [planes, w, l])
     # net.blobs['data'].data[...] = np.reshape(plane_data, [planes, w, l])
     x = np.reshape(plane_data, [planes, w, l])
-    net.blobs['data'].data[...] =  np.tile(x,(32,1,1,1))
+    #net.blobs['data'].data[...] =  np.tile(x,(32,1,1,1))
+    net.blobs['data'].data[...] =  x
 
 
     # compute
     out = net.forward()
+    print out['prob'][0][1]
     sock.sendall(str(out['prob'][0][1])+"\n")
     # sock.sendall(str(out['prob'].argmax())+"\n")
 

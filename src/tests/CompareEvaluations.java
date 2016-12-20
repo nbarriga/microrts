@@ -68,24 +68,21 @@ public class CompareEvaluations {
 		zip.getNextEntry();
 		Trace t = new Trace(new SAXBuilder().build(zip).getRootElement(), utt);
 
-		List<TraceEntry> entries = t.getEntries();
-		int nrEntries = entries.size();
-
-		int winner = new GameState(entries.get(nrEntries-1).getPhysicalGameState(), utt).winner();
+		int winner = t.getGameStateAtCycle(t.getLength()).winner();
 		if(winner == -1) {
-			return new Sample(states,nrEntries,-1);
+			return new Sample(states,t.getLength(),-1);
 		}
 
 
 		for(int i=0; i<n; i++)
 		{
 
-			int frameNR = generator.nextInt(nrEntries);
+			int frameNR = generator.nextInt(t.getLength());
 
-			GameState gs = new GameState(entries.get(frameNR).getPhysicalGameState(), utt);
+			GameState gs = t.getGameStateAtCycle(frameNR);
 			states.add(gs);
 		}
-		return new Sample(states,nrEntries,winner);
+		return new Sample(states,t.getLength(),winner);
 	}
 	public static void main(String[] args) {
 
@@ -106,17 +103,16 @@ public class CompareEvaluations {
 		int[][] counts = new int[ef.length][21];
 		try {
 
-			//		int count=0;
+					int count=0;
 			for(File f : files){
 
-				Sample samples = getSamples(f, 5);
-
-
+				Sample samples = getSamples(f, 3);
 
 
 				for (GameState gs : samples.states) {
 
 					int plotIndex = (gs.getTime()*20/samples.length); //every 5%! 
+					System.out.println(""+gs.getTime()+" "+samples.length+" "+plotIndex);
 
 
 					for(int eval=0;eval<ef.length;eval++){
@@ -126,8 +122,10 @@ public class CompareEvaluations {
 							accurate[eval][plotIndex]++;
 						}
 						counts[eval][plotIndex]++;
+						count++;
 					}
 				}
+				if(count==10000)break;
 			}
 
 		} catch (JDOMException e) {
@@ -141,7 +139,7 @@ public class CompareEvaluations {
 
 		for(int e=0;e<ef.length;e++){
 			System.out.print(ef[e].toString()+": ");
-			for(int i=0;i<22;i++){
+			for(int i=0;i<21;i++){
 				System.out.print(accurate[e][i]/(float)counts[e][i]+ " ");
 			}
 			System.out.println("");
