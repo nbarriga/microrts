@@ -25,17 +25,21 @@ public class NetEvaluationFunction extends EvaluationFunction {
 		catch (Exception e) {e.printStackTrace();}
 	}
 	
-	public static NetEvaluationFunction getInstance() {
+	private static int mapSize = -1;
+	public static NetEvaluationFunction getInstance(int mapSize) {
 		if(instance == null) {
 			instance = new NetEvaluationFunction();
 			// instance.init("python echo.py");
-			instance.init("python src/py/interface.py 8 25");
+			NetEvaluationFunction.mapSize=mapSize;
+			instance.init("python src/py/interface.py "+mapSize+" 25");
+		}else{
+			assert(NetEvaluationFunction.mapSize==mapSize);
 		}
 		return instance;
 	}
 	
     public float evaluate(int maxplayer, int minplayer, GameState gs) {
-
+    	assert(gs.getPhysicalGameState().getHeight()==mapSize);
     	//if(GameState.TIME_LIMIT!=-1&&gs.getTime()>=GameState.TIME_LIMIT)return 0.0f;//tie
     	// System.out.println("eval GETTING CALLED");
     	float p0WIN = 0.0f;
@@ -46,7 +50,7 @@ public class NetEvaluationFunction extends EvaluationFunction {
 			caffe.send(cnnGs.writePlanesCompressed());   
 	    	// System.out.println("sent");	
 			p0WIN = caffe.read();
-			if(maxplayer == 0) return (p0WIN-0.5f)*2.0f;
+			if(maxplayer == 1) return (p0WIN-0.5f)*2.0f;
 			return (0.5f - p0WIN)*2.0f;
 		} catch (Exception e) {e.printStackTrace();}
 		return p0WIN;
