@@ -97,13 +97,13 @@ public class CompareEvaluations {
 
 
 		float[][] accurate = new float[ef.length][21];
-		int[][] counts = new int[ef.length][21];
+		int[] counts = new int[21];
 		try {
 
 			for(File f : files){
 
 				System.out.println("sampling file: "+f.toString());
-				Sample samples = getSamples(f, 1);
+				Sample samples = getSamples(f, 2);
 
 
 				for (GameState gs : samples.states) {
@@ -121,8 +121,8 @@ public class CompareEvaluations {
 								(samples.winner==1 && evaluation<0)){
 							accurate[eval][plotIndex]++;
 						}
-						counts[eval][plotIndex]++;
 					}
+					counts[plotIndex]++;
 				}
 			}
 
@@ -136,11 +136,17 @@ public class CompareEvaluations {
 	
 
 		for(int e=0;e<ef.length;e++){
-			System.out.print(ef[e].toString()+": ");
+			//System.out.print(ef[e].toString()+": ");
+			System.out.print("[");
 			for(int i=0;i<21;i++){
-				System.out.format("%.2f ",accurate[e][i]/(float)counts[e][i]);
+				System.out.print(accurate[e][i]+", ");
 			}
-			System.out.println("");
+			System.out.println("]");
 		}
+			System.out.print("[");
+			for(int i=0;i<21;i++){
+				System.out.print(counts[i]+", ");
+			}
+			System.out.println("]");
 	}
 }
