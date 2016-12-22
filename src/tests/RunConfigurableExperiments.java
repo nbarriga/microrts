@@ -374,6 +374,9 @@ public class RunConfigurableExperiments {
         	saveTrace=true;
         	saveZip=true;
         	traceDir=args[5];
+        	traceDir=traceDir.replace("/", "");
+        	traceDir=traceDir.replace(")", "");
+        	traceDir=traceDir.replace("(", "");
         }
         if(true){
         	if(asymetric){
