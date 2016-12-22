@@ -19,8 +19,6 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
-import com.sun.javafx.geom.transform.GeneralTransform3D;
-
 import rts.units.UnitTypeTable;
 
 

@@ -13,8 +13,11 @@ PORT = 8080
 
 caffe.set_mode_cpu()
 #caffe.set_mode_gpu()
-net = caffe.Net('data/caffe/marius_8x8_deploy_v3.prototxt',
-                'data/caffe/marius_8x8_rtsnet_v3.caffemodel',
+net = caffe.Net(
+                #'data/caffe/marius_8x8_deploy_v3.prototxt',
+                #'data/caffe/marius_8x8_rtsnet_v3.caffemodel',
+                'data/caffe/'+str(dim)+'x'+str(dim)+'.prototxt',
+                'data/caffe/'+str(dim)+'x'+str(dim)+'.caffemodel',
                 caffe.TEST)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -48,6 +51,7 @@ while True:
 
     # compute
     out = net.forward()
+    #print out['prob']
     print out['prob'][0][1]
     sock.sendall(str(out['prob'][0][1])+"\n")
     # sock.sendall(str(out['prob'].argmax())+"\n")

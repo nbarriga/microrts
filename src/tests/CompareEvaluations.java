@@ -82,27 +82,28 @@ public class CompareEvaluations {
 	}
 	public static void main(String[] args) {
 
-
+		int size=8;
 		EvaluationFunction[] ef = {
 				new SimpleEvaluationFunction(),
 				new SimpleOptEvaluationFunction(),
 				new LanchesterEvaluationFunction(),
 				new SimpleSqrtEvaluationFunction3(),
-				NetEvaluationFunction.getInstance()
+				NetEvaluationFunction.getInstance(size)
 				};
 
 
 		List<File> files = new ArrayList<File>();
-		listf("8x8replays", files);
+		listf(""+size+"x"+size+"replays", files);
 
 
-		int[][] accurate = new int[ef.length][21];
+		float[][] accurate = new float[ef.length][21];
 		int[][] counts = new int[ef.length][21];
 		try {
 
 			for(File f : files){
 
-				Sample samples = getSamples(f, 3);
+				System.out.println("sampling file: "+f.toString());
+				Sample samples = getSamples(f, 1);
 
 
 				for (GameState gs : samples.states) {
@@ -111,8 +112,12 @@ public class CompareEvaluations {
 
 
 					for(int eval=0;eval<ef.length;eval++){
+
+						//System.out.println("eval: "+ef[eval].toString());
 						float evaluation = ef[eval].evaluate(0, 1, gs);
-						if((samples.winner==0 && evaluation>0)||
+						if(Math.abs(evaluation)<0.00001f)
+							 accurate[eval][plotIndex]+=0.5;
+						else if((samples.winner==0 && evaluation>0)||
 								(samples.winner==1 && evaluation<0)){
 							accurate[eval][plotIndex]++;
 						}
@@ -133,7 +138,7 @@ public class CompareEvaluations {
 		for(int e=0;e<ef.length;e++){
 			System.out.print(ef[e].toString()+": ");
 			for(int i=0;i<21;i++){
-				System.out.print(accurate[e][i]/(float)counts[e][i]+ " ");
+				System.out.format("%.2f ",accurate[e][i]/(float)counts[e][i]);
 			}
 			System.out.println("");
 		}
