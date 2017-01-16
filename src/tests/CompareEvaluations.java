@@ -30,7 +30,7 @@ public class CompareEvaluations {
 			UnitTypeTable.VERSION_ORIGINAL_FINETUNED,
 			UnitTypeTable.MOVE_CONFLICT_RESOLUTION_CANCEL_BOTH);
 
-	static Random generator = new Random(66);
+	static Random generator = new Random();
 
 	public static void listf(String directoryName, List<File> files) {
 		File directory = new File(directoryName);
@@ -82,7 +82,7 @@ public class CompareEvaluations {
 	}
 	public static void main(String[] args) {
 
-		int size=8;
+		int size=128;
 		EvaluationFunction[] ef = {
 				new SimpleEvaluationFunction(),
 				new SimpleOptEvaluationFunction(),
@@ -93,29 +93,40 @@ public class CompareEvaluations {
 
 
 		List<File> files = new ArrayList<File>();
-		listf(""+size+"x"+size+"replays", files);
+		listf("../cnn-data/"+size+"x"+size+"replaysTest", files);
 
 
 		float[][] accurate = new float[ef.length][21];
 		int[] counts = new int[21];
+		int count=0;
 		try {
 
 			for(File f : files){
 
 				System.out.println("sampling file: "+f.toString());
-				Sample samples = getSamples(f, 2);
+				Sample samples = getSamples(f, 25);
+
+				//System.out.println("got samples");
 
 
 				for (GameState gs : samples.states) {
 
 					int plotIndex = (gs.getTime()*20/samples.length); //every 5%! 
 
+					/*if(count%100==0){
+						try{
+						Thread.sleep(1000);
+						}catch(Exception e){}
+					}*/
 
 					for(int eval=0;eval<ef.length;eval++){
 
 						//System.out.println("eval: "+ef[eval].toString());
+						//System.out.println("eval");
 						float evaluation = ef[eval].evaluate(0, 1, gs);
-						if(Math.abs(evaluation)<0.00001f)
+						//if(eval==4)evaluation=-evaluation;
+						//System.out.println("eval done");
+						if(Math.abs(evaluation)<0.00000001f)
 							 accurate[eval][plotIndex]+=0.5;
 						else if((samples.winner==0 && evaluation>0)||
 								(samples.winner==1 && evaluation<0)){
@@ -123,6 +134,7 @@ public class CompareEvaluations {
 						}
 					}
 					counts[plotIndex]++;
+					count++;
 				}
 			}
 

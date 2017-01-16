@@ -14,13 +14,15 @@ public class NetEvaluationFunction extends EvaluationFunction {
 	}
 	private static NetEvaluationFunction instance = null;
 	private CaffeInterface caffe;
-	
+	private static int port = 8080;
+	private static String path = "data/caffe/";
+
 	private void init(String cmd)
 	{
 		caffe =  new CaffeInterface();
 		try
 		{
-			caffe.start(cmd);
+			caffe.start(cmd, port);
         }
 		catch (Exception e) {e.printStackTrace();}
 	}
@@ -31,7 +33,12 @@ public class NetEvaluationFunction extends EvaluationFunction {
 			instance = new NetEvaluationFunction();
 			// instance.init("python echo.py");
 			NetEvaluationFunction.mapSize=mapSize;
-			instance.init("python src/py/interface.py "+mapSize+" 25");
+			instance.init("python src/py/interface.py "
+					+port+" "
+					+mapSize
+					+" 25 "
+					+path+mapSize+"x"+mapSize+".prototxt "
+					+path+mapSize+"x"+mapSize+".caffemodel");
 		}else{
 			assert(NetEvaluationFunction.mapSize==mapSize);
 		}

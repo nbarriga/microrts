@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.FileSystems;
 
 import javax.swing.JFrame;
 
@@ -91,26 +93,70 @@ public class TraceExtracter {
 		}
 		return new Sample(states,t.getLength(),winner);
 	}
+	public static Sample getAllSamples(File trace) throws JDOMException, IOException{
+		List<GameState> states = new ArrayList<GameState>();
+
+		ZipInputStream zip=new ZipInputStream(new FileInputStream(trace.getAbsolutePath()));
+		zip.getNextEntry();
+		Trace t = new Trace(new SAXBuilder().build(zip).getRootElement(), utt);
+
+		int winner = t.getGameStateAtCycle(t.getLength()).winner();
+
+		if(winner == -1) {
+			return new Sample(states,t.getLength(),-1);
+		}
+
+		int step = 10 + generator.nextInt(10);
+
+		int i=0;
+	       while(i<t.getLength())
+		{
+			states.add(t.getGameStateAtCycle(i));
+			i=(i+step<t.getLength())?i+step:t.getLength();
+		}
+		return new Sample(states,t.getLength(),winner);
+	}
 	public static void main(String[] args) {
 
+		int size = 64;
+		String inDir="../cnn-data/"+size+"x"+size+"replays";
+		String outDir="../cnn-data/"+size+"x"+size+"extracted";
 		List<File> files = new ArrayList<File>();
-		listf("8x8replays", files);
+		listf(inDir, files);
 		
 		int count=0;
+		int testCount=0;
+		int sampleTestCount=0;
 		for(File f : files){
 			try
 			{
 				
-				Sample samples = getSamples(f, 3);
 
+				if(generator.nextInt(10)<1){//test
+					Files.copy(f.toPath(),FileSystems.getDefault().getPath(inDir+"Test","game"+testCount+".zip"));
+					testCount++;
+					Sample samples = getSamples(f, 12);
+					for (GameState gs : samples.states) {
+
+						CNNGameState cnngs=new CNNGameState(gs);
+						cnngs.writePlanes(outDir+"Test/game"+sampleTestCount);
+						cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, samples.winner);
+						sampleTestCount++;
+
+					}
+					continue;
+				}
+				//train
+				Sample samples = getSamples(f, 12);
+				//Sample samples = getAllSamples(f);
 				for (GameState gs : samples.states) {
 
 					CNNGameState cnngs=new CNNGameState(gs);
-					cnngs.writePlanes("8x8extracted/game"+count);
-					cnngs.writeLabel("8x8extracted/game"+count, samples.winner);
+					cnngs.writePlanes(outDir+"/game"+count);
+					cnngs.writeLabel(outDir+"/game"+count, samples.winner);
 					count++;
 
-			    }
+				}
 
 			}
 			catch (JDOMException e)

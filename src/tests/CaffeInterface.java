@@ -23,28 +23,28 @@ public class CaffeInterface {
     }
 
     public float read() throws Exception {
-    	fromClient = in.readLine();
+	    fromClient = in.readLine();
 	    // System.out.println("received: " + Integer.parseInt(fromClient));
 	    return Float.parseFloat(fromClient);
     }
 
-    public void start(String cmd) throws Exception {
+    public void start(String cmd, int port) throws Exception {
 
     	// String cmd = "python /media/sf_LINUX/microrts/echo.py";
     	
 	    try {	
 	        System.out.println(cmd);
 	        System.out.println(System.getProperty("user.dir"));
-	        Process p = Runtime.getRuntime().exec(cmd);
+		Process p = Runtime.getRuntime().exec(cmd);
 	    }catch (Exception err) {
 	        err.printStackTrace();
 	    }
 
-        server = new ServerSocket(8080);
-        System.out.println("wait for connection on port 8080");
+        server = new ServerSocket(port);
+        System.out.println("wait for connection on port "+port);
  
 		Socket client = server.accept();
-        System.out.println("got connection on port 8080");
+        System.out.println("got connection on port "+port);
         in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
         out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
