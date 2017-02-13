@@ -59,7 +59,7 @@ x = np.arange(20)*5 + 2.5
 colors=['black','red','blue','green','yellow']
 for alg in range(num): 
     plt.plot(x, res[alg], label='Algorithm '+str(alg), color=colors[alg], linewidth=2)
-#    plt.fill_between(x, res[alg]-i_sd[alg],  res[alg]+i_sd[alg], color=colors[alg], alpha=0.1)
+    plt.fill_between(x, res[alg]-i_sd[alg],  res[alg]+i_sd[alg], color=colors[alg], alpha=0.1)
 
 plt.legend(loc=4, ncol=1, fancybox=True, shadow=False)
 plt.setp(plt.gca().get_legend().get_texts(), fontsize='24')
