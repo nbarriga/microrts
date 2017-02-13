@@ -54,9 +54,10 @@ public class NetEvaluationFunction extends EvaluationFunction {
 		try
 		{ 
 			CNNGameState cnnGs=new CNNGameState(gs);
-			caffe.send(cnnGs.writePlanesCompressed());   
+			caffe.send(cnnGs.writeHeader()+cnnGs.writePlanesCompressed());   
 	    	// System.out.println("sent");	
 			p0WIN = caffe.read();
+			//System.out.println("eval: "+p0WIN);
 			if(maxplayer == 1) return (p0WIN-0.5f)*2.0f;
 			return (0.5f - p0WIN)*2.0f;
 		} catch (Exception e) {e.printStackTrace();}

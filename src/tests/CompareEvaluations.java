@@ -82,7 +82,14 @@ public class CompareEvaluations {
 	}
 	public static void main(String[] args) {
 
-		int size=128;
+		//int size=128;
+		//String dir="../cnn-data/"+size+"x"+size+"replaysTest";
+		if(args.length!=3)
+			System.out.println("Usage: prog mapSize directory samplesPerGame");
+		int size=Integer.parseInt(args[0]);
+		String dir = args[1];
+		int samplesPerGame = Integer.parseInt(args[2]);
+
 		EvaluationFunction[] ef = {
 				new SimpleEvaluationFunction(),
 				new SimpleOptEvaluationFunction(),
@@ -93,7 +100,7 @@ public class CompareEvaluations {
 
 
 		List<File> files = new ArrayList<File>();
-		listf("../cnn-data/"+size+"x"+size+"replaysTest", files);
+		listf(dir, files);
 
 
 		float[][] accurate = new float[ef.length][21];
@@ -104,7 +111,7 @@ public class CompareEvaluations {
 			for(File f : files){
 
 				System.out.println("sampling file: "+f.toString());
-				Sample samples = getSamples(f, 25);
+				Sample samples = getSamples(f, samplesPerGame);
 
 				//System.out.println("got samples");
 
@@ -124,8 +131,7 @@ public class CompareEvaluations {
 						//System.out.println("eval: "+ef[eval].toString());
 						//System.out.println("eval");
 						float evaluation = ef[eval].evaluate(0, 1, gs);
-						//if(eval==4)evaluation=-evaluation;
-						//System.out.println("eval done");
+						//if(eval==2)System.out.println("lanc: "+evaluation);
 						if(Math.abs(evaluation)<0.00000001f)
 							 accurate[eval][plotIndex]+=0.5;
 						else if((samples.winner==0 && evaluation>0)||
