@@ -35,19 +35,21 @@ public class CaffeInterface {
 	    try {	
 	        System.out.println(cmd);
 	        System.out.println(System.getProperty("user.dir"));
-		Process p = Runtime.getRuntime().exec(cmd);
+		//Process p = Runtime.getRuntime().exec(cmd);
 	    }catch (Exception err) {
 	        err.printStackTrace();
 	    }
 
-        server = new ServerSocket(port);
+        //server = new ServerSocket(port);
         System.out.println("wait for connection on port "+port);
  
-		Socket client = server.accept();
+		//Socket client = server.accept();
+		Socket client=new Socket("localhost",port);  
         System.out.println("got connection on port "+port);
         in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
         out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
+	send(cmd);
         // out = new PrintWriter(client.getOutputStream(),true);
 
     }

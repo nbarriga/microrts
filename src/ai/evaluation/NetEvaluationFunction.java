@@ -33,11 +33,11 @@ public class NetEvaluationFunction extends EvaluationFunction {
 			instance = new NetEvaluationFunction();
 			// instance.init("python echo.py");
 			NetEvaluationFunction.mapSize=mapSize;
-			instance.init("python src/py/interface.py "
-					+port+" "
-					+mapSize
-					+" 25 "
-					+path+mapSize+"x"+mapSize+".prototxt "
+			instance.init(//"python src/py/interface.py "
+					//+port+" "
+					//+mapSize
+					//+" 25 "
+					path+mapSize+"x"+mapSize+".prototxt "
 					+path+mapSize+"x"+mapSize+".caffemodel");
 		}else{
 			assert(NetEvaluationFunction.mapSize==mapSize);
