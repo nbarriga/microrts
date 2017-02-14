@@ -17,12 +17,9 @@ def main():
     #HOST = "localhost"
     HOST = ""
     
-    dims = [8, 16, 24, 128]
-    
-    
     #caffe.set_mode_cpu()
-    caffe.set_device(1)
-    caffe.set_mode_gpu()
+    #caffe.set_device(1)
+    #caffe.set_mode_gpu()
     #net = caffe.Net(
                     #'data/caffe/marius_8x8_deploy_v3.prototxt',
                     #'data/caffe/marius_8x8_rtsnet_v3.caffemodel',
@@ -44,17 +41,19 @@ def main():
         data = conn.recv(8192)
         definition, model = data.split()
         print("Loading model: "+model)
-        net = caffe.Net(
-                    definition,
-                    model,
-                    caffe.TEST)
-        th = threading.Thread(target=processRequests, args = (conn,net))
+        th = threading.Thread(target=processRequests, args = (conn, definition, model))
         th.start()
         print("Thread started")
 
     sock.close()
 
-def processRequests(conn, net):
+def processRequests(conn, definition, model):
+    caffe.set_device(1)
+    caffe.set_mode_gpu()
+    net = caffe.Net(
+                    definition,
+                    model,
+                    caffe.TEST)
     while True:
         data = conn.recv(8192)
         
@@ -70,7 +69,11 @@ def processRequests(conn, net):
     
         plane_data[a[3:len(a)]] = 1
     
+	
         x = np.reshape(plane_data, [planes, w, l])
+        #x = np.reshape(plane_data, [1, planes, w, l])
+	#x = augment(x)
+        #net.blobs['data'].reshape(8,planes,w,l)
         net.blobs['data'].data[...] =  x
     
     
@@ -78,6 +81,22 @@ def processRequests(conn, net):
         out = net.forward()
     
         conn.sendall(str(out['prob'][0][1][0][0])+"\n")
+        #conn.sendall(str(np.average(out['prob'][0][1][0]))+"\n")
         #sock.sendall(str(out['prob'][0][0])+"\n")
+
+def augment(data):
+    aug_data = np.zeros((8, data[0].shape[0], data[0].shape[1], data[0].shape[2]), dtype=np.uint8)
+
+    for idx, array in enumerate(data):
+        for i in xrange(array.shape[0]):
+            aug_data[idx*8+0][i] = array[i]
+            aug_data[idx*8+1][i] = np.rot90(array[i])
+            aug_data[idx*8+2][i] = np.rot90(array[i], 2)
+            aug_data[idx*8+3][i] = np.rot90(array[i], 3)
+            aug_data[idx*8+4][i] = np.flipud(aug_data[idx*8+0][i])
+            aug_data[idx*8+5][i] = np.fliplr(aug_data[idx*8+1][i])
+            aug_data[idx*8+6][i] = np.flipud(aug_data[idx*8+2][i])
+            aug_data[idx*8+7][i] = np.fliplr(aug_data[idx*8+3][i])
+    return aug_data
 
 main()
