@@ -91,10 +91,10 @@ public class CompareEvaluations {
 		int samplesPerGame = Integer.parseInt(args[2]);
 
 		EvaluationFunction[] ef = {
+				new SimpleSqrtEvaluationFunction3(),
 				new SimpleEvaluationFunction(),
 				new SimpleOptEvaluationFunction(),
 				new LanchesterEvaluationFunction(),
-				new SimpleSqrtEvaluationFunction3(),
 				NetEvaluationFunction.getInstance(size)
 				};
 

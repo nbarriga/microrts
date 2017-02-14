@@ -42,7 +42,7 @@ public class TraceExtracter {
 			UnitTypeTable.VERSION_ORIGINAL_FINETUNED,
 			UnitTypeTable.MOVE_CONFLICT_RESOLUTION_CANCEL_BOTH);
 	
-	static Random generator = new Random(66);
+	static Random generator = new Random();
 	
 	public static void listf(String directoryName, List<File> files) {
 	    File directory = new File(directoryName);
@@ -138,7 +138,7 @@ public class TraceExtracter {
 		List<File> files = new ArrayList<File>();
 		listf(inDir, files);
 
-		EvaluationFunction ef= NetEvaluationFunction.getInstance(8);
+		//EvaluationFunction ef= NetEvaluationFunction.getInstance(8);
 		
 		int count=0;
 		int testCount=0;
@@ -156,8 +156,8 @@ public class TraceExtracter {
 
 						CNNGameState cnngs=new CNNGameState(gs);
 						cnngs.writePlanes(outDir+"Test/game"+sampleTestCount);
-						//cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, samples.winner);
-						cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, ef.evaluate(0,1,gs));
+						cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, samples.winner);
+						//cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, ef.evaluate(0,1,gs));
 						sampleTestCount++;
 
 					}
@@ -170,8 +170,8 @@ public class TraceExtracter {
 
 					CNNGameState cnngs=new CNNGameState(gs);
 					cnngs.writePlanes(outDir+"/game"+count);
-					//cnngs.writeLabel(outDir+"/game"+count, samples.winner);
-					cnngs.writeLabel(outDir+"/game"+count, ef.evaluate(0,1,gs));
+					cnngs.writeLabel(outDir+"/game"+count, samples.winner);
+					//cnngs.writeLabel(outDir+"/game"+count, ef.evaluate(0,1,gs));
 					count++;
 
 				}

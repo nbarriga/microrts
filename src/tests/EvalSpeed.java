@@ -82,18 +82,22 @@ public class EvalSpeed {
 	}
 	public static void main(String[] args) {
 
-		int size=8;
+		if(args.length!=3)
+			System.out.println("Usage: prog mapSize directory samplesPerGame");
+		int size=Integer.parseInt(args[0]);
+		String dir = args[1];
+		int samplesPerGame = Integer.parseInt(args[2]);
 		EvaluationFunction[] ef = {
+				new SimpleSqrtEvaluationFunction3(),
 				new SimpleEvaluationFunction(),
 				new SimpleOptEvaluationFunction(),
 				new LanchesterEvaluationFunction(),
-				new SimpleSqrtEvaluationFunction3(),
 				NetEvaluationFunction.getInstance(size)
 				};
 
 
 		List<File> files = new ArrayList<File>();
-		listf("../cnn-data/"+size+"x"+size+"replaysTest", files);
+		listf(dir, files);
 
 
 		float[][] accurate = new float[ef.length][21];
@@ -106,7 +110,7 @@ public class EvalSpeed {
 			for(File f : files){
 
 				System.out.println("sampling file: "+f.toString());
-				Sample samples = getSamples(f, 50);
+				Sample samples = getSamples(f, samplesPerGame);
 				allSamples.add(samples);
 			}
 			long end = System.currentTimeMillis();
