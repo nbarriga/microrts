@@ -1,24 +1,15 @@
 package tests;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.zip.ZipInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Vector;
 import java.util.Arrays;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
-
-import javax.swing.JFrame;
 
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
@@ -34,15 +25,10 @@ import ai.abstraction.WorkerRush;
 import ai.abstraction.LightRush;
 import ai.abstraction.RangedRush;
 import ai.abstraction.HeavyRush;
-import gui.TraceVisualizer;
 import rts.CNNGameState;
 import rts.GameState;
-import rts.PhysicalGameState;
 import rts.Trace;
 import rts.units.UnitTypeTable;
-import tests.CompareEvaluations.Sample;
-import rts.TraceEntry;
-import util.Pair;
 
 public class PuppetTraceExtracter {
 

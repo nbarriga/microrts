@@ -1,3 +1,4 @@
 *.class
 /bin/
 /old/
+/8x8*/
