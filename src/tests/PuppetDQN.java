@@ -19,12 +19,15 @@ import ai.evaluation.EvaluationFunction;
 import ai.evaluation.LanchesterEvaluationFunction;
 // import ai.evaluation.ScriptEvaluation;
 import ai.evaluation.SimpleEvaluationFunction;
+import ai.mcts.naivemcts.NaiveMCTS;
 import ai.evaluation.NetEvaluationFunction;
 import ai.core.AI;
+import ai.core.ContinuingAI;
 import ai.abstraction.pathfinding.FloodFillPathFinding;
 import ai.abstraction.WorkerRush;
 import ai.abstraction.LightRush;
 import ai.abstraction.RangedRush;
+import ai.RandomBiasedAI;
 import ai.abstraction.HeavyRush;
 import rts.CNNGameState;
 import rts.GameState;
@@ -98,8 +101,8 @@ public class PuppetDQN {
 			if (gs.isComplete()) {
 				gameover = gs.cycle();
 			} else {
-				gs.issue(ai1.getAction(player1, gs));
-				gs.issue(ai2.getAction(player2, gs));
+				gs.issueSafe(ai1.getAction(player1, gs));
+				gs.issueSafe(ai2.getAction(player2, gs));
 			}
 		}
 	}
@@ -114,29 +117,135 @@ public class PuppetDQN {
 		float reward;
 		String next;
 	}
+	public static boolean gameover(GameState gs){
+		return gs.gameover()||gs.getTime()>5000;
+	}
+	static int numActions = 4;
+	static int action_time = 100;
+	static String map="maps/basesWorkers8x8.xml";
+	static AI[] ais = {
+			new WorkerRush(utt,new FloodFillPathFinding()),
+			new LightRush(utt,new FloodFillPathFinding()),
+			new RangedRush(utt,new FloodFillPathFinding()),
+			new HeavyRush(utt,new FloodFillPathFinding()),
+			new ContinuingAI(new NaiveMCTS(100, -1, 100, 10, 0.33f, 0.0f, 0.75f, 
+					new RandomBiasedAI(), new SimpleEvaluationFunction()))
+	};
+	public static void test(CaffeInterface net) throws Exception{
+		System.out.println("Testing");
+		int M=10;
+
+		//float[][] score=new float[4][4];
+		float[] score=new float[ais.length];
+		for(int ep=0;ep<M;ep++){
+			//for(int i=0;i<numActions;i++){
+
+			for(int j=0;j<ais.length;j++){
+
+
+				GameState gs=new GameState(PhysicalGameState.load(map, utt),utt);
+				CNNGameState cnngs=new CNNGameState(gs);
+				for(int i=0;i<ais.length;i++){
+					ais[i].reset();
+				}
+				AI opp=ais[j].clone();
+				opp.reset();
+				while(!gameover(gs)){
+					String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
+					net.send("eval\n"+current);
+					int action=net.readInt();
+					assert action<numActions;
+					if(ep+j==0)
+						System.out.print(action+" ");
+					simulate(gs, ais[action].clone(), opp, 0, 1, action_time);
+					//simulate(gs, ais[i], ais[j], 0, 1, 10000);
+				}
+				if(ep+j==0)
+					System.out.println();
+				switch(gs.winner()){
+				case -1:
+					score[j]+=0.5;
+					//score[i][j]+=0.5;
+					//score[j][i]+=0.5;
+					break;
+				case 0:
+					score[j]+=1;
+					//score[i][j]+=1;
+					break;
+//				case 1:
+//					score[j][i]+=1;
+//					break;
+				}
+			//}
+			}
+		}
+		//for(int i=0;i<numActions;i++){
+		for(int j=0;j<ais.length;j++){
+			System.out.print(score[j]*100.0/M+" ");
+			//System.out.print(score[i][j]+" ");
+		}
+		System.out.println();
+		//}
+	}
+	public static void init(CaffeInterface net) throws Exception{
+		int it=0;
+		while(true){
+			if(it>=500)break;
+			GameState gs=new GameState(PhysicalGameState.load(map, utt),utt);
+			CNNGameState cnngs=new CNNGameState(gs);
+			
+			for(int i=0;i<ais.length;i++){
+				ais[i].reset();
+			}
+	
+			AI opponent=ais[generator.nextInt(ais.length)].clone();//use an older network for self-play
+			opponent.reset();
+			while(!gameover(gs)){
+				it++;
+				String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
+				int action=generator.nextInt(numActions);
+
+				
+				simulate(gs, ais[action], opponent, 0, 1, action_time);
+				int winner =gs.winner();
+				float reward=(!gameover(gs))||winner<0?0:1-2*winner;
+				net.send("store\n"+current);//current state
+				net.send(Integer.toString(action));//action
+				net.send(Float.toString(reward));//reward
+				String next=cnngs.writeHeader()+cnngs.writePlanesCompressed();
+				assert current != next;
+				net.send(next);//next state
+				net.send(Integer.toString(gameover(gs)?1:0));//is it terminal
+
+			}
+		}
+	}
 	public static void main(String[] args) throws Exception{
 		//Algorithm 1: deep Q-learning with experience replay.
-		int M=100;
+		int M=10000;
 		float epsilon_start = 1;
 		float epsilon_end = 0.1f;
-		float epsilon_anneal = 100;
-		int numActions = 4;
-		int action_time = 50;
-		AI[] ais = {
-				new WorkerRush(utt,new FloodFillPathFinding()),
-				new LightRush(utt,new FloodFillPathFinding()),
-				new RangedRush(utt,new FloodFillPathFinding()),
-				new HeavyRush(utt,new FloodFillPathFinding()),
-		};
+		float epsilon_anneal = 1000;
+
 		CaffeInterface net=new CaffeInterface();
 		net.start(8080);
-		for(int ep=0;ep<M;ep++){
-			float epsilon = ep* (epsilon_end-epsilon_start)/epsilon_anneal+epsilon_start;
-			System.out.println("eps: "+epsilon);
 
-			GameState gs=new GameState(PhysicalGameState.load("maps/basesWorkers8x8.xml", utt),utt);
+		test(net);
+		System.out.println("Filling D");
+		init(net);
+		System.out.println("Training");
+		int it=0;
+		for(int ep=0;ep<M;ep++){
+			GameState gs=new GameState(PhysicalGameState.load(map, utt),utt);
 			CNNGameState cnngs=new CNNGameState(gs);
-			while(!gs.gameover()){
+			for(int j=0;j<ais.length;j++){
+				ais[j].reset();
+			}
+			AI opponent=ais[generator.nextInt(ais.length)].clone();//use an older network for self-play
+			opponent.reset();
+			while(!gameover(gs)){
+				float epsilon = it* (epsilon_end-epsilon_start)/epsilon_anneal+epsilon_start;
+				it++;
 				String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
 				int action;
 				if(generator.nextDouble()<epsilon){
@@ -145,22 +254,25 @@ public class PuppetDQN {
 				else{
 					net.send("eval\n"+current);
 					action=net.readInt();
-					System.out.println(""+action);
+					assert action<numActions;
+					//System.out.println(""+action);
 
 				}
-				int opponent=0;//use an older network for self-play
-				simulate(gs, ais[action], ais[opponent], 0, 1, action_time);
+				
+				simulate(gs, ais[action], opponent, 0, 1, action_time);
 				int winner =gs.winner();
-				float reward=gs.gameover()||winner<0?0:1-2*winner;
-				net.send("store\n"+current);
-				net.send(Integer.toString(action));
-				net.send(Float.toString(reward));
+				float reward=(!gameover(gs))||winner<0?0:1-2*winner;
+				net.send("store\n"+current);//current state
+				net.send(Integer.toString(action));//action
+				net.send(Float.toString(reward));//reward
 				String next=cnngs.writeHeader()+cnngs.writePlanesCompressed();
 				assert current != next;
-				net.send(next);
-				net.send(Integer.toString(gs.gameover()?1:0));
+				net.send(next);//next state
+				net.send(Integer.toString(gameover(gs)?1:0));//is it terminal
 			}
+			if(ep%10==0)test(net);
 		}
+		
 
 		
 //		//int size = 64;
