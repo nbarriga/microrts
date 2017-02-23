@@ -41,7 +41,7 @@ public class PuppetNoPlan extends InterruptibleAIWithComputationBudget {
 
 	@Override
 	public AI clone() {
-		PuppetNoPlan clone=new PuppetNoPlan(puppet);
+		PuppetNoPlan clone=new PuppetNoPlan((PuppetBase)puppet.clone());
 		return clone;
 	}
 
