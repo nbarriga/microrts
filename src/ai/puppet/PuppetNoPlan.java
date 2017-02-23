@@ -3,9 +3,12 @@ package ai.puppet;
 import ai.core.AI;
 import ai.core.InterruptibleAIWithComputationBudget;
 import ai.core.ParameterSpecification;
+
+import java.util.Collection;
 import java.util.List;
 import rts.GameState;
 import rts.PlayerAction;
+import util.Pair;
 
 public class PuppetNoPlan extends InterruptibleAIWithComputationBudget {
 
@@ -55,5 +58,9 @@ public class PuppetNoPlan extends InterruptibleAIWithComputationBudget {
     @Override
     public List<ParameterSpecification> getParameters() {
         return puppet.getParameters();
-    }          
+    }    
+    
+    public Collection<Pair<Integer, Integer>> getBestChoicesSoFar() throws Exception {
+		return puppet.getBestChoicesSoFar();
+	}
 }

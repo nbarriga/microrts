@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Arrays;
+import java.util.Collection;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
 
@@ -18,9 +19,13 @@ import ai.evaluation.EvaluationFunction;
 import ai.evaluation.LanchesterEvaluationFunction;
 // import ai.evaluation.ScriptEvaluation;
 import ai.evaluation.SimpleEvaluationFunction;
+import ai.puppet.PuppetNoPlan;
+import ai.puppet.PuppetSearchAB;
+import ai.puppet.SingleChoiceConfigurableScript;
 import ai.evaluation.NetEvaluationFunction;
 import ai.core.AI;
 import ai.abstraction.pathfinding.FloodFillPathFinding;
+import ai.abstraction.pathfinding.PathFinding;
 import ai.abstraction.WorkerRush;
 import ai.abstraction.LightRush;
 import ai.abstraction.RangedRush;
@@ -29,6 +34,7 @@ import rts.CNNGameState;
 import rts.GameState;
 import rts.Trace;
 import rts.units.UnitTypeTable;
+import util.Pair;
 
 public class PuppetTraceExtracter {
 
@@ -36,7 +42,7 @@ public class PuppetTraceExtracter {
 			UnitTypeTable.VERSION_ORIGINAL_FINETUNED,
 			UnitTypeTable.MOVE_CONFLICT_RESOLUTION_CANCEL_BOTH);
 	
-	static Random generator = new Random(66);
+	static Random generator = new Random();
 	
 	public static void listf(String directoryName, List<File> files) {
 	    File directory = new File(directoryName);
@@ -105,6 +111,8 @@ public class PuppetTraceExtracter {
 		File d = new File(dir);
 		d.mkdirs();
 	}
+	static PathFinding getPathFinding(){return new FloodFillPathFinding();}
+
 
 	public static void main(String[] args) throws Exception{
 
@@ -125,13 +133,27 @@ public class PuppetTraceExtracter {
 		List<File> files = new ArrayList<File>();
 		listf(inDir, files);
 		
-		AI ais[] = new AI[]{
-			new WorkerRush(utt,new FloodFillPathFinding()),
-			new LightRush(utt,new FloodFillPathFinding()),
-			new RangedRush(utt,new FloodFillPathFinding()),
-			new HeavyRush(utt,new FloodFillPathFinding()),
-			};
-		EvaluationFunction ef =   NetEvaluationFunction.getInstance(size);
+//		AI[] ais = {
+//				new WorkerRush(utt,getPathFinding()),
+//				new LightRush(utt,getPathFinding()),
+//				new RangedRush(utt,getPathFinding()),
+//				new HeavyRush(utt,getPathFinding()),
+//			};
+		PuppetNoPlan puppet=new PuppetNoPlan(
+				new PuppetSearchAB(
+						1000, -1,
+						-1, -1,
+						100,
+						new SingleChoiceConfigurableScript(getPathFinding(),
+								new AI[]{
+										new WorkerRush(utt, getPathFinding()),
+										new LightRush(utt, getPathFinding()),
+										new RangedRush(utt, getPathFinding()),
+										new HeavyRush(utt, getPathFinding()),
+						}),
+						new SimpleEvaluationFunction())
+                );
+		//EvaluationFunction ef =   NetEvaluationFunction.getInstance(size);
 		int count=0;
 		int testCount=0;
 		int sampleTestCount=0;
@@ -147,35 +169,30 @@ public class PuppetTraceExtracter {
 				Sample samples = getSamples(f, samplesPerGame);
 				//Sample samples = getAllSamples(f);
 				for (GameState gs : samples.states) {
-
-					for(int i=0;i<ais.length;i++){
-						for(int j=0;j<ais.length;j++){
-							//writePlanes of original GS 
-							//write script planes
+					for(int p=0;p<2;p++){
+						puppet.reset();
+						puppet.startNewComputation(p, gs);
+						puppet.computeDuringOneGameFrame();
+						Collection<Pair<Integer, Integer>> choices = puppet.getBestChoicesSoFar();
+						assert choices.size()==1;
+						for(Pair<Integer, Integer> choice:choices){
+							System.out.println(choice.m_a+": "+choice.m_b);
 							CNNGameState cnngs=new CNNGameState(gs);
 							if(test){
-								cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount, ais.length, i, j);
+								cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,1,p);
 							}else{
-								cnngs.writePlanesExtra(outDir+"/game"+count, ais.length, i, j);
+								cnngs.writePlanesExtra(outDir+"/game"+count,1,p);
 							}
-							//simulate game for each script combination
-							GameState copyGs = gs.clone();
-							simulate(copyGs, ais[i], ais[j], 0, 1, 200);
-							//call network eval
-							float eval = ef.evaluate(0,1,copyGs);
-							//writeLabel: eval
 							if(test){
-								cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, eval);
+								cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, choice.m_b);
 								sampleTestCount++;
 							}else{
-								cnngs.writeLabel(outDir+"/game"+count, eval);
+								cnngs.writeLabel(outDir+"/game"+count, choice.m_b);
 								count++;
 							}
 						}
 					}
-
 				}
-
 			}
 			catch (JDOMException e)
 			{

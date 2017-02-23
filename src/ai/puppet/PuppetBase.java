@@ -1,6 +1,7 @@
 package ai.puppet;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 import ai.core.AI;
@@ -119,7 +120,7 @@ public abstract class PuppetBase extends AI {
 	abstract void computeDuringOneGameFrame() throws Exception;
 	abstract PlayerAction getBestActionSoFar() throws Exception;
 	
-	
+    abstract Collection<Pair<Integer, Integer>> getBestChoicesSoFar() throws Exception ;
 	
 	static void simulate(GameState gs, AI ai1, AI ai2, int player1, int player2, int time)
 			throws Exception {

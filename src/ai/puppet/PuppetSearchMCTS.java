@@ -338,6 +338,13 @@ public class PuppetSearchMCTS extends PuppetBase {
     
     public void setEvaluationFunction(EvaluationFunction a_ef) {
         eval = a_ef;
-    }      
+    }
+
+
+	@Override
+	Collection<Pair<Integer, Integer>> getBestChoicesSoFar() throws Exception {
+		assert(!PLAN):"This method can only be called when not using s standing plan";
+		return root.actions[root.bestChild().index].choices;
+	}      
     
 }

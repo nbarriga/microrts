@@ -253,6 +253,11 @@ public class PuppetSearchAB extends PuppetBase {
 		DEPTH=0;
 	}
 	@Override
+    public Collection<Pair<Integer, Integer>> getBestChoicesSoFar() throws Exception {
+		assert(!PLAN):"This method can only be called when not using s standing plan";
+		return currentPlan.getChoices();
+	}
+	@Override
 	PlayerAction getBestActionSoFar() throws Exception {
 		assert(!PLAN):"This method can only be called when not using a standing plan";
 		if (DEBUG>=1) System.out.println("ABCD:\n" + currentPlan + " in " 
