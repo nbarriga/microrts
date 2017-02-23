@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.Arrays;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
+import java.nio.charset.Charset;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
@@ -34,6 +37,12 @@ import rts.GameState;
 import rts.PhysicalGameState;
 import rts.Trace;
 import rts.units.UnitTypeTable;
+import ai.puppet.BasicConfigurableScript;
+import ai.puppet.PuppetNoPlan;
+import ai.puppet.PuppetSearchAB;
+import ai.puppet.PuppetSearchMCTS;
+import ai.puppet.SingleChoiceConfigurableScript;
+import ai.abstraction.pathfinding.PathFinding;
 
 public class PuppetDQN {
 
@@ -41,7 +50,7 @@ public class PuppetDQN {
 			UnitTypeTable.VERSION_ORIGINAL_FINETUNED,
 			UnitTypeTable.MOVE_CONFLICT_RESOLUTION_CANCEL_BOTH);
 	
-	static Random generator = new Random(66);
+	static Random generator = new Random();
 	
 	public static void listf(String directoryName, List<File> files) {
 	    File directory = new File(directoryName);
@@ -122,76 +131,113 @@ public class PuppetDQN {
 	}
 	static int numActions = 4;
 	static int action_time = 100;
-	static String map="maps/basesWorkers8x8.xml";
+	//static String map="maps/basesWorkers8x8.xml";
+	//static String map="maps/BroodWar/(4)BloodBath.scmA.xml";
+	static PathFinding getPathFinding(){return new FloodFillPathFinding();}
+	static ArrayList<String> maps=new ArrayList<String>();
 	static AI[] ais = {
-			new WorkerRush(utt,new FloodFillPathFinding()),
-			new LightRush(utt,new FloodFillPathFinding()),
-			new RangedRush(utt,new FloodFillPathFinding()),
-			new HeavyRush(utt,new FloodFillPathFinding()),
-			new ContinuingAI(new NaiveMCTS(100, -1, 100, 10, 0.33f, 0.0f, 0.75f, 
-					new RandomBiasedAI(), new SimpleEvaluationFunction()))
+			new WorkerRush(utt,getPathFinding()),
+			new LightRush(utt,getPathFinding()),
+			new RangedRush(utt,getPathFinding()),
+			new HeavyRush(utt,getPathFinding()),
+			//new ContinuingAI(new NaiveMCTS(100, -1, 100, 10, 0.33f, 0.0f, 0.75f, 
+			//		new RandomBiasedAI(), new SimpleEvaluationFunction()))
+		                        new PuppetNoPlan(
+                                        new PuppetSearchAB(
+                                                        100, -1,
+                                                        -1, -1,
+                                                        100,
+                                                        new SingleChoiceConfigurableScript(getPathFinding(),
+                                                                        new AI[]{
+                                                                                        new WorkerRush(utt, getPathFinding()),
+                                                                                        new LightRush(utt, getPathFinding()),
+                                                                                        new RangedRush(utt, getPathFinding()),
+                                                                                        new HeavyRush(utt, getPathFinding()),
+                                                        }),
+                                                        new SimpleEvaluationFunction())
+                                        )
 	};
 	public static void test(CaffeInterface net) throws Exception{
 		System.out.println("Testing");
 		int M=10;
 
 		//float[][] score=new float[4][4];
-		float[] score=new float[ais.length];
-		for(int ep=0;ep<M;ep++){
-			//for(int i=0;i<numActions;i++){
+		int numScores=ais.length+2;
+		float[][] score=new float[numScores][ais.length];
+		for(int k=0;k<numScores;k++){
+			 System.out.println("Calculating score");
+			for(int ep=0;ep<M;ep++){
+				//for(int i=0;i<numActions;i++){
 
-			for(int j=0;j<ais.length;j++){
+				for(int j=0;j<ais.length;j++){
 
 
-				GameState gs=new GameState(PhysicalGameState.load(map, utt),utt);
-				CNNGameState cnngs=new CNNGameState(gs);
-				for(int i=0;i<ais.length;i++){
-					ais[i].reset();
+					GameState gs=new GameState(PhysicalGameState.load(maps.get(generator.nextInt(maps.size())), utt),utt);
+					CNNGameState cnngs=new CNNGameState(gs);
+					for(int i=0;i<ais.length;i++){
+						ais[i].reset();
+					}
+					AI opp=ais[j].clone();
+					opp.reset();
+					while(!gameover(gs)){
+						if(k==numScores-2){
+							String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
+							net.send("eval\n"+current);
+							int action=net.readInt();
+							assert action<numActions;
+							//if(ep+j==0)
+							//	System.out.print(action+" ");
+							simulate(gs, ais[action].clone(), opp, 0, 1, action_time);
+						}else if(k==numScores-1){
+							simulate(gs, ais[generator.nextInt(numActions)].clone(), opp, 0, 1, action_time);
+						}else{
+							simulate(gs, ais[k].clone(), opp, 0, 1, action_time);
+						}
+
+						//simulate(gs, ais[i], ais[j], 0, 1, 10000);
+					}
+					switch(gs.winner()){
+						case -1:
+							score[k][j]+=0.5;
+							//score[i][j]+=0.5;
+							//score[j][i]+=0.5;
+							break;
+						case 0:
+							score[k][j]+=1;
+							//score[i][j]+=1;
+							break;
+							//				case 1:
+							//					score[j][i]+=1;
+							//					break;
+					}
+					//}
 				}
-				AI opp=ais[j].clone();
-				opp.reset();
-				while(!gameover(gs)){
-					String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
-					net.send("eval\n"+current);
-					int action=net.readInt();
-					assert action<numActions;
-					if(ep+j==0)
-						System.out.print(action+" ");
-					simulate(gs, ais[action].clone(), opp, 0, 1, action_time);
-					//simulate(gs, ais[i], ais[j], 0, 1, 10000);
-				}
-				if(ep+j==0)
-					System.out.println();
-				switch(gs.winner()){
-				case -1:
-					score[j]+=0.5;
-					//score[i][j]+=0.5;
-					//score[j][i]+=0.5;
-					break;
-				case 0:
-					score[j]+=1;
-					//score[i][j]+=1;
-					break;
-//				case 1:
-//					score[j][i]+=1;
-//					break;
-				}
-			//}
 			}
 		}
 		//for(int i=0;i<numActions;i++){
-		for(int j=0;j<ais.length;j++){
-			System.out.print(score[j]*100.0/M+" ");
-			//System.out.print(score[i][j]+" ");
-		}
 		System.out.println();
+		for(int k=0;k<numScores;k++){
+			float acum=0;
+			if(k==numScores-2)
+				System.out.print("net: ");
+			else if(k==numScores-1)
+				System.out.print("rnd: ");
+			else
+				System.out.print(k+": ");
+			for(int j=0;j<ais.length;j++){
+				System.out.print(score[k][j]*100.0/M+" ");
+				acum+=score[k][j];
+				//System.out.print(score[i][j]+" ");
+			}
+			System.out.println(" "+acum*100.0/(M*ais.length));
+		}
 		//}
 	}
 	public static void init(CaffeInterface net) throws Exception{
 		int it=0;
 		while(true){
 			if(it>=500)break;
-			GameState gs=new GameState(PhysicalGameState.load(map, utt),utt);
+			GameState gs=new GameState(PhysicalGameState.load(maps.get(generator.nextInt(maps.size())), utt),utt);
 			CNNGameState cnngs=new CNNGameState(gs);
 			
 			for(int i=0;i<ais.length;i++){
@@ -201,7 +247,7 @@ public class PuppetDQN {
 			AI opponent=ais[generator.nextInt(ais.length)].clone();//use an older network for self-play
 			opponent.reset();
 			while(!gameover(gs)){
-				it++;
+				if((++it)>=500)break;
 				String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
 				int action=generator.nextInt(numActions);
 
@@ -221,22 +267,30 @@ public class PuppetDQN {
 		}
 	}
 	public static void main(String[] args) throws Exception{
+		try (Stream<String> lines = Files.lines(Paths.get("maps.txt"), Charset.defaultCharset())) {
+			lines.forEachOrdered(line -> {
+				try {
+					if(!line.startsWith("#")&&!line.isEmpty())maps.add(line);
+				} catch (Exception ex) {
+					throw new RuntimeException(ex);
+				}
+			});
+		}
 		//Algorithm 1: deep Q-learning with experience replay.
 		int M=10000;
-		float epsilon_start = 1;
+		float epsilon_start = 1.0f;
 		float epsilon_end = 0.1f;
-		float epsilon_anneal = 1000;
+		float epsilon_anneal = M;
 
 		CaffeInterface net=new CaffeInterface();
 		net.start(8080);
 
-		test(net);
+					test(net);
 		System.out.println("Filling D");
 		init(net);
-		System.out.println("Training");
 		int it=0;
 		for(int ep=0;ep<M;ep++){
-			GameState gs=new GameState(PhysicalGameState.load(map, utt),utt);
+			GameState gs=new GameState(PhysicalGameState.load(maps.get(generator.nextInt(maps.size())), utt),utt);
 			CNNGameState cnngs=new CNNGameState(gs);
 			for(int j=0;j<ais.length;j++){
 				ais[j].reset();
@@ -244,7 +298,11 @@ public class PuppetDQN {
 			AI opponent=ais[generator.nextInt(ais.length)].clone();//use an older network for self-play
 			opponent.reset();
 			while(!gameover(gs)){
-				float epsilon = it* (epsilon_end-epsilon_start)/epsilon_anneal+epsilon_start;
+				float epsilon = java.lang.Math.max(epsilon_end,epsilon_start - it*(epsilon_start-epsilon_end)/epsilon_anneal);
+				if(it%1000==0){
+					test(net);
+					System.out.println("Training, epsilon: "+epsilon+", episode: "+ep+", frame: "+it);
+				}
 				it++;
 				String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
 				int action;
@@ -270,7 +328,6 @@ public class PuppetDQN {
 				net.send(next);//next state
 				net.send(Integer.toString(gameover(gs)?1:0));//is it terminal
 			}
-			if(ep%10==0)test(net);
 		}
 		
 
