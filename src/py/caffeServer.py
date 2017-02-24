@@ -80,7 +80,7 @@ def processRequests(conn, definition, model):
         # compute
         out = net.forward()
     
-        output=" ".join([str(prob) for prob in out['prob'][0][:][0][0]])+"\n"
+        output=" ".join([str(prob) for prob in out['prob'][0,:,0,0]])+"\n"
         conn.sendall(output)
         #conn.sendall(str(out['prob'][0][1][0][0])+"\n")
         #conn.sendall(str(np.average(out['prob'][0][1][0]))+"\n")
