@@ -119,8 +119,8 @@ public class PuppetTraceExtracter {
 		//int size = 64;
 		//String inDir="../cnn-data/"+size+"x"+size+"replays";
 		//String outDir="../cnn-data/"+size+"x"+size+"extracted";
-		if(args.length!=3)
-			 System.out.println("Usage: prog size inDirectory outDirectory samplesPerGame");
+		if(args.length!=4)
+			 System.out.println("Usage: prog size inDirectory outDirectory samplesPerGame searchTime");
 		int size = Integer.parseInt(args[0]);
 		String inDir=args[1];
 		inDir = inDir.replaceAll("/$", "");
@@ -128,10 +128,11 @@ public class PuppetTraceExtracter {
 		outDir = outDir.replaceAll("/$", "");
 		createDir(outDir);
 		createDir(outDir+"Test");
-		createDir(inDir+"Test");
+		createDir(outDir+"ReplaysTest");
 		int samplesPerGame = Integer.parseInt(args[3]);
 		List<File> files = new ArrayList<File>();
 		listf(inDir, files);
+		int searchTime = Integer.parseInt(args[4]);
 		
 //		AI[] ais = {
 //				new WorkerRush(utt,getPathFinding()),
@@ -139,9 +140,9 @@ public class PuppetTraceExtracter {
 //				new RangedRush(utt,getPathFinding()),
 //				new HeavyRush(utt,getPathFinding()),
 //			};
-		PuppetNoPlan puppet=new PuppetNoPlan(
+		PuppetNoPlan puppetOrig=new PuppetNoPlan(
 				new PuppetSearchAB(
-						1000, -1,
+						searchTime, -1,
 						-1, -1,
 						100,
 						new SingleChoiceConfigurableScript(getPathFinding(),
@@ -151,56 +152,52 @@ public class PuppetTraceExtracter {
 										new RangedRush(utt, getPathFinding()),
 										new HeavyRush(utt, getPathFinding()),
 						}),
-						new SimpleEvaluationFunction())
+						//new SimpleEvaluationFunction()
+						NetEvaluationFunction.getInstance(size)
+						)
                 );
 		//EvaluationFunction ef =   NetEvaluationFunction.getInstance(size);
 		int count=0;
 		int testCount=0;
 		int sampleTestCount=0;
+		int fn=0;
 		for(File f : files){
-			try
-			{
-				boolean test=false;
-				if(generator.nextInt(10)<1){//test
-					test=true;
-					Files.copy(f.toPath(),FileSystems.getDefault().getPath(inDir+"Test","game"+testCount+".zip"));
-					testCount++;
-				}
-				Sample samples = getSamples(f, samplesPerGame);
-				//Sample samples = getAllSamples(f);
-				for (GameState gs : samples.states) {
-					for(int p=0;p<2;p++){
-						puppet.reset();
-						puppet.startNewComputation(p, gs);
-						puppet.computeDuringOneGameFrame();
-						Collection<Pair<Integer, Integer>> choices = puppet.getBestChoicesSoFar();
-						assert choices.size()==1;
-						for(Pair<Integer, Integer> choice:choices){
-							System.out.println(choice.m_a+": "+choice.m_b);
-							CNNGameState cnngs=new CNNGameState(gs);
-							if(test){
-								cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,1,p);
-							}else{
-								cnngs.writePlanesExtra(outDir+"/game"+count,1,p);
-							}
-							if(test){
-								cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, choice.m_b);
-								sampleTestCount++;
-							}else{
-								cnngs.writeLabel(outDir+"/game"+count, choice.m_b);
-								count++;
-							}
+			System.out.println(fn+"/"+files.size()+" files processed");
+			boolean test=false;
+			if(generator.nextInt(10)<1){//test
+				test=true;
+				Files.copy(f.toPath(),FileSystems.getDefault().getPath(outDir+"ReplaysTest","game"+testCount+".zip"));
+				testCount++;
+			}
+			Sample samples = getSamples(f, samplesPerGame);
+			//Sample samples = getAllSamples(f);
+			for (GameState gs : samples.states) {
+				for(int p=0;p<2;p++){
+					PuppetNoPlan puppet=(PuppetNoPlan)puppetOrig.clone();
+					puppet.reset();
+					System.gc();
+					puppet.startNewComputation(p, gs);
+					puppet.computeDuringOneGameFrame();
+					Collection<Pair<Integer, Integer>> choices = puppet.getBestChoicesSoFar();
+					assert choices.size()==1;
+					for(Pair<Integer, Integer> choice:choices){
+						System.out.println(choice.m_a+": "+choice.m_b);
+						CNNGameState cnngs=new CNNGameState(gs);
+						if(test){
+							cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,1,p);
+							cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, choice.m_b);
+							sampleTestCount++;
+						}else{
+							cnngs.writePlanesExtra(outDir+"/game"+count,1,p);
+							cnngs.writeLabel(outDir+"/game"+count, choice.m_b);
+							count++;
 						}
 					}
+					puppet.startNewComputation(p, gs);//just for statistics
+					System.out.println(puppet.statisticsString());
 				}
 			}
-			catch (JDOMException e)
-			{
-				e.printStackTrace();	
-			} catch (IOException e) 
-			{
-				e.printStackTrace();
-			}
+			fn++;
 		}
 
 	}
