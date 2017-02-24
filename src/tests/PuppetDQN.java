@@ -181,9 +181,9 @@ public class PuppetDQN {
 					opp.reset();
 					while(!gameover(gs)){
 						if(k==numScores-2){
-							String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
+							String current=cnngs.getHeader()+cnngs.getPlanesCompressed();
 							net.send("eval\n"+current);
-							int action=net.readInt();
+							int action=net.readInt(0);
 							assert action<numActions;
 							//if(ep+j==0)
 							//	System.out.print(action+" ");
@@ -248,7 +248,7 @@ public class PuppetDQN {
 			opponent.reset();
 			while(!gameover(gs)){
 				if((++it)>=500)break;
-				String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
+				String current=cnngs.getHeader()+cnngs.getPlanesCompressed();
 				int action=generator.nextInt(numActions);
 
 				
@@ -258,7 +258,7 @@ public class PuppetDQN {
 				net.send("store\n"+current);//current state
 				net.send(Integer.toString(action));//action
 				net.send(Float.toString(reward));//reward
-				String next=cnngs.writeHeader()+cnngs.writePlanesCompressed();
+				String next=cnngs.getHeader()+cnngs.getPlanesCompressed();
 				assert current != next;
 				net.send(next);//next state
 				net.send(Integer.toString(gameover(gs)?1:0));//is it terminal
@@ -304,14 +304,14 @@ public class PuppetDQN {
 					System.out.println("Training, epsilon: "+epsilon+", episode: "+ep+", frame: "+it);
 				}
 				it++;
-				String current=cnngs.writeHeader()+cnngs.writePlanesCompressed();
+				String current=cnngs.getHeader()+cnngs.getPlanesCompressed();
 				int action;
 				if(generator.nextDouble()<epsilon){
 					action=generator.nextInt(numActions);
 				}
 				else{
 					net.send("eval\n"+current);
-					action=net.readInt();
+					action=net.readInt(0);
 					assert action<numActions;
 					//System.out.println(""+action);
 
@@ -323,7 +323,7 @@ public class PuppetDQN {
 				net.send("store\n"+current);//current state
 				net.send(Integer.toString(action));//action
 				net.send(Float.toString(reward));//reward
-				String next=cnngs.writeHeader()+cnngs.writePlanesCompressed();
+				String next=cnngs.getHeader()+cnngs.getPlanesCompressed();
 				assert current != next;
 				net.send(next);//next state
 				net.send(Integer.toString(gameover(gs)?1:0));//is it terminal

@@ -32,12 +32,8 @@ public class NetEvaluationFunction extends EvaluationFunction {
 	public static NetEvaluationFunction getInstance(int mapSize) {
 		if(instance == null) {
 			instance = new NetEvaluationFunction();
-			// instance.init("python echo.py");
 			NetEvaluationFunction.mapSize=mapSize;
-			instance.init(//"python src/py/interface.py "
-					//+port+" "
-					//+mapSize
-					//+" 25 "
+			instance.init(
 					path+mapSize+"x"+mapSize+".prototxt "
 					+path+mapSize+"x"+mapSize+".caffemodel");
 		}else{
@@ -55,9 +51,9 @@ public class NetEvaluationFunction extends EvaluationFunction {
 		try
 		{ 
 			CNNGameState cnnGs=new CNNGameState(gs);
-			caffe.send(cnnGs.writeHeader()+cnnGs.writePlanesCompressed());   
+			caffe.send(cnnGs.getHeader()+cnnGs.getPlanesCompressed());   
 	    	// System.out.println("sent");	
-			p0WIN = caffe.read();
+			p0WIN = caffe.readFloat(1);
 			//System.out.println("eval: "+p0WIN);
 			if(maxplayer == 1) return (p0WIN-0.5f)*2.0f;
 			return (0.5f - p0WIN)*2.0f;

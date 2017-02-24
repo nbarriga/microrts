@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class CaffeInterface {
 
@@ -22,15 +23,32 @@ public class CaffeInterface {
         out.flush();
     }
 
-    public float read() throws Exception {
-	    fromClient = in.readLine();
-	    // System.out.println("received: " + Integer.parseInt(fromClient));
-	    return Float.parseFloat(fromClient);
+    public double readDouble(int i) throws Exception {
+    	return readDoubles()[i];
     }
-    public int readInt() throws Exception {
+    public float readFloat(int i) throws Exception {
+    	return (float)readDoubles()[i];
+    }
+    public double[] readDoubles() throws Exception {
 	    fromClient = in.readLine();
-	    // System.out.println("received: " + Integer.parseInt(fromClient));
-	    return Integer.parseInt(fromClient);
+	    return Arrays.asList(fromClient.split(" ")).stream().mapToDouble(s -> Float.parseFloat(s)).toArray();
+    }
+    public int readInt(int i) throws Exception {
+    	return readInts()[i];
+    }
+    public int[] readInts() throws Exception {
+	    fromClient = in.readLine();
+	    return Arrays.asList(fromClient.split(" ")).stream().mapToInt(s -> Integer.parseInt(s)).toArray();
+    }
+    public int getMaxIndex() throws Exception{
+    	double[] values=readDoubles();
+    	int maxIndex=0;
+    	for(int i=1;i<values.length;i++){
+    		if(values[i]>values[maxIndex]){
+    			maxIndex=i;
+    		}
+    	}
+    	return maxIndex;
     }
     public void start(int port) throws Exception {
 

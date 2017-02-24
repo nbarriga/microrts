@@ -30,6 +30,7 @@ import ai.core.InterruptibleAIWithComputationBudget;
 import ai.core.PseudoContinuingAI;
 import ai.evaluation.EvaluationFunction;
 import ai.evaluation.LanchesterEvaluationFunction;
+import ai.evaluation.NetEvaluationFunction;
 import ai.evaluation.SimpleEvaluationFunction;
 import ai.evaluation.SimpleOptEvaluationFunction;
 import ai.evaluation.SimpleSqrtEvaluationFunction2;
@@ -45,6 +46,7 @@ import ai.montecarlo.MonteCarlo;
 import ai.portfolio.PortfolioAI;
 import ai.portfolio.portfoliogreedysearch.PGSAI;
 import ai.puppet.BasicConfigurableScript;
+import ai.puppet.PuppetCNN;
 import ai.puppet.PuppetNoPlan;
 import ai.puppet.PuppetSearchAB;
 import ai.puppet.PuppetSearchMCTS;
@@ -78,10 +80,11 @@ public class RunConfigurableExperiments {
 		return new FloodFillPathFinding();
 	}
 	public static EvaluationFunction getEvaluationFunction(){
-//		return new SimpleEvaluationFunction();
+		return new SimpleEvaluationFunction();
 //		return new SimpleSqrtEvaluationFunction3();
 //		return new SimpleOptEvaluationFunction();
-		return new LanchesterEvaluationFunction();
+		//return new LanchesterEvaluationFunction();
+		//return NetEvaluationFunction.getInstance(8);
 	}
 	
 	public static void loadMaps(String mapFileName) throws IOException  {
@@ -308,6 +311,17 @@ public class RunConfigurableExperiments {
 							new BasicConfigurableScript(utt, getPathFinding()),
 							getEvaluationFunction())
 					)
+					;
+		case "PuppetCNN":
+			return new PuppetCNN(
+							TIME, MAX_PLAYOUTS,
+							new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding())}
+									)
+							)
 					;
 		default:
 			throw new RuntimeException("AI not found");
