@@ -77,12 +77,14 @@ public class PuppetCNN extends AIWithComputationBudget {
 			}
 			if(p0&&p1){
 				PlayerAction paExtra=extraAI.getAction(player, rgs);
-				System.out.println("Extra search with "+rgs.getUnits().size()+" units");
+//				System.out.println("Extra search with "+rgs.getUnits().size()+" units");
+//				System.out.println("actions: "+paExtra.getActions().size());
 				//remove non attacking units
 				List<Pair<Unit,UnitAction>> toRemove=new ArrayList<Pair<Unit,UnitAction>>();
 				for(Pair<Unit,UnitAction> ua:paExtra.getActions()) {
 					if(!ua.m_a.getType().canAttack){
 						toRemove.add(ua);
+//						System.out.println("removed");
 					}
 				}
 				for(Pair<Unit,UnitAction>ua:toRemove){
@@ -95,17 +97,28 @@ public class PuppetCNN extends AIWithComputationBudget {
 				//add extra actions
 				List<Unit> skip=new ArrayList<Unit>();
 				for(Pair<Unit,UnitAction> ua:paExtra.getActions()) {
-					if(ua.m_b.resourceUsage(ua.m_a, gs.getPhysicalGameState()).consistentWith(paFull.getResourceUsage(), gs)){
+					if(ua.m_b.resourceUsage(ua.m_a, gs.getPhysicalGameState()).consistentWith(paScript.getResourceUsage(), gs)){
 						paFull.addUnitAction(ua.m_a, ua.m_b);
 						paFull.getResourceUsage().merge(ua.m_b.resourceUsage(ua.m_a, gs.getPhysicalGameState()));
-						//System.out.println("Frame: "+gs.getTime()+", extra action: "+ua);
+//						System.out.println("Frame: "+gs.getTime()+", extra action: "+ua);
 						skip.add(ua.m_a);
 					}
+//					else{
+//						System.out.println("inconsistent");
+//					}
 				}
 				
 				//add script actions
 				for(Pair<Unit,UnitAction> ua:paScript.getActions()) {
-					if(skip.contains(ua.m_a)){//skip units that were assigned by the extra AI
+					boolean found=false;
+					for(Unit u:skip){
+						if(u.getID()==ua.m_a.getID()){
+							found=true;
+							break;
+						}
+					}
+					if(found){//skip units that were assigned by the extra AI
+						//System.out.println("skipping");
 						continue;
 					}
 					paFull.addUnitAction(ua.m_a, ua.m_b);
