@@ -63,11 +63,11 @@ public class CaffeInterface {
 //	    }
 
         //server = new ServerSocket(port);
-        System.out.println("wait for connection on port "+port);
+        System.out.println("Connecting to port "+port);
  
 		//Socket client = server.accept();
-		Socket client=new Socket("skat2",port);  
-        System.out.println("got connection on port "+port);
+	Socket client=new Socket("skat2",port);  
+        System.out.println("Connected to port "+port);
         in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
         out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));

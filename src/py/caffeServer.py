@@ -1,3 +1,5 @@
+import os
+os.environ['GLOG_minloglevel'] = '2' 
 import StringIO
 import numpy as np
 import caffe
@@ -38,16 +40,16 @@ def main():
         conn, addr = sock.accept()
         conn.setblocking(1) 
 
-        data = conn.recv(8192)
-        definition, model = data.split()
-        print("Loading model: "+model)
-        th = threading.Thread(target=processRequests, args = (conn, definition, model))
+        th = threading.Thread(target=processRequests, args = (conn.makefile(),1))
         th.start()
         print("Thread started")
 
     sock.close()
 
-def processRequests(conn, definition, model):
+def processRequests(conn, dummy):
+
+    definition, model = conn.readline().split()
+    print("Loading model: "+model)
     caffe.set_device(1)
     caffe.set_mode_gpu()
     net = caffe.Net(
@@ -55,19 +57,20 @@ def processRequests(conn, definition, model):
                     model,
                     caffe.TEST)
     while True:
-        data = conn.recv(8192)
+        header = conn.readline()
+        #print header
         
-        if len(data)==0:
+        if len(header)==0:
             conn.close()
             return
 
-        a = map(int, data.split())
-        w, l, planes = a[0:3]
+        w, l, planes = map(int, header.split())
+    
         
         size=w*l*planes
         plane_data = np.zeros(size)
     
-        plane_data[a[3:len(a)]] = 1
+        plane_data[map(int, conn.readline().split())] = 1
     
 	
         x = np.reshape(plane_data, [planes, w, l])
@@ -81,7 +84,9 @@ def processRequests(conn, definition, model):
         out = net.forward()
     
         output=" ".join([str(prob) for prob in out['prob'][0,:,0,0]])+"\n"
-        conn.sendall(output)
+        #print output
+        conn.write(output)
+        conn.flush()
         #conn.sendall(str(out['prob'][0][1][0][0])+"\n")
         #conn.sendall(str(np.average(out['prob'][0][1][0]))+"\n")
         #sock.sendall(str(out['prob'][0][0])+"\n")

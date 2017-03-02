@@ -47,6 +47,7 @@ import ai.portfolio.PortfolioAI;
 import ai.portfolio.portfoliogreedysearch.PGSAI;
 import ai.puppet.BasicConfigurableScript;
 import ai.puppet.PuppetCNN;
+import ai.puppet.PuppetRandom;
 import ai.puppet.PuppetNoPlan;
 import ai.puppet.PuppetSearchAB;
 import ai.puppet.PuppetSearchMCTS;
@@ -314,12 +315,49 @@ public class RunConfigurableExperiments {
 					;
 		case "PuppetCNN":
 			return new PuppetCNN(
-							TIME, MAX_PLAYOUTS,
+							TIME, MAX_PLAYOUTS,100,
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
 											new RangedRush(utt, getPathFinding()),
 											new HeavyRush(utt, getPathFinding())}
+									)
+							)
+					;
+		case "PuppetRandom":
+			return new PuppetRandom(100,new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding())}
+									)
+							)
+					;
+		case "PuppetCNN0":
+			return new PuppetCNN(
+							TIME, MAX_PLAYOUTS,0,
+							new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding())}
+									)
+							)
+					;
+		case "PuppetRandom0":
+			return new PuppetRandom(0,new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding())}
+									)
+							)
+					;
+		case "PuppetRandom2":
+			return new PuppetRandom(100,new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+			}
 									)
 							)
 					;
@@ -395,7 +433,7 @@ public class RunConfigurableExperiments {
         if(true){
         	if(asymetric){
         		ExperimenterAsymmetric.runExperiments(bots1,bots2,
-        				maps, utt, iterations, 3000, 300, false, out, saveTrace, saveZip, traceDir);
+        				maps, utt, iterations, 10000, 300, false, out, saveTrace, saveZip, traceDir);
         	}else{
         		Experimenter.runExperiments(bots1, maps, utt, iterations, 3000, 300, false, out, 
                         -1, true, false, saveTrace, saveZip, traceDir);

@@ -22,6 +22,8 @@ import ai.evaluation.SimpleEvaluationFunction;
 import ai.puppet.PuppetNoPlan;
 import ai.puppet.PuppetSearchAB;
 import ai.puppet.SingleChoiceConfigurableScript;
+import ai.puppet.BasicConfigurableScript;
+import ai.puppet.ConfigurableScript;
 import ai.evaluation.NetEvaluationFunction;
 import ai.core.AI;
 import ai.abstraction.pathfinding.FloodFillPathFinding;
@@ -82,9 +84,9 @@ public class PuppetTraceExtracter {
 
 		int winner = t.getGameStateAtCycle(t.getLength()).winner();
 
-		if(winner == -1) {
+		/*if(winner == -1) {
 			return new Sample(states,t.getLength(),-1);
-		}
+		}*/
 
 
 		for(int i=0; i<n; i++)
@@ -145,13 +147,14 @@ public class PuppetTraceExtracter {
 						searchTime, -1,
 						-1, -1,
 						100,
-						new SingleChoiceConfigurableScript(getPathFinding(),
-								new AI[]{
-										new WorkerRush(utt, getPathFinding()),
-										new LightRush(utt, getPathFinding()),
-										new RangedRush(utt, getPathFinding()),
-										new HeavyRush(utt, getPathFinding()),
-						}),
+						//new SingleChoiceConfigurableScript(getPathFinding(),
+						//		new AI[]{
+						//				new WorkerRush(utt, getPathFinding()),
+						//				new LightRush(utt, getPathFinding()),
+						//				new RangedRush(utt, getPathFinding()),
+						//				new HeavyRush(utt, getPathFinding()),
+						//}),
+						new BasicConfigurableScript(utt,getPathFinding()),
 						//new SimpleEvaluationFunction()
 						NetEvaluationFunction.getInstance(size)
 						)
@@ -174,24 +177,30 @@ public class PuppetTraceExtracter {
 			for (GameState gs : samples.states) {
 				for(int p=0;p<2;p++){
 					PuppetNoPlan puppet=(PuppetNoPlan)puppetOrig.clone();
+					ArrayList<?> a=(ArrayList<?>)puppet.puppet.script.getApplicableChoicePoints(p,gs);
+					//if(((ConfigurableScript.Options)a.get(1)).numOptions()<2)continue;
+					//System.out.println(""+puppet.puppet.script.getApplicableChoicePoints(p,gs));
 					puppet.reset();
 					System.gc();
 					puppet.startNewComputation(p, gs);
 					puppet.computeDuringOneGameFrame();
 					Collection<Pair<Integer, Integer>> choices = puppet.getBestChoicesSoFar();
-					assert choices.size()==1;
+					assert choices.size()==2;
+					int c=0;
 					for(Pair<Integer, Integer> choice:choices){
-						System.out.println(choice.m_a+": "+choice.m_b);
-						CNNGameState cnngs=new CNNGameState(gs);
-						if(test){
-							cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,1,p);
-							cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, choice.m_b);
-							sampleTestCount++;
-						}else{
-							cnngs.writePlanesExtra(outDir+"/game"+count,1,p);
-							cnngs.writeLabel(outDir+"/game"+count, choice.m_b);
-							count++;
-						}
+						System.out.print(choice.m_a+": "+choice.m_b+"|");
+						c+=choice.m_a==0?(choice.m_b-3):choice.m_b*4;
+					}
+					System.out.println("final: "+c);
+					CNNGameState cnngs=new CNNGameState(gs);
+					if(test){
+						cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,1,p);
+						cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, c);
+						sampleTestCount++;
+					}else{
+						cnngs.writePlanesExtra(outDir+"/game"+count,1,p);
+						cnngs.writeLabel(outDir+"/game"+count, c);
+						count++;
 					}
 					puppet.startNewComputation(p, gs);//just for statistics
 					System.out.println(puppet.statisticsString());
