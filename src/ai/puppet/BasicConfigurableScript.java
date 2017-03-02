@@ -466,7 +466,7 @@ public class BasicConfigurableScript extends ConfigurableScript<BasicChoicePoint
 		}
 		List<Options> choices=new ArrayList<Options>();
 
-		if(nbarracks>0){//already have a barracks, build combat units
+		if(nbarracks>0&&nworkers>0){//already have a barracks, build combat units
 			choices.add(new Options(BasicChoicePoint.UNITTYPE.ordinal(),new int[]{
 					lightType.ID,
 					rangedType.ID,

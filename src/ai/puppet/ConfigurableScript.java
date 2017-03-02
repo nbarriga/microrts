@@ -29,7 +29,7 @@ public abstract class ConfigurableScript<T extends Enum<T>> extends AbstractionL
 		}
 		@Override
 		public String toString(){
-			return "("+id+",["+options+"])";
+			return "("+id+",["+java.util.Arrays.toString(options)+"])";
 		}
 	}
 	protected T[] choicePointValues;
