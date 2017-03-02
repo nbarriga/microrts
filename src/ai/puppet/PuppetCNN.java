@@ -1,6 +1,5 @@
 package ai.puppet;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,7 +38,7 @@ public class PuppetCNN extends AIWithComputationBudget {
 
 	}
 
-		static int lastAction=20000;
+	int lastAction=20000;
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
 		if(gs.getTime()<lastAction || gs.getTime()>lastAction+switchTime){

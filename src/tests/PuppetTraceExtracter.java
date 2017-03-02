@@ -142,19 +142,20 @@ public class PuppetTraceExtracter {
 //				new RangedRush(utt,getPathFinding()),
 //				new HeavyRush(utt,getPathFinding()),
 //			};
+		ConfigurableScript<?> script =new BasicConfigurableScript(utt,getPathFinding());
+		//ConfigurableScript script=new SingleChoiceConfigurableScript(getPathFinding(),
+		//		new AI[]{
+		//				new WorkerRush(utt, getPathFinding()),
+		//				new LightRush(utt, getPathFinding()),
+		//				new RangedRush(utt, getPathFinding()),
+		//				new HeavyRush(utt, getPathFinding()),
+		//}),
 		PuppetNoPlan puppetOrig=new PuppetNoPlan(
 				new PuppetSearchAB(
 						searchTime, -1,
 						-1, -1,
 						100,
-						//new SingleChoiceConfigurableScript(getPathFinding(),
-						//		new AI[]{
-						//				new WorkerRush(utt, getPathFinding()),
-						//				new LightRush(utt, getPathFinding()),
-						//				new RangedRush(utt, getPathFinding()),
-						//				new HeavyRush(utt, getPathFinding()),
-						//}),
-						new BasicConfigurableScript(utt,getPathFinding()),
+						script,
 						//new SimpleEvaluationFunction()
 						NetEvaluationFunction.getInstance(size)
 						)
@@ -177,7 +178,7 @@ public class PuppetTraceExtracter {
 			for (GameState gs : samples.states) {
 				for(int p=0;p<2;p++){
 					PuppetNoPlan puppet=(PuppetNoPlan)puppetOrig.clone();
-					ArrayList<?> a=(ArrayList<?>)puppet.puppet.script.getApplicableChoicePoints(p,gs);
+//					ArrayList<?> a=(ArrayList<?>)script.getApplicableChoicePoints(p,gs);
 					//if(((ConfigurableScript.Options)a.get(1)).numOptions()<2)continue;
 					//System.out.println(""+puppet.puppet.script.getApplicableChoicePoints(p,gs));
 					puppet.reset();
