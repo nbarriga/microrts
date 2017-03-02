@@ -118,6 +118,8 @@ public class Experimenter {
 
                         out.println("MATCH UP: " + ai1 + " vs " + ai2);
                         
+                        long time[]=new long[2];
+                        long start=System.currentTimeMillis();
                         boolean gameover = false;
                         Trace trace = null;
                         TraceEntry te;
@@ -135,9 +137,15 @@ public class Experimenter {
                                 pa2 = ai2.getAction(1, new PartiallyObservableGameState(gs,1));
 //                                if (DEBUG>=1) {System.out.println("AI2 done.");out.flush();}
                             } else {
+                            	long before=System.currentTimeMillis();
                                 pa1 = ai1.getAction(0, gs);
+                                long after = System.currentTimeMillis();
+                                time[0]+=(after-before);
+                                before=after;
                                 if (DEBUG>=1) {System.out.println("AI1 done.");out.flush();}
                                 pa2 = ai2.getAction(1, gs);
+                                after = System.currentTimeMillis();
+                                time[1]+=(after-before);
                                 if (DEBUG>=1) {System.out.println("AI2 done.");out.flush();}
                             }
                             if (saveTrace && (!pa1.isEmpty() || !pa2.isEmpty())) {
@@ -193,9 +201,9 @@ public class Experimenter {
                         }
                         if (w!=null) w.dispose();
                         int winner = gs.winner();
-                        out.println("Winner: " + winner + "  in " + gs.getTime() + " cycles");
-                        out.println(ai1 + " : " + ai1.statisticsString());
-                        out.println(ai2 + " : " + ai2.statisticsString());
+                        out.println("Winner: " + winner + "  in " + gs.getTime() + " cycles, "+(System.currentTimeMillis()-start)+"ms");
+                        out.println(ai1 + " : " + ai1.statisticsString()+", with "+time[0]/(float)gs.getTime()+"ms avg. time");
+                        out.println(ai2 + " : " + ai2.statisticsString()+", with "+time[1]/(float)gs.getTime()+"ms avg. time");
                         out.flush();
                         if (winner == -1) {
                             ties[ai1_idx][ai2_idx]++;

@@ -315,16 +315,17 @@ public class RunConfigurableExperiments {
 					;
 		case "PuppetCNN":
 			return new PuppetCNN(
-							TIME, MAX_PLAYOUTS,100,
+							TIME, MAX_PLAYOUTS,0,
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
 											new RangedRush(utt, getPathFinding()),
 											new HeavyRush(utt, getPathFinding())}
-									)
+									),
+							null
 							)
 					;
-		case "PuppetRandom":
+		case "PuppetRandom100":
 			return new PuppetRandom(100,new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
@@ -333,18 +334,22 @@ public class RunConfigurableExperiments {
 									)
 							)
 					;
-		case "PuppetCNN0":
+		case "PuppetCNNNaive":
 			return new PuppetCNN(
-							TIME, MAX_PLAYOUTS,0,
+							TIME, 
+							MAX_PLAYOUTS,
+							0,
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
 											new RangedRush(utt, getPathFinding()),
 											new HeavyRush(utt, getPathFinding())}
-									)
+									),
+							new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, 0.33f, 0.0f, 0.75f, 
+									new RandomBiasedAI(), getEvaluationFunction())
 							)
 					;
-		case "PuppetRandom0":
+		case "PuppetRandom":
 			return new PuppetRandom(0,new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
@@ -353,14 +358,7 @@ public class RunConfigurableExperiments {
 									)
 							)
 					;
-		case "PuppetRandom2":
-			return new PuppetRandom(100,new SingleChoiceConfigurableScript(getPathFinding(),
-									new AI[]{new WorkerRush(utt, getPathFinding()),
-											new LightRush(utt, getPathFinding()),
-			}
-									)
-							)
-					;
+
 		default:
 			throw new RuntimeException("AI not found");
 		}
