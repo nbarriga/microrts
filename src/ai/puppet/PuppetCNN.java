@@ -19,12 +19,11 @@ import rts.units.Unit;
 import tests.CaffeInterface;
 import util.Pair;
 
-public class PuppetCNN extends AIWithComputationBudget {
+public class PuppetCNN extends AI {
 
 	CaffeInterface net=null;
 	SingleChoiceConfigurableScript scripts;
-	public PuppetCNN(int mt, int mi, SingleChoiceConfigurableScript scripts) {
-		super(mt, mi);
+	public PuppetCNN(SingleChoiceConfigurableScript scripts) {
 		this.scripts=scripts;
 	}
 
@@ -68,7 +67,7 @@ public class PuppetCNN extends AIWithComputationBudget {
 	@Override
 	public AI clone() {
 		// TODO Auto-generated method stub
-		return (AI)new PuppetCNN(TIME_BUDGET, ITERATIONS_BUDGET, (SingleChoiceConfigurableScript)scripts.clone());
+		return (AI)new PuppetCNN((SingleChoiceConfigurableScript)scripts.clone());
 	}
 
 	@Override

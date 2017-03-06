@@ -12,14 +12,13 @@ import rts.PlayerAction;
 import tests.CaffeInterface;
 import util.Pair;
 
-public class PuppetRandom extends AIWithComputationBudget {
+public class PuppetRandom extends AI {
 
 	CaffeInterface net=new CaffeInterface();
 	SingleChoiceConfigurableScript scripts;
 	Random generator = new Random();
 	int switchTime;
-	public PuppetRandom(int mt, int mi, int switchTime,SingleChoiceConfigurableScript scripts) {
-		super(mt,mi);
+	public PuppetRandom(int switchTime,SingleChoiceConfigurableScript scripts) {
 		this.scripts=scripts;
 		this.switchTime=switchTime;
 	}
@@ -46,7 +45,7 @@ public class PuppetRandom extends AIWithComputationBudget {
 	@Override
 	public AI clone() {
 		// TODO Auto-generated method stub
-		return (AI)new PuppetRandom(TIME_BUDGET,ITERATIONS_BUDGET, switchTime,scripts);
+		return (AI)new PuppetRandom(switchTime,scripts);
 	}
 
 	@Override

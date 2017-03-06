@@ -21,11 +21,16 @@ import util.Pair;
 
 public class StrategyTactics extends AIWithComputationBudget {
 
-	AIWithComputationBudget strategyAI;
+	AI strategyAI;
+	boolean strategyWithComputationBudget;
 	AIWithComputationBudget tacticsAI;
 	int weightStrategy,weightTactics;
 	int origTimeBudget,origItBudget;
 	public StrategyTactics(int mt, int mi, int weightStrategy, int weightTactics, AIWithComputationBudget strategyAI, AIWithComputationBudget tacticsAI) {
+		this(mt,mi,weightStrategy,weightTactics,(AI)strategyAI,tacticsAI);
+		strategyWithComputationBudget=true;
+	}
+	public StrategyTactics(int mt, int mi, int weightStrategy, int weightTactics, AI strategyAI, AIWithComputationBudget tacticsAI) {
 		super(mt, mi);
 		origTimeBudget=mt;
 		origItBudget=mi;
@@ -33,8 +38,8 @@ public class StrategyTactics extends AIWithComputationBudget {
 		this.tacticsAI=tacticsAI;
 		this.weightStrategy=weightStrategy;
 		this.weightTactics=weightTactics;
+		this.strategyWithComputationBudget=false;
 	}
-
 
 	@Override
 	public void reset() {
@@ -55,11 +60,15 @@ public class StrategyTactics extends AIWithComputationBudget {
 			if(p0&&p1)break;
 		}
 		if(!(p0&&p1)){
-			strategyAI.setTimeBudget(TIME_BUDGET);
+			if(strategyWithComputationBudget){
+				((AIWithComputationBudget)strategyAI).setTimeBudget(TIME_BUDGET);
+			}
 			PlayerAction paStrategy=strategyAI.getAction(player, gs);
 			return paStrategy;
 		}else{
-			strategyAI.setTimeBudget(TIME_BUDGET*weightStrategy/(weightStrategy+weightTactics));
+			if(strategyWithComputationBudget){
+				((AIWithComputationBudget)strategyAI).setTimeBudget(TIME_BUDGET*weightStrategy/(weightStrategy+weightTactics));
+			}
 			PlayerAction paStrategy=strategyAI.getAction(player, gs);
 			tacticsAI.setTimeBudget(TIME_BUDGET*weightTactics/(weightStrategy+weightTactics));
 			PlayerAction paTactics=tacticsAI.getAction(player, rgs);
@@ -120,8 +129,8 @@ public class StrategyTactics extends AIWithComputationBudget {
 				origTimeBudget, 
 				origItBudget, 
 				weightStrategy,
-				weightTactics, 
-				(AIWithComputationBudget)strategyAI.clone(),
+				weightTactics,strategyWithComputationBudget? 
+				(AIWithComputationBudget)strategyAI.clone():(AI)strategyAI.clone(),
 				(AIWithComputationBudget)tacticsAI.clone());
 	}
 

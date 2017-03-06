@@ -316,7 +316,6 @@ public class RunConfigurableExperiments {
 					;
 		case "PuppetCNN":
 			return new PuppetCNN(
-							TIME, MAX_PLAYOUTS,
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
@@ -332,8 +331,6 @@ public class RunConfigurableExperiments {
 					5,
 					95,
 					new PuppetCNN(
-							TIME, 
-							MAX_PLAYOUTS,
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
@@ -345,7 +342,7 @@ public class RunConfigurableExperiments {
 							)
 					;
 		case "PuppetRandom":
-			return new PuppetRandom(TIME, MAX_PLAYOUTS,0,new SingleChoiceConfigurableScript(getPathFinding(),
+			return new PuppetRandom(0,new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
 											new RangedRush(utt, getPathFinding()),
@@ -359,7 +356,7 @@ public class RunConfigurableExperiments {
 					MAX_PLAYOUTS,
 					5,
 					95,
-					new PuppetRandom(TIME, MAX_PLAYOUTS,0,new SingleChoiceConfigurableScript(getPathFinding(),
+					new PuppetRandom(0,new SingleChoiceConfigurableScript(getPathFinding(),
 							new AI[]{new WorkerRush(utt, getPathFinding()),
 									new LightRush(utt, getPathFinding()),
 									new RangedRush(utt, getPathFinding()),
