@@ -21,7 +21,7 @@ import util.Pair;
 
 public class PuppetCNN extends AIWithComputationBudget {
 
-	CaffeInterface net=new CaffeInterface();
+	CaffeInterface net=null;
 	SingleChoiceConfigurableScript scripts;
 	AIWithComputationBudget extraAI;
 	int switchTime;
@@ -30,12 +30,9 @@ public class PuppetCNN extends AIWithComputationBudget {
 		this.switchTime=switchTime;
 		this.scripts=scripts;
 		this.extraAI=extraAI;
-		reset();
 	}
 
-	@Override
-	public void reset() {
-		if(extraAI!=null)extraAI.reset();
+	void establishConnection(){
 		net=new CaffeInterface();
 		try {
 			net.start(8080);
@@ -45,13 +42,26 @@ public class PuppetCNN extends AIWithComputationBudget {
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
 
+	@Override
+	public void reset() {
+		if(extraAI!=null)extraAI.reset();
+		if(net!=null){
+			try{
+				net.close();
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			net=null;
+		}
 	}
 
 	int lastAction=20000;
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
 		if(gs.getTime()<lastAction || gs.getTime()>lastAction+switchTime){
+			if(net==null)establishConnection();
 
 			CNNGameState cnngs=new CNNGameState(gs);
 			net.send(cnngs.getHeaderExtra(1, player)+cnngs.getPlanesCompressed()+cnngs.getExtraPlanesCompressed(1,player));   
@@ -143,6 +153,10 @@ public class PuppetCNN extends AIWithComputationBudget {
 	public List<ParameterSpecification> getParameters() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	@Override
+	public String toString(){
+		return  getClass().getSimpleName() + "(" + (extraAI==null?"":extraAI.getClass().getSimpleName()) + ")";
 	}
 
 }

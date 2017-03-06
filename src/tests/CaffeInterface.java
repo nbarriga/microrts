@@ -74,4 +74,8 @@ public class CaffeInterface {
         // out = new PrintWriter(client.getOutputStream(),true);
 
     }
+    public void close() throws Exception {
+	    in.close();
+	    out.close();
+    }
 }

@@ -5,7 +5,8 @@ import numpy as np
 import caffe
 import socket
 import sys
-import threading
+#import threading
+import multiprocessing as mp
 
 def main():
     
@@ -40,56 +41,65 @@ def main():
         conn, addr = sock.accept()
         conn.setblocking(1) 
 
-        th = threading.Thread(target=processRequests, args = (conn.makefile(),1))
+        #th = threading.Thread(target=processRequests, args = (conn.makefile(),1))
+        th = mp.Process(target=processRequests, args = (conn.makefile(),1))
         th.start()
         print("Thread started")
 
     sock.close()
 
 def processRequests(conn, dummy):
-
-    definition, model = conn.readline().split()
-    print("Loading model: "+model)
-    caffe.set_device(1)
-    caffe.set_mode_gpu()
-    net = caffe.Net(
-                    definition,
-                    model,
-                    caffe.TEST)
-    while True:
-        header = conn.readline()
-        #print header
+    try:
+        definition, model = conn.readline().split()
+        print("Loading model: "+model)
+        caffe.set_device(0)
+        caffe.set_mode_gpu()
+        net = caffe.Net(
+                        definition,
+                        model,
+                        caffe.TEST)
+        while True:
+            header = conn.readline()
+            #print header
+            
+            if len(header)==0:
+                del net
+                conn.close()
+                return
+    
+            w, l, planes = map(int, header.split())
         
-        if len(header)==0:
-            conn.close()
-            return
-
-        w, l, planes = map(int, header.split())
-    
+            
+            size=w*l*planes
+            plane_data = np.zeros(size)
         
-        size=w*l*planes
-        plane_data = np.zeros(size)
-    
-        plane_data[map(int, conn.readline().split())] = 1
-    
-	
-        x = np.reshape(plane_data, [planes, w, l])
-        #x = np.reshape(plane_data, [1, planes, w, l])
-	#x = augment(x)
-        #net.blobs['data'].reshape(8,planes,w,l)
-        net.blobs['data'].data[...] =  x
-    
-    
-        # compute
-        out = net.forward()
-    
-        output=" ".join([str(prob) for prob in out['prob'][0,:,0,0]])+"\n"
-        #print output
-        conn.write(output)
-        conn.flush()
-        #conn.sendall(str(out['prob'][0][1][0][0])+"\n")
-        #conn.sendall(str(np.average(out['prob'][0][1][0]))+"\n")
-        #sock.sendall(str(out['prob'][0][0])+"\n")
+            plane_data[map(int, conn.readline().split())] = 1
+        
+    	
+            x = np.reshape(plane_data, [planes, w, l])
+            #x = np.reshape(plane_data, [1, planes, w, l])
+    	    #x = augment(x)
+            #net.blobs['data'].reshape(8,planes,w,l)
+            net.blobs['data'].data[...] =  x
+        
+        
+            # compute
+            out = net.forward()
+        
+            output=" ".join([str(prob) for prob in out['prob'][0,:,0,0]])+"\n"
+            #print output
+            conn.write(output)
+            conn.flush()
+            del x
+            del out
+            #conn.sendall(str(out['prob'][0][1][0][0])+"\n")
+            #conn.sendall(str(np.average(out['prob'][0][1][0]))+"\n")
+            #sock.sendall(str(out['prob'][0][0])+"\n")
+    except ex:
+        print str(ex)
+    finally:
+        del net
+        conn.close()
 
 def augment(data):
     aug_data = np.zeros((8, data[0].shape[0], data[0].shape[1], data[0].shape[2]), dtype=np.uint8)
