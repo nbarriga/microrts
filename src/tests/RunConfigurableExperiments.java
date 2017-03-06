@@ -52,6 +52,7 @@ import ai.puppet.PuppetNoPlan;
 import ai.puppet.PuppetSearchAB;
 import ai.puppet.PuppetSearchMCTS;
 import ai.puppet.SingleChoiceConfigurableScript;
+import ai.puppet.StrategyTactics;
 import rts.GameState;
 import rts.PhysicalGameState;
 import rts.units.UnitTypeTable;
@@ -315,18 +316,8 @@ public class RunConfigurableExperiments {
 					;
 		case "PuppetCNN":
 			return new PuppetCNN(
-							TIME, MAX_PLAYOUTS,0,
+							TIME, MAX_PLAYOUTS,
 							new SingleChoiceConfigurableScript(getPathFinding(),
-									new AI[]{new WorkerRush(utt, getPathFinding()),
-											new LightRush(utt, getPathFinding()),
-											new RangedRush(utt, getPathFinding()),
-											new HeavyRush(utt, getPathFinding())}
-									),
-							null
-							)
-					;
-		case "PuppetRandom100":
-			return new PuppetRandom(100,new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
 											new RangedRush(utt, getPathFinding()),
@@ -334,23 +325,27 @@ public class RunConfigurableExperiments {
 									)
 							)
 					;
-		case "PuppetCNNNaive":
-			return new PuppetCNN(
+		case "PuppetCNN-Naive":
+			return new StrategyTactics(
+					TIME, 
+					MAX_PLAYOUTS,
+					5,
+					95,
+					new PuppetCNN(
 							TIME, 
 							MAX_PLAYOUTS,
-							0,
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
 											new RangedRush(utt, getPathFinding()),
 											new HeavyRush(utt, getPathFinding())}
-									),
+									)),
 							new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, 0.33f, 0.0f, 0.75f, 
 									new RandomBiasedAI(), getEvaluationFunction())
 							)
 					;
 		case "PuppetRandom":
-			return new PuppetRandom(0,new SingleChoiceConfigurableScript(getPathFinding(),
+			return new PuppetRandom(TIME, MAX_PLAYOUTS,0,new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),
 											new LightRush(utt, getPathFinding()),
 											new RangedRush(utt, getPathFinding()),
@@ -358,7 +353,45 @@ public class RunConfigurableExperiments {
 									)
 							)
 					;
-
+		case "PuppetRandom-Naive":
+			return new StrategyTactics(
+					TIME, 
+					MAX_PLAYOUTS,
+					5,
+					95,
+					new PuppetRandom(TIME, MAX_PLAYOUTS,0,new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+									new LightRush(utt, getPathFinding()),
+									new RangedRush(utt, getPathFinding()),
+									new HeavyRush(utt, getPathFinding())}
+							)
+					),
+					new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, 0.33f, 0.0f, 0.75f, 
+							new RandomBiasedAI(), getEvaluationFunction())
+					)
+					;
+		case "PuppetSearchAB-Naive":
+			return new StrategyTactics(
+					TIME, 
+					MAX_PLAYOUTS,
+					50,
+					50,
+					new PuppetNoPlan(new PuppetSearchAB(
+							TIME, MAX_PLAYOUTS,
+							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
+							PLAYOUT_TIME,
+							new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{
+											new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding()),
+							}),
+							getEvaluationFunction())),
+					new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, 0.33f, 0.0f, 0.75f, 
+							new RandomBiasedAI(), getEvaluationFunction())
+					)
+					;
 		default:
 			throw new RuntimeException("AI not found");
 		}
