@@ -173,11 +173,11 @@ public class TraceExtractorWithActionVector {
 								System.out.println("eval: "+eval);
 								CNNGameState cnngs=new CNNGameState(gs);
 								if(test){
-									cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,ais.length,i,j,k,l);
+									cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,true,ais.length,i,j,k,l);
 									cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, eval);
 									sampleTestCount++;
 								}else{
-									cnngs.writePlanesExtra(outDir+"/game"+count,ais.length,i,j,k,l);
+									cnngs.writePlanesExtra(outDir+"/game"+count,true,ais.length,i,j,k,l);
 									cnngs.writeLabel(outDir+"/game"+count, eval);
 									count++;
 								}

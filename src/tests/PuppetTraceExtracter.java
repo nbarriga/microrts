@@ -195,11 +195,11 @@ public class PuppetTraceExtracter {
 					System.out.println("final: "+c);
 					CNNGameState cnngs=new CNNGameState(gs);
 					if(test){
-						cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,1,p);
+						cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,true,1,p);
 						cnngs.writeLabel(outDir+"Test/game"+sampleTestCount, c);
 						sampleTestCount++;
 					}else{
-						cnngs.writePlanesExtra(outDir+"/game"+count,1,p);
+						cnngs.writePlanesExtra(outDir+"/game"+count,true,1,p);
 						cnngs.writeLabel(outDir+"/game"+count, c);
 						count++;
 					}

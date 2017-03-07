@@ -65,6 +65,23 @@ public class CNNGameState extends GameState {
 
 		return baos.toString();
 	}
+	public String getHeaderExtraCompressed(int planesPerVar, int... vars)
+	{
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		PrintStream out = new PrintStream(baos);
+
+		int p = planes.length+ planesPerVar*vars.length;
+		int w = pgs.getWidth();
+		int h = pgs.getHeight();
+
+		out.print(w + " " + h + " " + p);
+		for(int i = 0; i<vars.length; i++){
+			out.print(" "+(planes.length+planesPerVar*i+vars[i]));
+		}
+		out.println("");
+		return baos.toString();
+	}
 	public String getHeader()
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -135,53 +152,53 @@ public class CNNGameState extends GameState {
 		return baos.toString();
 	}
 	
-	public String getExtraPlanesCompressed(int planesPerVar, int... vars)
-	{
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-		PrintStream out = new PrintStream(baos);
-
-		int startIndex = nrPlanes*pgs.getWidth()*pgs.getHeight();
-		
-		int p = planesPerVar*vars.length;
-		int w = pgs.getWidth();
-		int h = pgs.getHeight();
-
-		boolean [][][]planes = new boolean[p][w][h];
-
-		for(int i = 0; i<vars.length; i++)
-		{
-			for(int j = 0; j<planesPerVar; j++)
-			{
-				for (boolean[] row: planes[j+i*planesPerVar])
-				{
-					if(j==vars[i])
-					{
-						Arrays.fill(row, true);
-					}
-					else
-					{
-						Arrays.fill(row, false);
-					}
-				}
-			}
-
-		}
-		
-		for(int i = 0; i<p; i++)
-		{
-			for(int j=0; j<w; j++)
-			{
-				for(int k=0; k<h; k++)
-				{
-					if(planes[i][j][k])
-						out.print((startIndex+i*w*h+k*w+j)+" ");
-				}
-			}
-		}       
-
-		return baos.toString();
-	}
+//	public String getExtraPlanesCompressed(int planesPerVar, int... vars)
+//	{
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//
+//		PrintStream out = new PrintStream(baos);
+//
+//		int startIndex = nrPlanes*pgs.getWidth()*pgs.getHeight();
+//		
+//		int p = planesPerVar*vars.length;
+//		int w = pgs.getWidth();
+//		int h = pgs.getHeight();
+//
+//		boolean [][][]planes = new boolean[p][w][h];
+//
+//		for(int i = 0; i<vars.length; i++)
+//		{
+//			for(int j = 0; j<planesPerVar; j++)
+//			{
+//				for (boolean[] row: planes[j+i*planesPerVar])
+//				{
+//					if(j==vars[i])
+//					{
+//						Arrays.fill(row, true);
+//					}
+//					else
+//					{
+//						Arrays.fill(row, false);
+//					}
+//				}
+//			}
+//
+//		}
+//		
+//		for(int i = 0; i<p; i++)
+//		{
+//			for(int j=0; j<w; j++)
+//			{
+//				for(int k=0; k<h; k++)
+//				{
+//					if(planes[i][j][k])
+//						out.print((startIndex+i*w*h+k*w+j)+" ");
+//				}
+//			}
+//		}       
+//
+//		return baos.toString();
+//	}
 	public String getExtraPlanes(int planesPerVar, int... vars)
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -234,9 +251,9 @@ public class CNNGameState extends GameState {
 	public void writePlanesExtra(String filename, boolean compressed, int planesPerVar, int... vars) throws FileNotFoundException 
 	{
 		PrintStream out = new PrintStream(new File(filename));
-		out.print(getHeaderExtra(planesPerVar, vars));
+		out.print(compressed?getHeaderExtraCompressed(planesPerVar, vars):getHeaderExtra(planesPerVar, vars));
 		out.print(compressed?getPlanesCompressed():getPlanes());
-		out.print(compressed?getExtraPlanesCompressed(planesPerVar, vars):getExtraPlanes(planesPerVar, vars));
+		out.print(compressed?"":getExtraPlanes(planesPerVar, vars));
 		out.close();
 	}
 	public void writePlanes(String filename) throws FileNotFoundException 

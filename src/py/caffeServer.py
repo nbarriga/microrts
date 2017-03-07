@@ -67,7 +67,8 @@ def processRequests(conn, dummy):
                 conn.close()
                 return
     
-            w, l, planes = map(int, header.split())
+            header = map(int, header.split())
+            w, l, planes, one_hots = header[0],header[1],header[2],header[3:]
         
             
             size=w*l*planes
@@ -77,6 +78,8 @@ def processRequests(conn, dummy):
         
     	
             x = np.reshape(plane_data, [planes, w, l])
+            for index in one_hots:
+                x[index]=1
             #x = np.reshape(plane_data, [1, planes, w, l])
     	    #x = augment(x)
             #net.blobs['data'].reshape(8,planes,w,l)

@@ -56,7 +56,7 @@ public class PuppetCNN extends AI {
 		if(net==null)establishConnection();
 
 		CNNGameState cnngs=new CNNGameState(gs);
-		net.send(cnngs.getHeaderExtra(1, player)+cnngs.getPlanesCompressed()+cnngs.getExtraPlanesCompressed(1,player));   
+		net.send(cnngs.getHeaderExtraCompressed(1, player)+cnngs.getPlanesCompressed());   
 		scripts.setDefaultChoices();
 		int action = net.getMaxIndex();
 		scripts.setChoices(Collections.singletonList(new Pair<Integer,Integer>(0,action)));
