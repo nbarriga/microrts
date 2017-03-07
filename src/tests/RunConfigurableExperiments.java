@@ -331,16 +331,16 @@ public class RunConfigurableExperiments {
 					5,
 					95,
 					new PuppetCNN(
-							new SingleChoiceConfigurableScript(getPathFinding(),
-									new AI[]{new WorkerRush(utt, getPathFinding()),
-											new LightRush(utt, getPathFinding()),
-											new RangedRush(utt, getPathFinding()),
-											new HeavyRush(utt, getPathFinding())}
-									)),
-							new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, 0.33f, 0.0f, 0.75f, 
-									new RandomBiasedAI(), getEvaluationFunction())
-							)
-					;
+						new SingleChoiceConfigurableScript(getPathFinding(),
+							new AI[]{new WorkerRush(utt, getPathFinding()),
+								new LightRush(utt, getPathFinding()),
+								new RangedRush(utt, getPathFinding()),
+								new HeavyRush(utt, getPathFinding())}
+							)),
+					new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, 0.33f, 0.0f, 0.75f, 
+						new RandomBiasedAI(), getEvaluationFunction())
+					)
+				;
 		case "PuppetRandom":
 			return new PuppetRandom(0,new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{new WorkerRush(utt, getPathFinding()),

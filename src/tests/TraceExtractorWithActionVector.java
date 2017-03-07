@@ -122,7 +122,7 @@ public class TraceExtractorWithActionVector {
 		//String inDir="../cnn-data/"+size+"x"+size+"replays";
 		//String outDir="../cnn-data/"+size+"x"+size+"extracted";
 		if(args.length!=4)
-			 System.out.println("Usage: prog size inDirectory outDirectory samplesPerGame searchTime");
+			 System.out.println("Usage: prog size inDirectory outDirectory samplesPerGame");
 		int size = Integer.parseInt(args[0]);
 		String inDir=args[1];
 		inDir = inDir.replaceAll("/$", "");
@@ -134,7 +134,6 @@ public class TraceExtractorWithActionVector {
 		int samplesPerGame = Integer.parseInt(args[3]);
 		List<File> files = new ArrayList<File>();
 		listf(inDir, files);
-		int searchTime = Integer.parseInt(args[4]);
 		
 		AI[] ais = {
 				new WorkerRush(utt,getPathFinding()),
@@ -159,7 +158,7 @@ public class TraceExtractorWithActionVector {
 			Sample samples = getSamples(f, samplesPerGame);
 			//Sample samples = getAllSamples(f);
 			for (GameState gs : samples.states) {
-				System.out.println("Sample: "+gs.getTime());
+				//System.out.println("Sample: "+gs.getTime());
 				for(int i=0;i<ais.length;i++){
 					for(int j=0;j<ais.length;j++){
 						GameState copyGs = gs.clone();
@@ -170,7 +169,7 @@ public class TraceExtractorWithActionVector {
 								simulate(copyGs2, ais[k], ais[l], 0, 1, 100);
 								//call network eval
 								float eval = ef.evaluate(0,1,copyGs2);
-								System.out.println("eval: "+eval);
+								//System.out.println("eval: "+eval);
 								CNNGameState cnngs=new CNNGameState(gs);
 								if(test){
 									cnngs.writePlanesExtra(outDir+"Test/game"+sampleTestCount,true,ais.length,i,j,k,l);

@@ -142,14 +142,14 @@ public class PuppetTraceExtracter {
 //				new RangedRush(utt,getPathFinding()),
 //				new HeavyRush(utt,getPathFinding()),
 //			};
-		ConfigurableScript<?> script =new BasicConfigurableScript(utt,getPathFinding());
-		//ConfigurableScript script=new SingleChoiceConfigurableScript(getPathFinding(),
-		//		new AI[]{
-		//				new WorkerRush(utt, getPathFinding()),
-		//				new LightRush(utt, getPathFinding()),
-		//				new RangedRush(utt, getPathFinding()),
-		//				new HeavyRush(utt, getPathFinding()),
-		//}),
+		//ConfigurableScript<?> script =new BasicConfigurableScript(utt,getPathFinding());
+		ConfigurableScript script=new SingleChoiceConfigurableScript(getPathFinding(),
+				new AI[]{
+					new WorkerRush(utt, getPathFinding()),
+						new LightRush(utt, getPathFinding()),
+						new RangedRush(utt, getPathFinding()),
+						new HeavyRush(utt, getPathFinding()),
+		});
 		PuppetNoPlan puppetOrig=new PuppetNoPlan(
 				new PuppetSearchAB(
 						searchTime, -1,
@@ -186,11 +186,12 @@ public class PuppetTraceExtracter {
 					puppet.startNewComputation(p, gs);
 					puppet.computeDuringOneGameFrame();
 					Collection<Pair<Integer, Integer>> choices = puppet.getBestChoicesSoFar();
-					assert choices.size()==2;
+					assert choices.size()==1;
 					int c=0;
 					for(Pair<Integer, Integer> choice:choices){
 						System.out.print(choice.m_a+": "+choice.m_b+"|");
-						c+=choice.m_a==0?(choice.m_b-3):choice.m_b*4;
+						//c+=choice.m_a==0?(choice.m_b-3):choice.m_b*4;
+						c=choice.m_b;
 					}
 					System.out.println("final: "+c);
 					CNNGameState cnngs=new CNNGameState(gs);
