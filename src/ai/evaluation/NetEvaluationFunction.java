@@ -23,7 +23,7 @@ public class NetEvaluationFunction extends EvaluationFunction {
 		try
 		{
 			caffe.start( port);
-			caffe.send(cmd);
+			caffe.send(cmd+"\n");
         }
 		catch (Exception e) {e.printStackTrace();}
 	}

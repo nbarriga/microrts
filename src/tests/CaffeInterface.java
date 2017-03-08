@@ -19,7 +19,7 @@ public class CaffeInterface {
     public void send(String s) throws Exception {
     	// System.out.println("sending: " + s);
     	out.write(s);
-    	out.newLine(); //HERE!!!!!!
+	//out.newLine();
         out.flush();
     }
 

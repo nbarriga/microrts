@@ -76,8 +76,16 @@ public class CNNGameState extends GameState {
 		int h = pgs.getHeight();
 
 		out.print(w + " " + h + " " + p);
-		for(int i = 0; i<vars.length; i++){
-			out.print(" "+(planes.length+planesPerVar*i+vars[i]));
+		if(planesPerVar==1){
+			for(int i = 0; i<vars.length; i++){
+				if(vars[i]==1)
+					out.print(" "+(planes.length+planesPerVar*i));
+			}
+		}else{
+			for(int i = 0; i<vars.length; i++){
+				assert(vars[i]<planesPerVar);
+				out.print(" "+(planes.length+planesPerVar*i+vars[i]));
+			}
 		}
 		out.println("");
 		return baos.toString();
@@ -121,7 +129,7 @@ public class CNNGameState extends GameState {
 				}
 			}
 		}       
-
+		out.println("");
 		return baos.toString();
 	}
 	

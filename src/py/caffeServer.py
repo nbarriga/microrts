@@ -33,6 +33,7 @@ def main():
      #               caffe.TEST)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     #sock.connect((HOST, PORT))
     sock.bind((HOST, PORT))
     sock.listen(5)
@@ -74,7 +75,9 @@ def processRequests(conn, dummy):
             size=w*l*planes
             plane_data = np.zeros(size)
         
-            plane_data[map(int, conn.readline().split())] = 1
+            indices =  conn.readline().split()
+            #print indices
+            plane_data[map(int, indices)] = 1
         
     	
             x = np.reshape(plane_data, [planes, w, l])
@@ -98,10 +101,9 @@ def processRequests(conn, dummy):
             #conn.sendall(str(out['prob'][0][1][0][0])+"\n")
             #conn.sendall(str(np.average(out['prob'][0][1][0]))+"\n")
             #sock.sendall(str(out['prob'][0][0])+"\n")
-    except ex:
+    except Exception as ex:
         print str(ex)
     finally:
-        del net
         conn.close()
 
 def augment(data):

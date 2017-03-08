@@ -31,7 +31,7 @@ public class PuppetCNN extends AI {
 		net=new CaffeInterface();
 		try {
 			net.start(8080);
-			net.send("data/caffe/puppet128.prototxt data/caffe/puppet128.caffemodel");
+			net.send("data/caffe/puppet128.prototxt data/caffe/puppet128.caffemodel\n");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
