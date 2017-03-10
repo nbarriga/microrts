@@ -46,6 +46,7 @@ import ai.montecarlo.MonteCarlo;
 import ai.portfolio.PortfolioAI;
 import ai.portfolio.portfoliogreedysearch.PGSAI;
 import ai.puppet.BasicConfigurableScript;
+import ai.puppet.PuppetActionVector;
 import ai.puppet.PuppetCNN;
 import ai.puppet.PuppetRandom;
 import ai.puppet.PuppetNoPlan;
@@ -388,6 +389,16 @@ public class RunConfigurableExperiments {
 					new NaiveMCTS(TIME, MAX_PLAYOUTS, PLAYOUT_TIME, MAX_DEPTH, 0.33f, 0.0f, 0.75f, 
 							new RandomBiasedAI(), getEvaluationFunction())
 					)
+					;
+		case "PuppetActionVector":
+			return new PuppetActionVector(
+							new SingleChoiceConfigurableScript(getPathFinding(),
+									new AI[]{new WorkerRush(utt, getPathFinding()),
+											new LightRush(utt, getPathFinding()),
+											new RangedRush(utt, getPathFinding()),
+											new HeavyRush(utt, getPathFinding())}
+									)
+							)
 					;
 		default:
 			throw new RuntimeException("AI not found");
