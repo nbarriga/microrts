@@ -142,12 +142,12 @@ public class PuppetSearchAB extends PuppetBase {
 	Plan currentPlan;
 	TranspositionTable TT=new TranspositionTable(100000);
 	CacheTable CT=new CacheTable(100000);
-
+	int MAX_DEPTH;
         
         public PuppetSearchAB(UnitTypeTable utt) {
             this(100, -1,
                  5000, -1,
-                 100,
+                 100, -1,
                  new BasicConfigurableScript(utt, new FloodFillPathFinding()),
                  new SimpleSqrtEvaluationFunction3());
         }
@@ -160,12 +160,12 @@ public class PuppetSearchAB extends PuppetBase {
 	public PuppetSearchAB(
 			int max_time_per_frame, int max_playouts_per_frame, 
 			int max_plan_time, int max_plan_playouts, 
-			int playout_time,
+			int playout_time, int max_depth,
 			ConfigurableScript<?> script, EvaluationFunction evaluation) {
 		super(max_time_per_frame,max_playouts_per_frame,
 				max_plan_time, max_plan_playouts,playout_time,
 				script,evaluation);
-
+		MAX_DEPTH=max_depth;
 		currentPlan=new Plan();
 	}
 
@@ -182,7 +182,7 @@ public class PuppetSearchAB extends PuppetBase {
 	//todo:this clone method is broken
 	@Override
 	public AI clone() {
-		PuppetSearchAB ps = new PuppetSearchAB(MAX_TIME, MAX_ITERATIONS,PLAN_TIME,PLAN_PLAYOUTS,STEP_PLAYOUT_TIME, script.clone(), eval);
+		PuppetSearchAB ps = new PuppetSearchAB(MAX_TIME, MAX_ITERATIONS,PLAN_TIME,PLAN_PLAYOUTS,STEP_PLAYOUT_TIME, MAX_DEPTH, script.clone(), eval);
 		ps.currentPlan = currentPlan;
 		ps.lastSearchFrame = lastSearchFrame;
 		ps.lastSearchTime = lastSearchTime;
@@ -304,7 +304,7 @@ public class PuppetSearchAB extends PuppetBase {
 			totalTime+=next-prev;
 			prev=next;
 			frameTime=prev-frameStartTime;
-		}while(!frameBudgetExpired() && !searchDone());
+		}while(!frameBudgetExpired() && !searchDone() && ((DEPTH <= MAX_DEPTH) || (MAX_DEPTH < 0)));
 
 		if(!PLAN){
 			currentPlan=new Plan(lastFinishedHead);

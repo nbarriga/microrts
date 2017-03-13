@@ -154,7 +154,7 @@ public class PuppetTraceExtracter {
 				new PuppetSearchAB(
 						searchTime, -1,
 						-1, -1,
-						100,
+						100, -1,
 						script,
 						//new SimpleEvaluationFunction()
 						NetEvaluationFunction.getInstance(size)

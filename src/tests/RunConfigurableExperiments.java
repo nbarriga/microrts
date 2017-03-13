@@ -224,7 +224,7 @@ public class RunConfigurableExperiments {
 			return new PuppetSearchAB(
 							TIME, MAX_PLAYOUTS,
 							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
-							PLAYOUT_TIME,
+							PLAYOUT_TIME, -1,
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{
 											new WorkerRush(utt, getPathFinding()),
@@ -239,7 +239,7 @@ public class RunConfigurableExperiments {
 					new PuppetSearchAB(
 							TIME, MAX_PLAYOUTS,
 							-1, -1,
-							PLAYOUT_TIME,
+							PLAYOUT_TIME, -1,
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{
 											new WorkerRush(utt, getPathFinding()),
@@ -255,7 +255,7 @@ public class RunConfigurableExperiments {
 			return new PuppetSearchAB(
 							TIME, MAX_PLAYOUTS,
 							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
-							PLAYOUT_TIME,
+							PLAYOUT_TIME, -1,
 							new BasicConfigurableScript(utt, getPathFinding()),
 							getEvaluationFunction())
 					;
@@ -264,7 +264,7 @@ public class RunConfigurableExperiments {
 					new PuppetSearchAB(
 							TIME, MAX_PLAYOUTS,
 							-1, -1,
-							PLAYOUT_TIME,
+							PLAYOUT_TIME, -1,
 							new BasicConfigurableScript(utt, getPathFinding()),
 							getEvaluationFunction())
 					)
@@ -377,7 +377,7 @@ public class RunConfigurableExperiments {
 					new PuppetNoPlan(new PuppetSearchAB(
 							TIME, MAX_PLAYOUTS,
 							PUPPET_PLAN_TIME, PUPPET_PLAN_PLAYOUTS,
-							PLAYOUT_TIME,
+							PLAYOUT_TIME, -1,
 							new SingleChoiceConfigurableScript(getPathFinding(),
 									new AI[]{
 											new WorkerRush(utt, getPathFinding()),

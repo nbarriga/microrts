@@ -146,7 +146,7 @@ public class PuppetDQN {
                                         new PuppetSearchAB(
                                                         100, -1,
                                                         -1, -1,
-                                                        100,
+                                                        100, -1,
                                                         new SingleChoiceConfigurableScript(getPathFinding(),
                                                                         new AI[]{
                                                                                         new WorkerRush(utt, getPathFinding()),
