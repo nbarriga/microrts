@@ -27,11 +27,11 @@ public class PuppetCNN extends AI {
 		this.scripts=scripts;
 	}
 
-	void establishConnection(){
+	void establishConnection(int size){
 		net=new CaffeInterface();
 		try {
 			net.start(8080);
-			net.send("data/caffe/puppet128.prototxt data/caffe/puppet128.caffemodel\n");
+			net.send("data/caffe/puppet"+size+".prototxt data/caffe/puppet"+size+".caffemodel\n");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -53,7 +53,7 @@ public class PuppetCNN extends AI {
 
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
-		if(net==null)establishConnection();
+		if(net==null)establishConnection(gs.getPhysicalGameState().getWidth());
 
 		CNNGameState cnngs=new CNNGameState(gs);
 		net.send(cnngs.getHeaderExtraCompressed(1, player)+cnngs.getPlanesCompressed());   

@@ -27,11 +27,11 @@ public class PuppetActionVector extends AI {
 		this.scripts=scripts;
 	}
 
-	void establishConnection(){
+	void establishConnection(int size){
 		net=new CaffeInterface();
 		try {
 			net.start(8081);
-			net.send("data/caffe/actionvector128.prototxt data/caffe/actionvector128.caffemodel\n");
+			net.send("data/caffe/actionvector"+size+".prototxt data/caffe/actionvector"+size+".caffemodel\n");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -72,7 +72,7 @@ public class PuppetActionVector extends AI {
 	}
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
-		if(net==null)establishConnection();
+		if(net==null)establishConnection(gs.getPhysicalGameState().getWidth());
 		if (!gs.canExecuteAnyAction(player)){
 			return new PlayerAction(); 
 		}

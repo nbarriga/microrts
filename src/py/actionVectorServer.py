@@ -7,6 +7,7 @@ import socket
 import sys
 import time
 import multiprocessing as mp
+import traceback
 
 def main():
     
@@ -84,7 +85,7 @@ def processRequests(conn, dummy):
             out = net.forward()
             #d=time.clock()
             #print out['score']
-            output=" ".join([str(prob) for prob in out['score'][:,0,0,0]])+"\n"
+            output=" ".join([str(prob) for prob in out['score'][:,0]])+"\n"
             #print output
             #print str(b-a)+" "+str(c-b)+" "+str(d-c)
             conn.write(output)
@@ -95,7 +96,9 @@ def processRequests(conn, dummy):
             #conn.sendall(str(np.average(out['prob'][0][1][0]))+"\n")
             #sock.sendall(str(out['prob'][0][0])+"\n")
     except Exception as ex:
-        print str(ex)
+        print(str(type(ex))+": "+str(ex))
+        traceback.print_exc()
+        
     finally:
         conn.close()
 
