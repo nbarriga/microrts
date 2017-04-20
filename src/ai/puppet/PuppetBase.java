@@ -81,7 +81,7 @@ public abstract class PuppetBase extends AI {
 			int max_plan_time, int max_plan_playouts,int step_playout_time,
 			ConfigurableScript<?> script, EvaluationFunction evaluation) {
 		super();
-		assert(max_time_per_frame>=0||max_playouts_per_frame>=0);
+		//assert(max_time_per_frame>=0||max_playouts_per_frame>=0);
 		MAX_TIME=max_time_per_frame;
 		MAX_ITERATIONS=max_playouts_per_frame;
 		PLAN_TIME=max_plan_time;

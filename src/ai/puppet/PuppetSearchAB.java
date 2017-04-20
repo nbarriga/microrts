@@ -217,9 +217,9 @@ public class PuppetSearchAB extends PuppetBase {
 	}
 	@Override
 	public String statisticsString() {
-		return "Average Number of Leaves: "+allLeaves/allSearches+
-				", Average Depth: "+allDepth/allSearches+
-				", Average Time: "+allTime/allSearches;
+		return "Average Number of Leaves: "+allLeaves/(double)allSearches+
+				", Average Depth: "+allDepth/(double)allSearches+
+				", Average Time: "+allTime/(double)allSearches;
 	}
 	void clearStats(){
 		allTime=allLeaves=allDepth=0;
@@ -304,7 +304,7 @@ public class PuppetSearchAB extends PuppetBase {
 			totalTime+=next-prev;
 			prev=next;
 			frameTime=prev-frameStartTime;
-		}while(!frameBudgetExpired() && !searchDone() && ((DEPTH <= MAX_DEPTH) || (MAX_DEPTH < 0)));
+		}while(!frameBudgetExpired() && !searchDone() && ((DEPTH < MAX_DEPTH) || (MAX_DEPTH < 0)));
 
 		if(!PLAN){
 			currentPlan=new Plan(lastFinishedHead);
