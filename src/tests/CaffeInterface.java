@@ -8,6 +8,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
 
+import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
+
 public class CaffeInterface {
 
     String fromClient;
@@ -49,6 +51,14 @@ public class CaffeInterface {
     		}
     	}
     	return maxIndex;
+    }
+    public int sampleIndex() throws Exception{
+    	double[] values=readDoubles();
+	int[] numsToGenerate           = new int[]    {0,1,2,3};
+
+	EnumeratedIntegerDistribution distribution = 
+		    new EnumeratedIntegerDistribution(numsToGenerate, values);
+    	return distribution.sample();
     }
     public void start(int port) throws Exception {
 

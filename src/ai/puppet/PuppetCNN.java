@@ -23,15 +23,28 @@ public class PuppetCNN extends AI {
 
 	CaffeInterface net=null;
 	SingleChoiceConfigurableScript scripts;
+	String definition=null;
+	String model=null;
+	boolean sample=false;
 	public PuppetCNN(SingleChoiceConfigurableScript scripts) {
 		this.scripts=scripts;
+	}
+	public PuppetCNN(SingleChoiceConfigurableScript scripts, String definition, String model, boolean sample) {
+		this(scripts);
+		this.definition=definition;
+		this.model=model;
+		this.sample=sample;
 	}
 
 	void establishConnection(int size){
 		net=new CaffeInterface();
 		try {
 			net.start(8080);
-			net.send("data/caffe/puppet"+size+".prototxt data/caffe/puppet"+size+".caffemodel\n");
+			if(model!=null && definition!=null){
+				net.send(definition+" "+model+"\n");
+			}else{
+				net.send("data/caffe/puppet"+size+".prototxt data/caffe/puppet"+size+".caffemodel\n");
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -51,23 +64,32 @@ public class PuppetCNN extends AI {
 		}
 	}
 
+	int lastAction=-1;
+
 	@Override
 	public PlayerAction getAction(int player, GameState gs) throws Exception {
+		if(!gs.canExecuteAnyAction(player))return null;
 		if(net==null)establishConnection(gs.getPhysicalGameState().getWidth());
 
 		CNNGameState cnngs=new CNNGameState(gs);
 		net.send(cnngs.getHeaderExtraCompressed(1, player)+cnngs.getPlanesCompressed());   
 		scripts.setDefaultChoices();
-		int action = net.getMaxIndex();
-		scripts.setChoices(Collections.singletonList(new Pair<Integer,Integer>(0,action)));
+		lastAction = sample?net.sampleIndex():net.getMaxIndex();
+		scripts.setChoices(Collections.singletonList(new Pair<Integer,Integer>(0,lastAction)));
 
 		return scripts.getAction(player, gs);
 	}
 
+	public int getLastAction(){
+		return lastAction;
+	}
+	public void sample(boolean sample){
+		this.sample=sample;
+	}
 	@Override
 	public AI clone() {
 		// TODO Auto-generated method stub
-		return (AI)new PuppetCNN((SingleChoiceConfigurableScript)scripts.clone());
+		return (AI)new PuppetCNN((SingleChoiceConfigurableScript)scripts.clone(),definition,model,sample);
 	}
 
 	@Override
