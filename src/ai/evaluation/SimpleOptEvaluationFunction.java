@@ -9,9 +9,9 @@ import rts.PhysicalGameState;
 import rts.units.Unit;
 
 public class SimpleOptEvaluationFunction extends SimpleEvaluationFunction {    
-    public static float RESOURCE = 0.19059792f;
-    public static float RESOURCE_IN_WORKER = 0.60513535f;
-    public static float UNIT_BONUS_MULTIPLIER = 0.30983887f;
+    public static float[] RESOURCE = {0.19059792f, 0.45090911261381122f};
+    public static float[] RESOURCE_IN_WORKER = {0.60513535f, -0.33321490346376642f};
+    public static float[] UNIT_BONUS_MULTIPLIER = {0.30983887f, 0.15175784976067702f};
     
     
     public float evaluate(int maxplayer, int minplayer, GameState gs) {
@@ -20,12 +20,18 @@ public class SimpleOptEvaluationFunction extends SimpleEvaluationFunction {
     }
     
     public float base_score(int player, GameState gs) {
-        PhysicalGameState pgs = gs.getPhysicalGameState();
-        float score = gs.getPlayer(player).getResources()*RESOURCE;
+	PhysicalGameState pgs = gs.getPhysicalGameState();
+	int index = 0;
+	switch(pgs.getWidth()){
+	    case 128:
+	        index = 1;
+	        break;
+	}
+        float score = gs.getPlayer(player).getResources()*RESOURCE[index];
         for(Unit u:pgs.getUnits()) {
             if (u.getPlayer()==player) {
-                score += u.getResources() * RESOURCE_IN_WORKER;
-                score += UNIT_BONUS_MULTIPLIER * (u.getCost()*u.getHitPoints())/(float)u.getMaxHitPoints();
+                score += u.getResources() * RESOURCE_IN_WORKER[index];
+                score += UNIT_BONUS_MULTIPLIER[index] * (u.getCost()*u.getHitPoints())/(float)u.getMaxHitPoints();
             }
         }
         return score;
@@ -33,6 +39,12 @@ public class SimpleOptEvaluationFunction extends SimpleEvaluationFunction {
     
     public float upperBound(GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
+	int index = 0;
+	switch(pgs.getWidth()){
+	    case 128:
+	        index = 1;
+	        break;
+	}
         int free_resources = 0;
         int player_resources[] = {gs.getPlayer(0).getResources(),gs.getPlayer(1).getResources()};
         for(Unit u:pgs.getUnits()) {
@@ -50,6 +62,6 @@ public class SimpleOptEvaluationFunction extends SimpleEvaluationFunction {
 //        if (free_resources + player_resources[0] + player_resources[1]>62) {
 //            System.out.println(gs);
 //        }
-        return (free_resources + Math.max(player_resources[0],player_resources[1]))*UNIT_BONUS_MULTIPLIER;
+        return (free_resources + Math.max(player_resources[0],player_resources[1]))*UNIT_BONUS_MULTIPLIER[index];
     }
 }

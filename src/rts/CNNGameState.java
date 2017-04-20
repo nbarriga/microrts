@@ -374,4 +374,72 @@ public class CNNGameState extends GameState {
 
 		}
 	}
+	public void writeUnitDataset(String filename) throws FileNotFoundException
+	{
+		PrintStream out = new PrintStream(new FileOutputStream(filename, true));
+
+		//get unit numbers from gamestate
+		int unitCounts[][] = new int[2][12];
+
+		for(Unit u:pgs.units)
+		{
+			int player = u.getPlayer();
+
+			if(player == -1)
+			{
+				continue;
+			}
+
+			//UNITS
+			if(u.getType() == utt.getUnitType("Base"))
+			{
+				unitCounts[player][0] += u.getHitPoints();
+				unitCounts[player][1] += 1;
+			}
+			else if(u.getType() == utt.getUnitType("Barracks"))
+			{
+				unitCounts[player][2] += u.getHitPoints();
+				unitCounts[player][3] += 1;
+
+			}
+			else if(u.getType() == utt.getUnitType("Worker"))
+			{
+				unitCounts[player][4] += 1;
+			}
+			else if(u.getType() == utt.getUnitType("Light"))
+			{
+				unitCounts[player][5] += u.getHitPoints();
+				unitCounts[player][6] += 1;
+			}
+			else if(u.getType() == utt.getUnitType("Ranged"))
+			{
+				unitCounts[player][7] += 1;
+			}
+			else if(u.getType() == utt.getUnitType("Heavy"))
+			{
+				unitCounts[player][8] += u.getHitPoints();
+				unitCounts[player][9] += 1;
+			}
+
+
+			//RESOURCES CARRIED
+			unitCounts[player][10] += u.getResources();
+		}
+
+		//RESOURCES MINED
+		unitCounts[0][11] = this.getPlayer(0).getResources();
+		unitCounts[1][11] = this.getPlayer(1).getResources();
+
+		for(int i = 0; i<2; i++)
+		{
+			for(int j=0; j<12; j++)
+			{
+				out.print((unitCounts[i][j])+" ");
+			}
+		}
+
+		out.println();
+		out.close();
+	}
+
 }
